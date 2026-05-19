@@ -18,43 +18,41 @@ public enum SqlConfigFactory {
 
         config.addPackage("models.sql");
         config.addPackage("helpers.blueprint.models");
-        
+
         config.setDdlGenerate(false);
         config.setDdlRun(false);
 
-        try {
-            config.loadFromProperties();
-        } catch (Exception e) {
-            System.out.println("⚠️  Could not load ebean.properties, using explicit configuration");
+        // Loads app/src/main/resources/application.properties (datasource.db.*)
+        config.loadFromProperties();
+
+        // Railway / Docker env overrides (optional)
+        String host = System.getenv("MYSQLHOST");
+        if (host != null) {
+            DataSourceConfig ds = config.getDataSourceConfig();
+            if (ds == null) {
+                ds = new DataSourceConfig();
+                config.setDataSourceConfig(ds);
+            }
+            String port = envOr("MYSQLPORT", "3306");
+            String db = envOr("MYSQLDATABASE", "railway");
+            String user = envOr("MYSQLUSER", "root");
+            String pass = envOr("MYSQLPASSWORD", "");
+            ds.setUrl("jdbc:mysql://" + host + ":" + port + "/" + db
+                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
+            ds.setUsername(user);
+            ds.setPassword(pass);
+            ds.setDriver("com.mysql.cj.jdbc.Driver");
         }
 
-        DataSourceConfig ds = new DataSourceConfig();
-
-        String host = System.getenv("MYSQLHOST");
-        String port = System.getenv("MYSQLPORT");
-        String db = System.getenv("MYSQLDATABASE");
-        String user = System.getenv("MYSQLUSER");
-        String pass = System.getenv("MYSQLPASSWORD");
-
-        // Fallback for local dev
-        if (host == null) host = "localhost";
-        if (port == null) port = "3306";
-        if (db == null) db = "college_placement";
-        if (user == null) user = "root";
-        if (pass == null) pass = "PaZIjGjnKVEbyKjMqthELuxgVqVLBNgk";
-
-        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + db + "?useSSL=false&allowPublicKeyRetrieval=true";
-
-        ds.setUrl(jdbcUrl);
-        ds.setUsername(user);
-        ds.setPassword(pass);
-        ds.setDriver("com.mysql.cj.jdbc.Driver");
-
-        config.setDataSourceConfig(ds);
-
         this.database = DatabaseFactory.create(config);
-        System.out.println("✅ Connected to MySQL: " + jdbcUrl);
-        System.out.println("✅ Registered entity packages: models.sql, helpers.blueprint.models");
+        DataSourceConfig ds = config.getDataSourceConfig();
+        System.out.println("Connected to MySQL: " + (ds != null ? ds.getUrl() : "unknown"));
+        System.out.println("Registered entity packages: models.sql, helpers.blueprint.models");
+    }
+
+    private static String envOr(String key, String defaultValue) {
+        String value = System.getenv(key);
+        return value != null ? value : defaultValue;
     }
 
     public Database getServer() {

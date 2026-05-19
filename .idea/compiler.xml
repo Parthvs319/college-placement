@@ -20,6 +20,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="asdfgh" target="17" />
+      <module name="darshan" target="1.5" />
       <module name="driver" target="17" />
       <module name="hotel" target="17" />
       <module name="pujari" target="17" />

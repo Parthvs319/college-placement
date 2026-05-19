@@ -7,10 +7,13 @@ import models.services.WhatsAppService;
 
 public class Application {
     public static void main(String[] args) {
-        int cores = Runtime.getRuntime().availableProcessors();
+        // DB must be ready before HTTP handlers run
+        SqlConfigFactory.init();
+
         Vertx vertx = Vertx.vertx();
         WhatsAppService.initialize(vertx);
-        vertx.deployVerticle(HttpVerticle.class.getName(), new DeploymentOptions().setInstances(cores * 2));
-        SqlConfigFactory.init();
+
+        int instances = Integer.parseInt(System.getenv().getOrDefault("VERTICLE_INSTANCES", "1"));
+        vertx.deployVerticle(HttpVerticle.class.getName(), new DeploymentOptions().setInstances(instances));
     }
 }
