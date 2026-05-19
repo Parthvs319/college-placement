@@ -2,6 +2,7 @@ package models.repos;
 
 import helpers.sql.SqlFinder;
 import io.ebean.ExpressionList;
+import models.enums.UserType;
 import models.sql.User;
 
 import java.util.List;
@@ -9,26 +10,40 @@ import java.util.List;
 public enum UserRepository {
     INSTANCE;
 
-    private SqlFinder<Long , User> finder = new SqlFinder<>(User.class);
+    private final SqlFinder<Long, User> finder = new SqlFinder<>(User.class);
 
-    public User byId(Long id ) {
-        return finder.query().where().eq("t0.id" , id).setMaxRows(1).findOne();
-    }
-    
-    public User byMobile(String mobile) {
-        return finder.query().where().eq("t0.mobile" , mobile).setMaxRows(1).findOne();
+    public User byId(Long id) {
+        return finder.query().where().eq("id", id).eq("deleted", false).findOne();
     }
 
     public User byEmail(String email) {
-        return finder.query().where().eq("t0.email" , email).setMaxRows(1).findOne();
+        return finder.query().where().eq("email", email).eq("deleted", false).findOne();
     }
 
-    public List<User> finder() {
-        return finder.query().findList();
+    public User byMobile(String mobile) {
+        return finder.query().where().eq("mobile", mobile).eq("deleted", false).findOne();
     }
 
-    public ExpressionList<User> exprFinder() {
-        return finder.query().where();
+    public List<User> byCollege(Long collegeId) {
+        return finder.query().where()
+                .eq("college.id", collegeId)
+                .eq("deleted", false)
+                .findList();
     }
 
+    public List<User> byCollegeAndType(Long collegeId, UserType userType) {
+        return finder.query().where()
+                .eq("college.id", collegeId)
+                .eq("userType", userType)
+                .eq("deleted", false)
+                .findList();
+    }
+
+    public List<User> findAll() {
+        return finder.query().where().eq("deleted", false).findList();
+    }
+
+    public ExpressionList<User> where() {
+        return finder.query().where().eq("deleted", false);
+    }
 }

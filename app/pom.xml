@@ -5,55 +5,55 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.ujjain</groupId>
-        <artifactId>darshan</artifactId>
+        <groupId>com.placement</groupId>
+        <artifactId>college-placement</artifactId>
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>app</artifactId>
     <packaging>jar</packaging>
-    <name>Ujjain Darshan - Main Module</name>
+    <name>College Placement - Main Module</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>models</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.ujjain</groupId>
-            <artifactId>pujari</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ujjain</groupId>
-            <artifactId>tourist</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ujjain</groupId>
-            <artifactId>driver</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>helpers</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>user</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.ujjain</groupId>
-            <artifactId>hotel</artifactId>
+            <groupId>com.placement</groupId>
+            <artifactId>auth</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.ujjain</groupId>
-            <artifactId>auth</artifactId>
+            <groupId>com.placement</groupId>
+            <artifactId>college</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.placement</groupId>
+            <artifactId>company</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.placement</groupId>
+            <artifactId>student</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.placement</groupId>
+            <artifactId>drive</artifactId>
             <version>1.0.0</version>
         </dependency>
 
@@ -147,7 +147,7 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.ujjain.darshan.Application</mainClass>
+                                    <mainClass>com.college.placement.Application</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

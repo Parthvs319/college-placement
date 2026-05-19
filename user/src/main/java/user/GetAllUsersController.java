@@ -31,17 +31,17 @@ public enum GetAllUsersController implements BaseController {
     }
 
     private Response map(UserLoginRequest request) {
-        if (!request.getUser().getUserType().equals(UserType.ADMIN)) {
+        if (!request.getUser().getUserType().equals(UserType.SUPER_ADMIN)) {
             throw new RoutingError("You are not permitted to access this data !");
         }
         Response response = new Response();
-        UserRepository.INSTANCE.finder().forEach(dbUser -> {
+        UserRepository.INSTANCE.findAll().forEach(dbUser -> {
             User u = new User();
             u.setMobile(dbUser.getMobile());
             u.setName(dbUser.getName());
             u.setActive(dbUser.isActive());
             u.setEmail(dbUser.getEmail());
-            u.setResidingCity(dbUser.getResidingCity());
+
             u.setUserType(dbUser.getUserType());
             u.setVerified(dbUser.isVerified());
             response.getUsers().add(u);
@@ -65,8 +65,6 @@ public enum GetAllUsersController implements BaseController {
         public String password;
 
         public boolean active;
-
-        public String residingCity;
 
         public UserType userType;
 

@@ -8,19 +8,23 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="app" />
-        <module name="tourist" />
+        <module name="college" />
         <module name="models" />
         <module name="helpers" />
-        <module name="pujari" />
-        <module name="driver" />
         <module name="auth" />
-        <module name="hotel" />
+        <module name="student" />
+        <module name="company" />
+        <module name="drive" />
         <module name="user" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="asdfgh" target="17" />
+      <module name="driver" target="17" />
+      <module name="hotel" target="17" />
+      <module name="pujari" target="17" />
       <module name="src" target="17" />
+      <module name="tourist" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

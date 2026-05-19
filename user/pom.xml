@@ -5,18 +5,17 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Parent POM -->
     <parent>
-        <groupId>com.ujjain</groupId>
-        <artifactId>darshan</artifactId>
+        <groupId>com.placement</groupId>
+        <artifactId>college-placement</artifactId>
         <version>1.0.0</version>
-        <relativePath>../pom.xml</relativePath> <!-- important so Maven finds parent -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>user</artifactId>
     <packaging>jar</packaging>
-    <name>Ujjain Darshan - User Module</name>
+    <name>College Placement - User Module</name>
 
-    <!-- Dependencies -->
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -25,13 +24,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>helpers</artifactId>
             <version>1.0.0</version>
         </dependency>
 
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>models</artifactId>
             <version>1.0.0</version>
         </dependency>
@@ -40,10 +39,6 @@
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
         </dependency>
-
-
-
-
         <dependency>
             <groupId>io.ebean</groupId>
             <artifactId>ebean</artifactId>

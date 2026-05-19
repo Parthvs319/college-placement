@@ -41,7 +41,7 @@ public enum DeactivateUserController implements BaseController {
     }
 
     private SuccessResponse map(UserLoginRequest request) {
-        if (!request.getUser().getUserType().equals(UserType.ADMIN)) {
+        if (!request.getUser().getUserType().equals(UserType.SUPER_ADMIN)) {
             throw new RoutingError("You are not permitted to deactivate users !");
         }
         Long userId = request.getRequest().get("userId");

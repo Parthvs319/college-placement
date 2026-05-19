@@ -7,16 +7,15 @@
 
     <!-- Parent POM -->
     <parent>
-        <groupId>com.ujjain</groupId>
-        <artifactId>darshan</artifactId>
+        <groupId>com.placement</groupId>
+        <artifactId>college-placement</artifactId>
         <version>1.0.0</version>
-        <relativePath>../pom.xml</relativePath> <!-- important so Maven finds parent -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- Module identification -->
     <artifactId>helpers</artifactId>
     <packaging>jar</packaging>
-    <name>Ujjain Darshan - Helpers Module</name>
+    <name>College Placement - Helpers Module</name>
 
     <!-- Dependencies -->
     <dependencies>

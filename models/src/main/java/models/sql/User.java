@@ -1,14 +1,11 @@
 package models.sql;
 
 import helpers.blueprint.models.BaseModel;
-import io.ebean.Model;
-import io.ebean.Finder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import models.enums.UserType;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -17,18 +14,21 @@ import java.time.LocalDateTime;
 public class User extends BaseModel {
 
     @Column(nullable = false, unique = true)
-    public String mobile;
+    public String email;
 
     public String name;
 
-    public String email;
+    public String mobile;
 
     public String password;
 
-    public String residingCity;
-
     @Column(nullable = false)
     public UserType userType;
+
+    /** College this user belongs to (null for SUPER_ADMIN) */
+    @ManyToOne
+    @JoinColumn(name = "college_id")
+    public College college;
 
     public boolean verified = false;
 
@@ -36,4 +36,5 @@ public class User extends BaseModel {
 
     private String currentOtp;
 
+    public String avatarUrl;
 }

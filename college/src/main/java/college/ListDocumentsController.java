@@ -1,0 +1,47 @@
+package college;
+
+import helpers.annotations.UserAnnotation;
+import helpers.customErrors.RoutingError;
+import helpers.interfaces.BaseController;
+import helpers.utils.ResponseUtils;
+import io.vertx.rxjava.ext.web.RoutingContext;
+import models.access.middlewear.user.UserAccessMiddleware;
+import models.body.UserLoginRequest;
+import models.repos.CollegeRepository;
+import models.repos.DocumentRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@UserAnnotation
+public enum ListDocumentsController implements BaseController {
+
+    INSTANCE;
+
+    @Override
+    public void handle(RoutingContext event) {
+        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+                .map(this::map)
+                .subscribe(
+                        o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
+                        error -> ResponseUtils.INSTANCE.handleError(event, error)
+                );
+    }
+
+    private Object map(UserLoginRequest request) {
+        String collegeIdParam = request.getRoutingContext().pathParam("collegeId");
+        Long collegeId = Long.parseLong(collegeIdParam);
+
+        if (CollegeRepository.INSTANCE.byId(collegeId) == null) {
+            throw new RoutingError("College not found");
+        }
+
+        // Optional type filter
+        List<String> typeParam = request.getRoutingContext().queryParam("type");
+        if (!typeParam.isEmpty()) {
+            return DocumentRepository.INSTANCE.byCollegeAndType(collegeId, typeParam.get(0));
+        }
+
+        return DocumentRepository.INSTANCE.byCollege(collegeId);
+    }
+}

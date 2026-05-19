@@ -39,7 +39,7 @@ public enum SqlConfigFactory {
         // Fallback for local dev
         if (host == null) host = "localhost";
         if (port == null) port = "3306";
-        if (db == null) db = "ujjain-darshan-db";
+        if (db == null) db = "college_placement";
         if (user == null) user = "root";
         if (pass == null) pass = "PaZIjGjnKVEbyKjMqthELuxgVqVLBNgk";
 

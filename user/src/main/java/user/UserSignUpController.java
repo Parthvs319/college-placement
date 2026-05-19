@@ -28,7 +28,7 @@ public enum UserSignUpController implements BaseController {
         items.add(RequestItem.builder().key("name").itemType(RequestItemType.STRING).required(true).build());
         items.add(RequestItem.builder().key("email").itemType(RequestItemType.STRING).required(false).build());
         items.add(RequestItem.builder().key("userType").itemType(RequestItemType.STRING).required(true).build());
-        items.add(RequestItem.builder().key("residingCity").itemType(RequestItemType.STRING).required(false).build());
+
 
         return items;
     }
@@ -57,7 +57,7 @@ public enum UserSignUpController implements BaseController {
         String name = request.getRequest().get("name");
         String email = request.getRequest().get("email");
         String userType = request.getRequest().get("userType");
-        String residingCity = request.getRequest().get("residingCity");
+
 
         if (mobile == null || mobile.trim().isEmpty()) {
             throw new RuntimeException("Mobile number is required");
@@ -89,7 +89,7 @@ public enum UserSignUpController implements BaseController {
         user.setPassword(PasswordUtils.INSTANCE.hash(password));
         user.setEmail(email);
         user.setName(name);
-        user.setResidingCity(residingCity);
+
         user.setUserType(UserType.valueOf(userType.toUpperCase()));
         user.setVerified(false);
         user.save();

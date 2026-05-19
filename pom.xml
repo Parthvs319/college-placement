@@ -5,21 +5,21 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.ujjain</groupId>
-  <artifactId>darshan</artifactId>
+  <groupId>com.placement</groupId>
+  <artifactId>college-placement</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
-  <name>Ujjain Darshan Parent</name>
+  <name>College Placement System</name>
 
   <modules>
     <module>helpers</module>
     <module>models</module>
     <module>user</module>
     <module>auth</module>
-    <module>tourist</module>
-    <module>pujari</module>
-    <module>driver</module>
-    <module>hotel</module>
+    <module>college</module>
+    <module>company</module>
+    <module>student</module>
+    <module>drive</module>
     <module>app</module>
   </modules>
 
@@ -162,7 +162,7 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>3.1.0</version>
           <configuration>
-            <mainClass>com.ujjain.darshan.Application</mainClass>
+            <mainClass>com.college.placement.Application</mainClass>
           </configuration>
         </plugin>
         <plugin>

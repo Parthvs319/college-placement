@@ -31,7 +31,7 @@ public enum GetAllUsersByTypeController implements BaseController {
     }
 
     private Response map(UserLoginRequest request) {
-        if (!request.getUser().getUserType().equals(UserType.ADMIN)) {
+        if (!request.getUser().getUserType().equals(UserType.SUPER_ADMIN)) {
             throw new RoutingError("You are not permitted to access this data !");
         }
         String type = request.getRoutingContext().request().getParam("type");
@@ -39,13 +39,13 @@ public enum GetAllUsersByTypeController implements BaseController {
             throw new RoutingError("Type is must !");
         }
         Response response = new Response();
-        UserRepository.INSTANCE.exprFinder().eq("user_type" , type).findList().forEach(dbUser -> {
+        UserRepository.INSTANCE.where().eq("user_type" , type).findList().forEach(dbUser -> {
             User u = new User();
             u.setMobile(dbUser.getMobile());
             u.setName(dbUser.getName());
             u.setActive(dbUser.isActive());
             u.setEmail(dbUser.getEmail());
-            u.setResidingCity(dbUser.getResidingCity());
+
             u.setUserType(dbUser.getUserType());
             u.setVerified(dbUser.isVerified());
             response.getUsers().add(u);
@@ -69,8 +69,6 @@ public enum GetAllUsersByTypeController implements BaseController {
         public String password;
 
         public boolean active;
-
-        public String residingCity;
 
         public UserType userType;
 

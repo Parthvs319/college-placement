@@ -3,14 +3,11 @@ package models.enums;
 import io.ebean.annotation.DbEnumValue;
 
 public enum UserType {
-    TOURIST("TOURIST"),
-    PUJARI("PUJARI"),
-    GUIDE("GUIDE"),
-    DRIVER("DRIVER"),
-    TEMPLE_ADMIN("TEMPLE_ADMIN"),
-    HOTEL_ADMIN("HOTEL_ADMIN"),
-    ADMIN("ADMIN");
-
+    STUDENT("STUDENT"),
+    COLLEGE_ADMIN("COLLEGE_ADMIN"),
+    TPO("TPO"),
+    COMPANY_HR("COMPANY_HR"),
+    SUPER_ADMIN("SUPER_ADMIN");
 
     String dbValue;
 

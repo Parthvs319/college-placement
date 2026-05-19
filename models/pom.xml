@@ -7,15 +7,15 @@
 
     <!-- Parent POM -->
     <parent>
-        <groupId>com.ujjain</groupId>
-        <artifactId>darshan</artifactId>
+        <groupId>com.placement</groupId>
+        <artifactId>college-placement</artifactId>
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>models</artifactId>
     <packaging>jar</packaging>
-    <name>Ujjain Darshan - Models</name>
+    <name>College Placement - Models</name>
 
     <dependencies>
 
@@ -34,7 +34,7 @@
 
         <!-- Helper module -->
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>helpers</artifactId>
             <version>1.0.0</version>
         </dependency>

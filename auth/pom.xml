@@ -7,16 +7,15 @@
 
     <!-- Parent POM -->
     <parent>
-        <groupId>com.ujjain</groupId>
-        <artifactId>darshan</artifactId>
+        <groupId>com.placement</groupId>
+        <artifactId>college-placement</artifactId>
         <version>1.0.0</version>
-        <relativePath>../pom.xml</relativePath> <!-- important so Maven finds parent -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- Module identification -->
     <artifactId>auth</artifactId>
     <packaging>jar</packaging>
-    <name>Ujjain Darshan - Auth Module</name>
+    <name>College Placement - Auth Module</name>
 
     <!-- Dependencies -->
     <dependencies>
@@ -28,13 +27,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>helpers</artifactId>
             <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.ujjain</groupId>
+            <groupId>com.placement</groupId>
             <artifactId>models</artifactId>
             <version>1.0.0</version>
             <scope>compile</scope>

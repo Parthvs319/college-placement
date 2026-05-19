@@ -10,6 +10,12 @@
     <file url="file://$PROJECT_DIR$/asdfgh/main/resources/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/auth/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/auth/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/college/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/college/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/company/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/company/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/drive/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/drive/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/driver/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/driver/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/helpers/src/main/java" charset="UTF-8" />
@@ -22,6 +28,8 @@
     <file url="file://$PROJECT_DIR$/pujari/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/student/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/student/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tourist/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tourist/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/user/src/main/java" charset="UTF-8" />
