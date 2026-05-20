@@ -58,11 +58,9 @@ public enum ContributePYQController implements BaseController {
         pyq.college = student.college;
         pyq.content = content;
         pyq.roundType = RoundType.valueOf(roundTypeStr);
-
         if (body.isPresent("role")) pyq.role = body.get("role");
         if (body.isPresent("year")) pyq.year = Integer.parseInt(body.get("year"));
         if (body.isPresent("difficulty")) pyq.difficulty = body.get("difficulty");
-
         boolean anonymous = !body.isPresent("anonymous") || Boolean.parseBoolean(body.get("anonymous"));
         pyq.anonymous = anonymous;
         if (!anonymous) {

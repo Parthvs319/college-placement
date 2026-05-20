@@ -30,14 +30,11 @@ public enum GetPYQController implements BaseController {
     private Object map(UserLoginRequest request) {
         String companyIdParam = request.getRoutingContext().pathParam("companyId");
         Long companyId = Long.parseLong(companyIdParam);
-
-        // Optional filters
         List<String> roundTypeParam = request.getRoutingContext().queryParam("roundType");
         if (!roundTypeParam.isEmpty()) {
             RoundType roundType = RoundType.valueOf(roundTypeParam.get(0));
             return PYQRepository.INSTANCE.byCompanyAndRoundType(companyId, roundType);
         }
-
         return PYQRepository.INSTANCE.byCompany(companyId);
     }
 }

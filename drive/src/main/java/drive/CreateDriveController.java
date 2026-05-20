@@ -39,27 +39,20 @@ public enum CreateDriveController implements BaseController {
         if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO) && !userType.equals(UserType.COMPANY_HR)) {
             throw new RoutingError("Not authorized to create drives");
         }
-
         Request body = request.getRequest();
-
         String companyCollegeIdStr = body.get("companyCollegeId");
         String title = body.get("title");
         String employmentTypeStr = body.get("employmentType");
-
         if (companyCollegeIdStr == null || title == null || employmentTypeStr == null) {
             throw new RoutingError("companyCollegeId, title, and employmentType are required");
         }
-
         CompanyCollege cc = CompanyCollegeRepository.INSTANCE.byId(Long.parseLong(companyCollegeIdStr));
         if (cc == null) {
             throw new RoutingError("Company-College link not found");
         }
-
-        // Company HR can only create if companyCanManage is true
         if (userType.equals(UserType.COMPANY_HR) && !cc.companyCanManage) {
             throw new RoutingError("Company does not have manage access for this college");
         }
-
         Drive drive = new Drive();
         drive.companyCollege = cc;
         drive.title = title;

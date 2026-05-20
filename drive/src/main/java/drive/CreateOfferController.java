@@ -38,40 +38,32 @@ public enum CreateOfferController implements BaseController {
         if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO) && !userType.equals(UserType.COMPANY_HR)) {
             throw new RoutingError("Not authorized to create offers");
         }
-
         Request body = request.getRequest();
         String driveIdParam = request.getRoutingContext().pathParam("driveId");
         Long driveId = Long.parseLong(driveIdParam);
-
         Drive drive = DriveRepository.INSTANCE.byId(driveId);
         if (drive == null) {
             throw new RoutingError("Drive not found");
         }
-
         String studentIdStr = body.get("studentId");
         String ctcStr = body.get("ctcOffered");
         if (studentIdStr == null || ctcStr == null) {
             throw new RoutingError("studentId and ctcOffered are required");
         }
-
         Long studentId = Long.parseLong(studentIdStr);
         Student student = StudentRepository.INSTANCE.byId(studentId);
         if (student == null) {
             throw new RoutingError("Student not found");
         }
-
-        // Check existing offer
         Offer existing = OfferRepository.INSTANCE.byStudentAndDrive(studentId, driveId);
         if (existing != null) {
             throw new RoutingError("Offer already exists for this student in this drive");
         }
-
         Offer offer = new Offer();
         offer.student = student;
         offer.drive = drive;
         offer.ctcOffered = new BigDecimal(ctcStr);
         offer.status = OfferStatus.PENDING;
-
         if (body.isPresent("designation")) offer.designation = body.get("designation");
         if (body.isPresent("location")) offer.location = body.get("location");
         if (body.isPresent("offerLetterUrl")) offer.offerLetterUrl = body.get("offerLetterUrl");
@@ -79,23 +71,18 @@ public enum CreateOfferController implements BaseController {
         if (body.isPresent("responseDeadline")) {
             offer.responseDeadline = Timestamp.valueOf(String.valueOf(body.get("responseDeadline")));
         } else {
-            // Default: use policy's offerExpiryDays
             PlacementPolicy policy = PlacementPolicyRepository.INSTANCE.latestByCollege(student.college.getId());
             if (policy != null) {
                 long expiryMillis = (long) policy.offerExpiryDays * 24 * 60 * 60 * 1000;
                 offer.responseDeadline = new Timestamp(System.currentTimeMillis() + expiryMillis);
             }
         }
-
         offer.save();
-
-        // Update application status to SELECTED
         DriveApplication app = DriveApplicationRepository.INSTANCE.byStudentAndDrive(studentId, driveId);
         if (app != null) {
             app.status = ApplicationStatus.SELECTED;
             app.update();
         }
-
         return offer;
     }
 }
