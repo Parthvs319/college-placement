@@ -9,14 +9,20 @@ import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
 import models.repos.CollegeRepository;
+import models.repos.CompanyCollegeRepository;
+import models.repos.CompanyRepository;
 import models.sql.College;
-import models.sql.Document;
+import models.sql.Company;
+import models.sql.CompanyCollege;
 
 import java.util.ArrayList;
-import java.util.Map;
 
+/**
+ * TPO links a company to their college.
+ * This is a college-portal operation — only TPO/COLLEGE_ADMIN of their own college.
+ */
 @UserAnnotation
-public enum UploadDocumentController implements BaseController {
+public enum LinkCompanyCollegeController implements BaseController {
 
     INSTANCE;
 
@@ -33,30 +39,33 @@ public enum UploadDocumentController implements BaseController {
     private Object map(UserLoginRequest request) {
         UserType userType = request.getUser().getUserType();
         if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
-            throw new RoutingError("Only college admins and TPOs can upload documents");
+            throw new RoutingError("Only college admins and TPOs can link companies");
         }
 
+        Long companyId = Long.parseLong(request.getRequest().get("companyId"));
         Long collegeId = request.getUser().college.getId();
+
+        Company company = CompanyRepository.INSTANCE.byId(companyId);
+        if (company == null) {
+            throw new RoutingError("Company not found");
+        }
+
         College college = CollegeRepository.INSTANCE.byId(collegeId);
         if (college == null) {
             throw new RoutingError("College not found");
         }
-        Document doc = new Document();
-        doc.college = college;
-        doc.name = request.getRequest().get("name");
-        doc.type = request.getRequest().get("type");
-        doc.fileUrl = request.getRequest().get("fileUrl");
-        doc.fileType = request.getRequest().get("fileType");
-        doc.uploadedByUser = request.getUser();
 
-        if (request.getRequest().isPresent("academicYear")) {
-            doc.academicYear = Integer.parseInt(request.getRequest().get("academicYear"));
-        }
-        if (request.getRequest().isPresent("fileSizeBytes")) {
-            doc.fileSizeBytes = Long.parseLong(request.getRequest().get("fileSizeBytes"));
+        CompanyCollege existing = CompanyCollegeRepository.INSTANCE.byCompanyAndCollege(companyId, collegeId);
+        if (existing != null) {
+            throw new RoutingError("Company is already linked to this college");
         }
 
-        doc.save();
-        return doc;
+        CompanyCollege cc = new CompanyCollege();
+        cc.company = company;
+        cc.college = college;
+        cc.companyCanManage = request.getRequest().isPresent("companyCanManage") && Boolean.parseBoolean(request.getRequest().get("companyCanManage"));
+        cc.save();
+
+        return cc;
     }
 }

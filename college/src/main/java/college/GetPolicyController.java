@@ -28,8 +28,7 @@ public enum GetPolicyController implements BaseController {
     }
 
     private Object map(UserLoginRequest request) {
-        String collegeIdParam = request.getRoutingContext().pathParam("collegeId");
-        Long collegeId = Long.parseLong(collegeIdParam);
+        Long collegeId = request.getUser().college.getId();
 
         // Return latest policy or by year if query param provided
         String yearParam = request.getRoutingContext().queryParam("year").isEmpty()

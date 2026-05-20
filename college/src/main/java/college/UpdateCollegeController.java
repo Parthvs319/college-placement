@@ -12,7 +12,6 @@ import models.repos.CollegeRepository;
 import models.sql.College;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 @UserAnnotation
 public enum UpdateCollegeController implements BaseController {
@@ -31,17 +30,19 @@ public enum UpdateCollegeController implements BaseController {
 
     private Object map(UserLoginRequest request) {
         UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.SUPER_ADMIN) && !userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
+        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
             throw new RoutingError("Not authorized to update college");
         }
-        String idParam = request.getRoutingContext().pathParam("id");
-        College college = CollegeRepository.INSTANCE.byId(Long.parseLong(idParam));
+
+        if (request.getUser().college == null) {
+            throw new RoutingError("No college linked to your account");
+        }
+
+        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
         if (college == null) {
             throw new RoutingError("College not found");
         }
-        if (!userType.equals(UserType.SUPER_ADMIN) && !college.getId().equals(request.getUser().college.getId())) {
-            throw new RoutingError("You can only update your own college");
-        }
+
         if (request.getRequest().isPresent("name")) college.name = request.getRequest().get("name");
         if (request.getRequest().isPresent("address")) college.address = request.getRequest().get("address");
         if (request.getRequest().isPresent("city")) college.city = request.getRequest().get("city");

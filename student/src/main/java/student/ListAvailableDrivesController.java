@@ -1,4 +1,4 @@
-package college;
+package student;
 
 import helpers.annotations.UserAnnotation;
 import helpers.customErrors.RoutingError;
@@ -7,14 +7,18 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
-import models.enums.UserType;
-import models.repos.CollegeRepository;
-import models.sql.College;
+import models.repos.DriveRepository;
+import models.repos.StudentRepository;
+import models.sql.Student;
 
 import java.util.ArrayList;
 
+/**
+ * Student views drives available for their college.
+ * Shows upcoming + registration-open drives.
+ */
 @UserAnnotation
-public enum GetCollegeController implements BaseController {
+public enum ListAvailableDrivesController implements BaseController {
 
     INSTANCE;
 
@@ -29,20 +33,11 @@ public enum GetCollegeController implements BaseController {
     }
 
     private Object map(UserLoginRequest request) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
-            throw new RoutingError("Not authorized");
+        Student student = StudentRepository.INSTANCE.byUserId(request.getUser().getId());
+        if (student == null) {
+            throw new RoutingError("Student profile not found. Complete onboarding first.");
         }
-
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
-        }
-
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
-        if (college == null) {
-            throw new RoutingError("College not found");
-        }
-
-        return college;
+        Long collegeId = student.college.getId();
+        return DriveRepository.INSTANCE.upcoming(collegeId);
     }
 }

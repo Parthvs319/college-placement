@@ -34,8 +34,7 @@ public enum CollegeAnalyticsController implements BaseController {
             throw new RoutingError("Not authorized to view analytics");
         }
 
-        String collegeIdParam = request.getRoutingContext().pathParam("collegeId");
-        Long collegeId = Long.parseLong(collegeIdParam);
+        Long collegeId = request.getUser().college.getId();
 
         Analytics analytics = new Analytics();
         analytics.totalStudents = StudentRepository.INSTANCE.byCollege(collegeId).size();

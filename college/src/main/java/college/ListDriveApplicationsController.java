@@ -7,14 +7,15 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
+import models.enums.ApplicationStatus;
 import models.enums.UserType;
-import models.repos.CollegeRepository;
-import models.sql.College;
+import models.repos.DriveApplicationRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @UserAnnotation
-public enum GetCollegeController implements BaseController {
+public enum ListDriveApplicationsController implements BaseController {
 
     INSTANCE;
 
@@ -31,18 +32,18 @@ public enum GetCollegeController implements BaseController {
     private Object map(UserLoginRequest request) {
         UserType userType = request.getUser().getUserType();
         if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
-            throw new RoutingError("Not authorized");
+            throw new RoutingError("Not authorized to view applications");
         }
 
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
+        String driveIdParam = request.getRoutingContext().pathParam("driveId");
+        Long driveId = Long.parseLong(driveIdParam);
+
+        List<String> statusParam = request.getRoutingContext().queryParam("status");
+        if (!statusParam.isEmpty()) {
+            ApplicationStatus status = ApplicationStatus.valueOf(statusParam.get(0));
+            return DriveApplicationRepository.INSTANCE.byDriveAndStatus(driveId, status);
         }
 
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
-        if (college == null) {
-            throw new RoutingError("College not found");
-        }
-
-        return college;
+        return DriveApplicationRepository.INSTANCE.byDrive(driveId);
     }
 }

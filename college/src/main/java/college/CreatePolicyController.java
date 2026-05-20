@@ -38,16 +38,10 @@ public enum CreatePolicyController implements BaseController {
             throw new RoutingError("Only college admins and TPOs can manage policies");
         }
 
-        String collegeIdParam = request.getRoutingContext().pathParam("collegeId");
-        Long collegeId = Long.parseLong(collegeIdParam);
-
+        Long collegeId = request.getUser().college.getId();
         College college = CollegeRepository.INSTANCE.byId(collegeId);
         if (college == null) {
             throw new RoutingError("College not found");
-        }
-
-        if (!college.getId().equals(request.getUser().college.getId())) {
-            throw new RoutingError("You can only manage policies for your own college");
         }
         String yearStr = request.getRequest().get("academicYear");
         if (yearStr == null) {

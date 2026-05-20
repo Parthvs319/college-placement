@@ -58,6 +58,14 @@ public enum DriveRepository {
                 .findList();
     }
 
+    public List<Drive> byCompany(Long companyId) {
+        return finder.query().where()
+                .eq("companyCollege.company.id", companyId)
+                .eq("deleted", false)
+                .orderBy("driveDate desc")
+                .findList();
+    }
+
     public ExpressionList<Drive> where() {
         return finder.query().where().eq("deleted", false);
     }

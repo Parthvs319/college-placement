@@ -1,4 +1,4 @@
-package college;
+package student;
 
 import helpers.annotations.UserAnnotation;
 import helpers.customErrors.RoutingError;
@@ -7,14 +7,16 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
-import models.enums.UserType;
-import models.repos.CollegeRepository;
-import models.sql.College;
+import models.repos.DriveRepository;
+import models.sql.Drive;
 
 import java.util.ArrayList;
 
+/**
+ * Student views details of a specific drive.
+ */
 @UserAnnotation
-public enum GetCollegeController implements BaseController {
+public enum GetDriveDetailController implements BaseController {
 
     INSTANCE;
 
@@ -29,20 +31,11 @@ public enum GetCollegeController implements BaseController {
     }
 
     private Object map(UserLoginRequest request) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
-            throw new RoutingError("Not authorized");
+        String driveIdParam = request.getRoutingContext().pathParam("driveId");
+        Drive drive = DriveRepository.INSTANCE.byId(Long.parseLong(driveIdParam));
+        if (drive == null) {
+            throw new RoutingError("Drive not found");
         }
-
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
-        }
-
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
-        if (college == null) {
-            throw new RoutingError("College not found");
-        }
-
-        return college;
+        return drive;
     }
 }

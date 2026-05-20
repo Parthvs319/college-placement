@@ -51,12 +51,6 @@
             <artifactId>student</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.placement</groupId>
-            <artifactId>drive</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
         <!-- Vert.x -->
         <dependency>
             <groupId>io.vertx</groupId>

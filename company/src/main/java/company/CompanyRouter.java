@@ -12,13 +12,14 @@ public enum CompanyRouter implements SubRouterProtocol {
     public Router router(Vertx vertx) {
         Router router = Router.router(vertx);
 
+        // ── Company Profile CRUD ──
         router.post("/create").handler(CreateCompanyController.INSTANCE::handle);
-        router.get("/:id").handler(GetCompanyController.INSTANCE::handle);
         router.get("/list").handler(ListCompaniesController.INSTANCE::handle);
+        router.get("/:id").handler(GetCompanyController.INSTANCE::handle);
 
-        // Company-College mapping (TPO links a company to their college)
-        router.post("/link").handler(LinkCompanyCollegeController.INSTANCE::handle);
-        router.get("/college/:collegeId").handler(ListCompanyCollegesController.INSTANCE::handle);
+        // ── Company Portal (HR view) ──
+        router.get("/:companyId/colleges").handler(ListLinkedCollegesController.INSTANCE::handle);
+        router.get("/:companyId/drives").handler(ListCompanyDrivesController.INSTANCE::handle);
 
         return router;
     }

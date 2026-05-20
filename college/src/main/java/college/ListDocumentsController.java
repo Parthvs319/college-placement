@@ -29,12 +29,7 @@ public enum ListDocumentsController implements BaseController {
     }
 
     private Object map(UserLoginRequest request) {
-        String collegeIdParam = request.getRoutingContext().pathParam("collegeId");
-        Long collegeId = Long.parseLong(collegeIdParam);
-
-        if (CollegeRepository.INSTANCE.byId(collegeId) == null) {
-            throw new RoutingError("College not found");
-        }
+        Long collegeId = request.getUser().college.getId();
 
         // Optional type filter
         List<String> typeParam = request.getRoutingContext().queryParam("type");

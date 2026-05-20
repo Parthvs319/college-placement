@@ -8,13 +8,13 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
-import models.repos.CollegeRepository;
-import models.sql.College;
+import models.repos.DriveRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @UserAnnotation
-public enum GetCollegeController implements BaseController {
+public enum ListDrivesController implements BaseController {
 
     INSTANCE;
 
@@ -30,19 +30,18 @@ public enum GetCollegeController implements BaseController {
 
     private Object map(UserLoginRequest request) {
         UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
+        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO) && !userType.equals(UserType.SUPER_ADMIN)) {
             throw new RoutingError("Not authorized");
         }
 
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
+        Long collegeId = request.getUser().college.getId();
+
+        List<String> yearParam = request.getRoutingContext().queryParam("year");
+        if (!yearParam.isEmpty()) {
+            int year = Integer.parseInt(yearParam.get(0));
+            return DriveRepository.INSTANCE.byCollegeAndYear(collegeId, year);
         }
 
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
-        if (college == null) {
-            throw new RoutingError("College not found");
-        }
-
-        return college;
+        return DriveRepository.INSTANCE.byCollege(collegeId);
     }
 }

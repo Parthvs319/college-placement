@@ -8,13 +8,12 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
-import models.repos.CollegeRepository;
-import models.sql.College;
+import models.repos.StudentRepository;
 
 import java.util.ArrayList;
 
 @UserAnnotation
-public enum GetCollegeController implements BaseController {
+public enum ListPlacedStudentsController implements BaseController {
 
     INSTANCE;
 
@@ -30,19 +29,11 @@ public enum GetCollegeController implements BaseController {
 
     private Object map(UserLoginRequest request) {
         UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
+        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO) && !userType.equals(UserType.SUPER_ADMIN)) {
             throw new RoutingError("Not authorized");
         }
 
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
-        }
-
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
-        if (college == null) {
-            throw new RoutingError("College not found");
-        }
-
-        return college;
+        Long collegeId = request.getUser().college.getId();
+        return StudentRepository.INSTANCE.findPlaced(collegeId);
     }
 }

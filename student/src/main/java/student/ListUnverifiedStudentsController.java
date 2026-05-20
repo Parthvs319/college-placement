@@ -1,4 +1,4 @@
-package college;
+package student;
 
 import helpers.annotations.UserAnnotation;
 import helpers.customErrors.RoutingError;
@@ -8,13 +8,20 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
-import models.repos.CollegeRepository;
-import models.sql.College;
+import models.repos.StudentRepository;
+import models.sql.Student;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * TPO / College Admin lists students whose user.verified = false.
+ * These are students who signed up but haven't been approved yet
+ * (their email domain didn't match the college domain).
+ */
 @UserAnnotation
-public enum GetCollegeController implements BaseController {
+public enum ListUnverifiedStudentsController implements BaseController {
 
     INSTANCE;
 
@@ -34,15 +41,14 @@ public enum GetCollegeController implements BaseController {
             throw new RoutingError("Not authorized");
         }
 
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
-        }
+        Long collegeId = request.getUser().college.getId();
 
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
-        if (college == null) {
-            throw new RoutingError("College not found");
-        }
+        // Get all students of this college, filter to unverified
+        List<Student> allStudents = StudentRepository.INSTANCE.byCollege(collegeId);
+        List<Student> unverified = allStudents.stream()
+                .filter(s -> !s.user.verified)
+                .collect(Collectors.toList());
 
-        return college;
+        return unverified;
     }
 }

@@ -3,7 +3,6 @@ package com.college.placement;
 import auth.AuthRouter;
 import college.CollegeRouter;
 import company.CompanyRouter;
-import drive.DriveRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
@@ -38,11 +37,10 @@ public class HttpVerticle extends AbstractVerticle {
         router.mountSubRouter("/user", UserRouter.INSTANCE.router(rxVertx));
         router.mountSubRouter("/auth", AuthRouter.INSTANCE.router(rxVertx));
 
-        // Placement modules
-        router.mountSubRouter("/college", CollegeRouter.INSTANCE.router(rxVertx));
-        router.mountSubRouter("/company", CompanyRouter.INSTANCE.router(rxVertx));
-        router.mountSubRouter("/student", StudentRouter.INSTANCE.router(rxVertx));
-        router.mountSubRouter("/drive", DriveRouter.INSTANCE.router(rxVertx));
+        // Placement portals — each module = one portal
+        router.mountSubRouter("/college", CollegeRouter.INSTANCE.router(rxVertx));  // TPO/Admin portal
+        router.mountSubRouter("/company", CompanyRouter.INSTANCE.router(rxVertx));  // Company HR portal
+        router.mountSubRouter("/student", StudentRouter.INSTANCE.router(rxVertx));  // Student portal
 
         HttpServerOptions options = new HttpServerOptions().setCompressionSupported(true);
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
