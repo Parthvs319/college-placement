@@ -18,23 +18,6 @@ import models.sql.User;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-/**
- * Student onboarding — called after signup to create the academic profile.
- *
- * Flow:
- * 1. User signs up with collegeCode → User created with college linked
- * 2. Student hits POST /student/onboard with enrollmentNumber + academic details
- * 3. We verify:
- *    - User is a STUDENT type
- *    - User has a college linked (set during signup)
- *    - enrollmentNumber is unique within that college
- *    - User doesn't already have a student profile
- * 4. Student profile created, linked to User + College
- *
- * Verification status:
- * - If user.verified = true (email domain matched college) → student can immediately participate
- * - If user.verified = false → student profile exists but TPO must verify before they can apply to drives
- */
 @UserAnnotation
 public enum StudentOnboardController implements BaseController {
 
@@ -53,17 +36,14 @@ public enum StudentOnboardController implements BaseController {
     private Object map(UserLoginRequest request) {
         User user = request.getUser();
 
-        // Only students can onboard
         if (!user.getUserType().equals(UserType.STUDENT)) {
             throw new RoutingError("Only STUDENT users can create a student profile");
         }
 
-        // Must have a college linked (set during signup via collegeCode)
         if (user.college == null) {
             throw new RoutingError("Your account is not linked to any college. Please contact support.");
         }
 
-        // Check if already onboarded
         Student existing = StudentRepository.INSTANCE.byUserId(user.getId());
         if (existing != null) {
             throw new RoutingError("Student profile already exists. Use PUT /student/me to update.");
@@ -76,20 +56,17 @@ public enum StudentOnboardController implements BaseController {
 
         Request body = request.getRequest();
 
-        // enrollmentNumber is mandatory
         String enrollmentNumber = body.get("enrollmentNumber");
         if (enrollmentNumber == null || enrollmentNumber.toString().trim().isEmpty()) {
             throw new RoutingError("enrollmentNumber is required");
         }
         enrollmentNumber = enrollmentNumber.toString().trim();
 
-        // Verify enrollment is unique within this college
         Student duplicate = StudentRepository.INSTANCE.byEnrollment(enrollmentNumber, college.getId());
         if (duplicate != null) {
             throw new RoutingError("A student with enrollment number " + enrollmentNumber + " is already registered at this college");
         }
 
-        // Validate department against college's department list
         String department = body.get("department");
         if (department != null && college.departments != null && !college.departments.isEmpty()) {
             if (!college.departments.contains(department.toString().trim())) {
@@ -97,7 +74,6 @@ public enum StudentOnboardController implements BaseController {
             }
         }
 
-        // Create student profile
         Student student = new Student();
         student.user = user;
         student.college = college;
