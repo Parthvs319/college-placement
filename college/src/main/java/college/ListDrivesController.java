@@ -8,10 +8,13 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.DriveRepository;
+import models.sql.Drive;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListDrivesController implements BaseController {
@@ -37,11 +40,14 @@ public enum ListDrivesController implements BaseController {
         Long collegeId = request.getUser().college.getId();
 
         List<String> yearParam = request.getRoutingContext().queryParam("year");
+        List<Drive> drives;
         if (!yearParam.isEmpty()) {
             int year = Integer.parseInt(yearParam.get(0));
-            return DriveRepository.INSTANCE.byCollegeAndYear(collegeId, year);
+            drives = DriveRepository.INSTANCE.byCollegeAndYear(collegeId, year);
+        } else {
+            drives = DriveRepository.INSTANCE.byCollege(collegeId);
         }
 
-        return DriveRepository.INSTANCE.byCollege(collegeId);
+        return drives.stream().map(CollegeDtos::toDriveDto).collect(Collectors.toList());
     }
 }

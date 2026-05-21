@@ -7,6 +7,7 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
+import models.json.CollegeDtos;
 import models.repos.PlacementPolicyRepository;
 import models.sql.PlacementPolicy;
 
@@ -45,6 +46,6 @@ public enum GetPolicyController implements BaseController {
             throw new RoutingError("No placement policy found");
         }
 
-        return policy;
+        return CollegeDtos.toPolicyDto(policy);
     }
 }

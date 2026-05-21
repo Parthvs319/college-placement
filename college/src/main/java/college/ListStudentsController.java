@@ -5,12 +5,17 @@ import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
+import lombok.Data;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
 import models.repos.StudentRepository;
+import models.sql.Student;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListStudentsController implements BaseController {
@@ -34,6 +39,40 @@ public enum ListStudentsController implements BaseController {
         }
 
         Long collegeId = request.getUser().college.getId();
-        return StudentRepository.INSTANCE.byCollege(collegeId);
+        List<Student> students = StudentRepository.INSTANCE.byCollege(collegeId);
+        return students.stream().map(ListStudentsController::toDto).collect(Collectors.toList());
+    }
+
+    static StudentListItem toDto(Student s) {
+        StudentListItem dto = new StudentListItem();
+        dto.id = s.getId();
+        dto.name = s.user != null ? s.user.name : null;
+        dto.email = s.user != null ? s.user.email : null;
+        dto.enrollmentNumber = s.enrollmentNumber;
+        dto.department = s.department;
+        dto.passingYear = s.passingYear;
+        dto.cgpa = s.cgpa;
+        dto.activeBacklogs = s.activeBacklogs;
+        dto.placed = s.placed;
+        dto.verified = s.user != null && s.user.verified;
+        dto.optedOut = s.optedOut;
+        dto.currentCtc = s.currentCtc;
+        return dto;
+    }
+
+    @Data
+    static class StudentListItem {
+        Long id;
+        String name;
+        String email;
+        String enrollmentNumber;
+        String department;
+        int passingYear;
+        BigDecimal cgpa;
+        int activeBacklogs;
+        boolean placed;
+        boolean verified;
+        boolean optedOut;
+        BigDecimal currentCtc;
     }
 }

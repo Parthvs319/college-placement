@@ -56,6 +56,6 @@ public enum CreateCompanyController implements BaseController {
         company.headquarters = body.get("headquarters");
         company.save();
 
-        return company;
+        return CompanyDtos.toCompanyDto(company);
     }
 }

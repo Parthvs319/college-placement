@@ -32,6 +32,6 @@ public enum GetMyProfileController implements BaseController {
         if (student == null) {
             throw new RoutingError("Student profile not found. Please complete onboarding.");
         }
-        return student;
+        return StudentDtos.toProfileDto(student);
     }
 }

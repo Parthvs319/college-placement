@@ -12,11 +12,9 @@ import models.repos.StudentRepository;
 import models.sql.Student;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
-/**
- * Student views drives available for their college.
- * Shows upcoming + registration-open drives.
- */
+
 @UserAnnotation
 public enum ListAvailableDrivesController implements BaseController {
 
@@ -38,6 +36,7 @@ public enum ListAvailableDrivesController implements BaseController {
             throw new RoutingError("Student profile not found. Complete onboarding first.");
         }
         Long collegeId = student.college.getId();
-        return DriveRepository.INSTANCE.upcoming(collegeId);
+        return DriveRepository.INSTANCE.upcoming(collegeId).stream()
+                .map(StudentDtos::toDriveListDto).collect(Collectors.toList());
     }
 }

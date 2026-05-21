@@ -11,6 +11,7 @@ import models.body.UserLoginRequest;
 import models.enums.ApplicationStatus;
 import models.enums.OfferStatus;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.*;
 import models.sql.*;
 
@@ -83,6 +84,6 @@ public enum CreateOfferController implements BaseController {
             app.status = ApplicationStatus.SELECTED;
             app.update();
         }
-        return offer;
+        return CollegeDtos.toOfferDto(offer);
     }
 }

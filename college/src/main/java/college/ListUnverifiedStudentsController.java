@@ -42,10 +42,9 @@ public enum ListUnverifiedStudentsController implements BaseController {
         Long collegeId = request.getUser().college.getId();
 
         List<Student> allStudents = StudentRepository.INSTANCE.byCollege(collegeId);
-        List<Student> unverified = allStudents.stream()
+        return allStudents.stream()
                 .filter(s -> !s.user.verified)
+                .map(ListStudentsController::toDto)
                 .collect(Collectors.toList());
-
-        return unverified;
     }
 }

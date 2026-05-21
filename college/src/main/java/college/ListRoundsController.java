@@ -6,9 +6,11 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
+import models.json.CollegeDtos;
 import models.repos.DriveRoundRepository;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListRoundsController implements BaseController {
@@ -27,6 +29,6 @@ public enum ListRoundsController implements BaseController {
 
     private Object map(UserLoginRequest request) {
         String driveIdParam = request.getRoutingContext().pathParam("driveId");
-        return DriveRoundRepository.INSTANCE.byDrive(Long.parseLong(driveIdParam));
+        return DriveRoundRepository.INSTANCE.byDrive(Long.parseLong(driveIdParam)).stream().map(CollegeDtos::toRoundDto).collect(Collectors.toList());
     }
 }

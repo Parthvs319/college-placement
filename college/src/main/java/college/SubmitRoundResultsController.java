@@ -11,6 +11,7 @@ import models.body.UserLoginRequest;
 import models.enums.ApplicationStatus;
 import models.enums.Status;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.DriveApplicationRepository;
 import models.repos.DriveRoundRepository;
 import models.repos.RoundResultRepository;
@@ -77,7 +78,7 @@ public enum SubmitRoundResultsController implements BaseController {
             existing.update();
 
             updateApplicationStatus(round, studentId, Status.valueOf(statusStr));
-            return existing;
+            return CollegeDtos.toRoundResultDto(existing);
         }
 
         RoundResult result = new RoundResult();
@@ -92,7 +93,7 @@ public enum SubmitRoundResultsController implements BaseController {
         result.save();
 
         updateApplicationStatus(round, studentId, Status.valueOf(statusStr));
-        return result;
+        return CollegeDtos.toRoundResultDto(result);
     }
 
     private void updateApplicationStatus(DriveRound round, Long studentId, Status roundStatus) {

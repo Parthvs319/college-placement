@@ -9,6 +9,7 @@ import models.body.UserLoginRequest;
 import models.repos.CompanyRepository;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListCompaniesController implements BaseController {
@@ -26,6 +27,7 @@ public enum ListCompaniesController implements BaseController {
     }
 
     private Object map(UserLoginRequest request) {
-        return CompanyRepository.INSTANCE.findAll();
+        return CompanyRepository.INSTANCE.findAll().stream()
+                .map(CompanyDtos::toCompanyDto).collect(Collectors.toList());
     }
 }

@@ -68,6 +68,6 @@ public enum ContributePYQController implements BaseController {
         }
 
         pyq.save();
-        return pyq;
+        return StudentDtos.toPyqDto(pyq);
     }
 }

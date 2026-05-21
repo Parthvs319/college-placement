@@ -49,6 +49,6 @@ public enum UpdateProfileController implements BaseController {
         if (body.isPresent("resumeUrl")) student.resumeUrl = body.get("resumeUrl");
 
         student.update();
-        return student;
+        return StudentDtos.toProfileDto(student);
     }
 }

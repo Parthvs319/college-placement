@@ -9,8 +9,11 @@ import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
 import models.repos.StudentRepository;
+import models.sql.Student;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListPlacedStudentsController implements BaseController {
@@ -34,6 +37,7 @@ public enum ListPlacedStudentsController implements BaseController {
         }
 
         Long collegeId = request.getUser().college.getId();
-        return StudentRepository.INSTANCE.findPlaced(collegeId);
+        List<Student> students = StudentRepository.INSTANCE.findPlaced(collegeId);
+        return students.stream().map(ListStudentsController::toDto).collect(Collectors.toList());
     }
 }

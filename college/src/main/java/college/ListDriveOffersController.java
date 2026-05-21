@@ -8,9 +8,11 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.OfferRepository;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListDriveOffersController implements BaseController {
@@ -34,6 +36,6 @@ public enum ListDriveOffersController implements BaseController {
         }
 
         String driveIdParam = request.getRoutingContext().pathParam("driveId");
-        return OfferRepository.INSTANCE.byDrive(Long.parseLong(driveIdParam));
+        return OfferRepository.INSTANCE.byDrive(Long.parseLong(driveIdParam)).stream().map(CollegeDtos::toOfferDto).collect(Collectors.toList());
     }
 }

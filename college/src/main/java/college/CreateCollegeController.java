@@ -8,6 +8,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 import models.sql.College;
 
@@ -32,20 +33,15 @@ public enum CreateCollegeController implements BaseController {
         if (!request.getUser().getUserType().equals(UserType.SUPER_ADMIN)) {
             throw new RoutingError("Only super admins can create colleges");
         }
-
         var body = request.getRequest();
         String name = body.get("name");
         String code = body.get("code");
-
         if (name == null || code == null) {
             throw new RoutingError("name and code are required");
         }
-
-        // Check unique code
         if (CollegeRepository.INSTANCE.byCode(code) != null) {
             throw new RoutingError("College with code " + code + " already exists");
         }
-
         College college = new College();
         college.name = name;
         college.code = code.toUpperCase();
@@ -57,7 +53,6 @@ public enum CreateCollegeController implements BaseController {
         college.contactEmail = body.get("contactEmail");
         college.contactPhone = body.get("contactPhone");
         college.save();
-
-        return college;
+        return CollegeDtos.toCollegeDto(college);
     }
 }

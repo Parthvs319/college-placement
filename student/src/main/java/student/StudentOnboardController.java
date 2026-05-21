@@ -95,6 +95,6 @@ public enum StudentOnboardController implements BaseController {
         if (body.isPresent("resumeUrl")) student.resumeUrl = body.get("resumeUrl");
 
         student.save();
-        return student;
+        return StudentDtos.toProfileDto(student);
     }
 }

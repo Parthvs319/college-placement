@@ -36,6 +36,6 @@ public enum GetDriveDetailController implements BaseController {
         if (drive == null) {
             throw new RoutingError("Drive not found");
         }
-        return drive;
+        return StudentDtos.toDriveDetailDto(drive);
     }
 }

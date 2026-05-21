@@ -90,6 +90,6 @@ public enum ApplyToDriveController implements BaseController {
             application.notes = body.get("notes");
         }
         application.save();
-        return application;
+        return StudentDtos.toApplicationDto(application);
     }
 }

@@ -8,6 +8,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 import models.repos.PlacementPolicyRepository;
 import models.sql.College;
@@ -15,7 +16,6 @@ import models.sql.PlacementPolicy;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Map;
 
 @UserAnnotation
 public enum CreatePolicyController implements BaseController {
@@ -79,6 +79,6 @@ public enum CreatePolicyController implements BaseController {
         }
 
         policy.save();
-        return policy;
+        return CollegeDtos.toPolicyDto(policy);
     }
 }

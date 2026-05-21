@@ -8,6 +8,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 import models.sql.College;
 
@@ -53,6 +54,6 @@ public enum UpdateCollegeController implements BaseController {
         if (request.getRequest().isPresent("contactPhone")) college.contactPhone = request.getRequest().get("contactPhone");
         college.update();
 
-        return college;
+        return CollegeDtos.toCollegeDto(college);
     }
 }

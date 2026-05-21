@@ -10,6 +10,7 @@ import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.DriveStatus;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.DriveRepository;
 import models.sql.Drive;
 
@@ -63,6 +64,6 @@ public enum UpdateDriveController implements BaseController {
         }
 
         drive.update();
-        return drive;
+        return CollegeDtos.toDriveDto(drive);
     }
 }

@@ -11,6 +11,7 @@ import models.body.UserLoginRequest;
 import models.enums.DriveStatus;
 import models.enums.EmploymentType;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.CompanyCollegeRepository;
 import models.sql.CompanyCollege;
 import models.sql.Drive;
@@ -81,6 +82,6 @@ public enum CreateDriveController implements BaseController {
         if (body.isPresent("maxPassingYear")) drive.maxPassingYear = Integer.parseInt(body.get("maxPassingYear"));
 
         drive.save();
-        return drive;
+        return CollegeDtos.toDriveDto(drive);
     }
 }

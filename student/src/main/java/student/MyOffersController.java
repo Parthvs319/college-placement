@@ -12,6 +12,7 @@ import models.repos.StudentRepository;
 import models.sql.Student;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum MyOffersController implements BaseController {
@@ -33,6 +34,7 @@ public enum MyOffersController implements BaseController {
         if (student == null) {
             throw new RoutingError("Student profile not found");
         }
-        return OfferRepository.INSTANCE.byStudent(student.getId());
+        return OfferRepository.INSTANCE.byStudent(student.getId()).stream()
+                .map(StudentDtos::toOfferDto).collect(Collectors.toList());
     }
 }

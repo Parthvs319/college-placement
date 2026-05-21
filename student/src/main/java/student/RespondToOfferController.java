@@ -104,6 +104,6 @@ public enum RespondToOfferController implements BaseController {
             offer.update();
         }
 
-        return offer;
+        return StudentDtos.toOfferDto(offer);
     }
 }

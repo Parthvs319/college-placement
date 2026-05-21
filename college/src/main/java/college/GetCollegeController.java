@@ -8,6 +8,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 import models.sql.College;
 
@@ -43,6 +44,6 @@ public enum GetCollegeController implements BaseController {
             throw new RoutingError("College not found");
         }
 
-        return college;
+        return CollegeDtos.toCollegeDto(college);
     }
 }

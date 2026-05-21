@@ -10,6 +10,7 @@ import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.RoundType;
 import models.enums.UserType;
+import models.json.CollegeDtos;
 import models.repos.DriveRepository;
 import models.sql.Drive;
 import models.sql.DriveRound;
@@ -64,6 +65,6 @@ public enum CreateRoundController implements BaseController {
         if (body.isPresent("scheduledAt")) round.scheduledAt = Timestamp.valueOf(String.valueOf(body.get("scheduledAt")));
 
         round.save();
-        return round;
+        return CollegeDtos.toRoundDto(round);
     }
 }

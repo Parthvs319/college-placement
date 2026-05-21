@@ -33,6 +33,6 @@ public enum GetCompanyController implements BaseController {
         if (company == null) {
             throw new RoutingError("Company not found");
         }
-        return company;
+        return CompanyDtos.toCompanyDto(company);
     }
 }

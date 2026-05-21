@@ -6,9 +6,11 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
+import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum ListCollegesController implements BaseController {
@@ -26,6 +28,6 @@ public enum ListCollegesController implements BaseController {
     }
 
     private Object map(UserLoginRequest request) {
-        return CollegeRepository.INSTANCE.findActive();
+        return CollegeRepository.INSTANCE.findActive().stream().map(CollegeDtos::toCollegeDto).collect(Collectors.toList());
     }
 }

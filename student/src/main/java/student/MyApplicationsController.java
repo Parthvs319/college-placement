@@ -12,6 +12,7 @@ import models.repos.StudentRepository;
 import models.sql.Student;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum MyApplicationsController implements BaseController {
@@ -33,6 +34,7 @@ public enum MyApplicationsController implements BaseController {
         if (student == null) {
             throw new RoutingError("Student profile not found");
         }
-        return DriveApplicationRepository.INSTANCE.byStudent(student.getId());
+        return DriveApplicationRepository.INSTANCE.byStudent(student.getId()).stream()
+                .map(StudentDtos::toApplicationDto).collect(Collectors.toList());
     }
 }

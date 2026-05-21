@@ -11,6 +11,7 @@ import models.enums.UserType;
 import models.repos.CompanyCollegeRepository;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Company HR views all colleges linked to their company.
@@ -38,6 +39,7 @@ public enum ListLinkedCollegesController implements BaseController {
         }
 
         Long companyId = Long.parseLong(request.getRoutingContext().pathParam("companyId"));
-        return CompanyCollegeRepository.INSTANCE.byCompany(companyId);
+        return CompanyCollegeRepository.INSTANCE.byCompany(companyId).stream()
+                .map(CompanyDtos::toLinkedCollegeDto).collect(Collectors.toList());
     }
 }

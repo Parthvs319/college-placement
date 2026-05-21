@@ -8,9 +8,11 @@ import models.access.middlewear.user.UserAccessMiddleware;
 import models.body.UserLoginRequest;
 import models.enums.RoundType;
 import models.repos.PYQRepository;
+import models.sql.PYQ;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UserAnnotation
 public enum GetPYQController implements BaseController {
@@ -31,10 +33,13 @@ public enum GetPYQController implements BaseController {
         String companyIdParam = request.getRoutingContext().pathParam("companyId");
         Long companyId = Long.parseLong(companyIdParam);
         List<String> roundTypeParam = request.getRoutingContext().queryParam("roundType");
+        List<PYQ> pyqs;
         if (!roundTypeParam.isEmpty()) {
             RoundType roundType = RoundType.valueOf(roundTypeParam.get(0));
-            return PYQRepository.INSTANCE.byCompanyAndRoundType(companyId, roundType);
+            pyqs = PYQRepository.INSTANCE.byCompanyAndRoundType(companyId, roundType);
+        } else {
+            pyqs = PYQRepository.INSTANCE.byCompany(companyId);
         }
-        return PYQRepository.INSTANCE.byCompany(companyId);
+        return pyqs.stream().map(StudentDtos::toPyqDto).collect(Collectors.toList());
     }
 }

@@ -11,6 +11,7 @@ import models.enums.UserType;
 import models.repos.DriveRepository;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Company HR views drives associated with their company (across all linked colleges).
@@ -37,6 +38,7 @@ public enum ListCompanyDrivesController implements BaseController {
         }
 
         Long companyId = Long.parseLong(request.getRoutingContext().pathParam("companyId"));
-        return DriveRepository.INSTANCE.byCompany(companyId);
+        return DriveRepository.INSTANCE.byCompany(companyId).stream()
+                .map(CompanyDtos::toCompanyDriveDto).collect(Collectors.toList());
     }
 }
