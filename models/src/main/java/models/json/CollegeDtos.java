@@ -6,6 +6,7 @@ import models.sql.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
 
 public final class CollegeDtos {
@@ -331,6 +332,45 @@ public final class CollegeDtos {
         dto.createdAt = d.getCreatedAt();
         if (d.uploadedByUser != null) {
             dto.uploadedBy = d.uploadedByUser.name;
+        }
+        return dto;
+    }
+
+    // ── Notification ──
+
+    @Data
+    public static class NotificationResponse {
+        Long id;
+        String channel;
+        String type;
+        String subject;
+        String body;
+        int recipientCount;
+        int deliveredCount;
+        int failedCount;
+        Timestamp sentAt;
+        Map<String, String> metadata;
+        Long driveId;
+        String driveTitle;
+        Timestamp createdAt;
+    }
+
+    public static NotificationResponse toNotificationDto(Notification n) {
+        NotificationResponse dto = new NotificationResponse();
+        dto.id = n.getId();
+        dto.channel = n.channel;
+        dto.type = n.type;
+        dto.subject = n.subject;
+        dto.body = n.body;
+        dto.recipientCount = n.recipientCount;
+        dto.deliveredCount = n.deliveredCount;
+        dto.failedCount = n.failedCount;
+        dto.sentAt = n.sentAt;
+        dto.metadata = n.metadata;
+        dto.createdAt = n.getCreatedAt();
+        if (n.drive != null) {
+            dto.driveId = n.drive.getId();
+            dto.driveTitle = n.drive.title;
         }
         return dto;
     }

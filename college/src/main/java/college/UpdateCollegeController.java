@@ -38,12 +38,10 @@ public enum UpdateCollegeController implements BaseController {
         if (request.getUser().college == null) {
             throw new RoutingError("No college linked to your account");
         }
-
         College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
         if (college == null) {
             throw new RoutingError("College not found");
         }
-
         if (request.getRequest().isPresent("name")) college.name = request.getRequest().get("name");
         if (request.getRequest().isPresent("address")) college.address = request.getRequest().get("address");
         if (request.getRequest().isPresent("city")) college.city = request.getRequest().get("city");
@@ -53,7 +51,6 @@ public enum UpdateCollegeController implements BaseController {
         if (request.getRequest().isPresent("contactEmail")) college.contactEmail = request.getRequest().get("contactEmail");
         if (request.getRequest().isPresent("contactPhone")) college.contactPhone = request.getRequest().get("contactPhone");
         college.update();
-
         return CollegeDtos.toCollegeDto(college);
     }
 }

@@ -21,6 +21,10 @@ public enum CompanyRouter implements SubRouterProtocol {
         router.get("/:companyId/colleges").handler(ListLinkedCollegesController.INSTANCE::handle);
         router.get("/:companyId/drives").handler(ListCompanyDrivesController.INSTANCE::handle);
 
+        // ── Reports (CSV downloads) ──
+        router.get("/:companyId/reports/drives").handler(CompanyDriveReportController.INSTANCE::handle);
+        router.get("/:companyId/reports/drives/:driveId/applications").handler(CompanyApplicationReportController.INSTANCE::handle);
+
         return router;
     }
 }

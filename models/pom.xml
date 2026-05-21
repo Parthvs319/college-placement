@@ -39,6 +39,13 @@
             <version>1.0.0</version>
         </dependency>
 
+        <!-- JavaMail for email notifications -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>

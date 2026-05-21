@@ -56,6 +56,18 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.post("/drives/:driveId/offers").handler(CreateOfferController.INSTANCE::handle);
         router.get("/drives/:driveId/offers").handler(ListDriveOffersController.INSTANCE::handle);
 
+        // ── Notifications (TPO/Admin) ──
+        router.post("/notifications/send").handler(SendNotificationController.INSTANCE::handle);
+        router.get("/notifications").handler(ListNotificationsController.INSTANCE::handle);
+
+        // ── Bulk Operations ──
+        router.post("/students/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);
+
+        // ── Reports (CSV downloads) ──
+        router.get("/reports/students").handler(StudentReportController.INSTANCE::handle);
+        router.get("/reports/drives").handler(DriveReportController.INSTANCE::handle);
+        router.get("/reports/offers").handler(OfferReportController.INSTANCE::handle);
+
         return router;
     }
 }
