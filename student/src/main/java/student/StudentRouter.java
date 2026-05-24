@@ -16,6 +16,10 @@ public enum StudentRouter implements SubRouterProtocol {
 
         router.get("/me").handler(GetMyProfileController.INSTANCE::handle);
         router.put("/me").handler(UpdateProfileController.INSTANCE::handle);
+        router.post("/me/resume").handler(ResumeUploadController.INSTANCE::handle);
+        router.get("/me/resumes").handler(ListResumesController.INSTANCE::handle);
+        router.put("/me/resumes/:resumeId/primary").handler(SetPrimaryResumeController.INSTANCE::handle);
+        router.delete("/me/resumes/:resumeId").handler(DeleteResumeController.INSTANCE::handle);
 
         router.get("/me/applications").handler(MyApplicationsController.INSTANCE::handle);
         router.get("/me/offers").handler(MyOffersController.INSTANCE::handle);
@@ -27,6 +31,12 @@ public enum StudentRouter implements SubRouterProtocol {
 
         router.get("/pyq/company/:companyId").handler(GetPYQController.INSTANCE::handle);
         router.post("/pyq/contribute").handler(ContributePYQController.INSTANCE::handle);
+
+        router.get("/premium/ats-score").handler(AtsScoreController.INSTANCE::handle);
+        router.get("/premium/match/:driveId").handler(JdMatchController.INSTANCE::handle);
+        router.post("/premium/resume-improve").handler(ResumeImproveController.INSTANCE::handle);
+        router.post("/premium/generate-resume").handler(GenerateResumeController.INSTANCE::handle);
+        router.post("/premium/parse-resume").handler(ParseResumeController.INSTANCE::handle);
 
         return router;
     }

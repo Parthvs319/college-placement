@@ -58,9 +58,16 @@ public class Student extends AttrsModel {
 
     public String portfolioUrl;
 
-    public String resumeUrl;                // S3 or Applyra resume link
+    /**
+     * @deprecated Use {@link Resume} entity instead. Kept for backward compatibility.
+     */
+    @Deprecated
+    public String resumeUrl;                // legacy single resume URL
 
-    public Integer atsScore;                // from Applyra integration
+    public Integer atsScore;                // from primary resume ATS score
+
+    @OneToMany(mappedBy = "student")
+    public List<Resume> resumes;
 
     public boolean optedOut = false;         // student opted out of placement
 

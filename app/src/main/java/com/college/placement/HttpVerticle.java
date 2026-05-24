@@ -10,6 +10,7 @@ import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.ext.web.Router;
 import io.vertx.rxjava.ext.web.handler.BodyHandler;
 import io.vertx.rxjava.ext.web.handler.CorsHandler;
+import models.services.SchedulerService;
 import student.StudentRouter;
 import user.UserRouter;
 
@@ -50,6 +51,8 @@ public class HttpVerticle extends AbstractVerticle {
                 .rxListen(port)
                 .subscribe(server -> {
                     System.out.println("College Placement System started on port " + port);
+                    // Start scheduled jobs after server is up
+                    SchedulerService.start(rxVertx);
                 }, throwable -> {
                     System.err.println("Failed to start HTTP Server: " + throwable.getMessage());
                 });

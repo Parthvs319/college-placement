@@ -68,6 +68,8 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.get("/reports/drives").handler(DriveReportController.INSTANCE::handle);
         router.get("/reports/offers").handler(OfferReportController.INSTANCE::handle);
 
+        router.post("/upload").handler(FileUploadController.INSTANCE::handle);
+
         return router;
     }
 }

@@ -46,6 +46,27 @@
             <version>1.6.2</version>
         </dependency>
 
+        <!-- AWS SDK v2 — S3 for file storage -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.25.16</version>
+        </dependency>
+
+        <!-- AWS SDK v2 — Textract for OCR -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>textract</artifactId>
+            <version>2.25.16</version>
+        </dependency>
+
+        <!-- RabbitMQ AMQP client -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.20.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
