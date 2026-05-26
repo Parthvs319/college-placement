@@ -1,0 +1,9 @@
+.git
+.env
+*.log
+target/
+*/target/
+.idea/
+*.iml
+.mvn/
+node_modules/

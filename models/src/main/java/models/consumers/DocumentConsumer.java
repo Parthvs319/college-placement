@@ -8,14 +8,6 @@ import models.services.RabbitMQService;
 import models.sql.Resume;
 import models.sql.Student;
 
-/**
- * Consumes document processing jobs from placement.documents queue.
- *
- * Job types:
- *   OCR_RESUME      — { studentId, s3Key } → extract text, store, trigger ATS scoring
- *   OCR_JD          — { driveId, s3Key }   → extract text, store parsed JD
- *   OCR_DOCUMENT    — { documentId, s3Key } → extract text for searchability
- */
 public class DocumentConsumer {
 
     public static void register() {

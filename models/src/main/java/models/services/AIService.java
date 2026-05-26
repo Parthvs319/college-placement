@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 /**
  * AI Service for premium placement features.
- * Uses OpenAI / Claude API for intelligent resume and job analysis.
+ * Supports OpenAI, Anthropic (Claude), and Google Gemini APIs.
  *
  * Premium Features:
  *   1. ATS Score — score resume against standard ATS criteria
@@ -21,16 +21,28 @@ import java.util.Scanner;
  *   5. Smart Resume Parse — extract structured data from resume into profile fields
  *
  * Configure via environment variables:
- *   AI_PROVIDER  — "openai" (default) or "anthropic"
+ *   AI_PROVIDER  — "gemini" (default), "openai", or "anthropic"
  *   AI_API_KEY   — API key for the provider
- *   AI_MODEL     — model name (default: gpt-4o-mini for OpenAI, claude-sonnet-4-20250514 for Anthropic)
+ *   AI_MODEL     — model name (default: gemini-2.0-flash / gpt-4o-mini / claude-sonnet-4-20250514)
  */
 public class AIService {
 
-    private static final String PROVIDER = System.getenv().getOrDefault("AI_PROVIDER", "openai");
+    private static final String PROVIDER = System.getenv().getOrDefault("AI_PROVIDER", "gemini");
     private static final String API_KEY = System.getenv().getOrDefault("AI_API_KEY", "");
-    private static final String MODEL = System.getenv().getOrDefault("AI_MODEL",
-            "openai".equals(PROVIDER) ? "gpt-4o-mini" : "claude-sonnet-4-20250514");
+    private static final String MODEL;
+
+    static {
+        String envModel = System.getenv("AI_MODEL");
+        if (envModel != null && !envModel.isEmpty()) {
+            MODEL = envModel;
+        } else {
+            switch (PROVIDER.toLowerCase()) {
+                case "anthropic": MODEL = "claude-sonnet-4-20250514"; break;
+                case "openai":    MODEL = "gpt-4o-mini"; break;
+                default:          MODEL = "gemini-2.0-flash"; break;
+            }
+        }
+    }
 
     private static boolean initialized = false;
 
@@ -179,6 +191,8 @@ public class AIService {
         try {
             if ("anthropic".equalsIgnoreCase(PROVIDER)) {
                 return callAnthropic(prompt);
+            } else if ("gemini".equalsIgnoreCase(PROVIDER)) {
+                return callGemini(prompt);
             } else {
                 return callOpenAI(prompt);
             }
@@ -277,6 +291,58 @@ public class AIService {
             return new JsonObject(content);
         } else {
             throw new RuntimeException("Anthropic API error " + status + ": " + responseBody);
+        }
+    }
+
+    private static JsonObject callGemini(String prompt) throws Exception {
+        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/"
+                + MODEL + ":generateContent?key=" + API_KEY;
+
+        URL url = new URL(apiUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+
+        JsonObject body = new JsonObject()
+                .put("contents", new JsonArray()
+                        .add(new JsonObject()
+                                .put("parts", new JsonArray()
+                                        .add(new JsonObject()
+                                                .put("text", "You are a JSON API. Always return valid JSON only, no markdown.\n\n" + prompt)))))
+                .put("generationConfig", new JsonObject()
+                        .put("temperature", 0.1)
+                        .put("maxOutputTokens", 2000)
+                        .put("responseMimeType", "application/json"));
+
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+        }
+
+        int status = conn.getResponseCode();
+        String responseBody;
+        try (Scanner scanner = new Scanner(
+                status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream(),
+                StandardCharsets.UTF_8)) {
+            responseBody = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+        }
+        conn.disconnect();
+
+        if (status >= 200 && status < 300) {
+            JsonObject response = new JsonObject(responseBody);
+            String content = response.getJsonArray("candidates")
+                    .getJsonObject(0)
+                    .getJsonObject("content")
+                    .getJsonArray("parts")
+                    .getJsonObject(0)
+                    .getString("text");
+            content = content.trim();
+            if (content.startsWith("```")) {
+                content = content.replaceAll("```json\\s*", "").replaceAll("```\\s*$", "").trim();
+            }
+            return new JsonObject(content);
+        } else {
+            throw new RuntimeException("Gemini API error " + status + ": " + responseBody);
         }
     }
 
