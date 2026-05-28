@@ -34,7 +34,7 @@ public class Resume extends BaseModel {
 
     public long fileSize;                // size in bytes
 
-    @Column(nullable = false)
+    @Column(name = "`primary`", nullable = false)
     public boolean primary = false;      // only one resume should be primary per student
 
     public String label;                 // optional user label (e.g. "SDE Resume", "Data Science Resume")
