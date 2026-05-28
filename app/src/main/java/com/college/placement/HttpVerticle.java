@@ -32,7 +32,7 @@ public class HttpVerticle extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
 
-        router.get("/health").handler(ctx -> ctx.response().end("OK"));
+        router.get("/").handler(ctx -> ctx.response().end("OK"));
 
         // Core modules
         router.mountSubRouter("/user", UserRouter.INSTANCE.router(rxVertx));
