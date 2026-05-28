@@ -19,8 +19,10 @@ public enum SqlConfigFactory {
         config.addPackage("models.sql");
         config.addPackage("helpers.blueprint.models");
 
-        config.setDdlGenerate(false);
-        config.setDdlRun(false);
+        // DDL: controlled by env var DDL_RUN (set to "true" for first deploy, then remove)
+        boolean ddl = "true".equalsIgnoreCase(System.getenv("DDL_RUN"));
+        config.setDdlGenerate(ddl);
+        config.setDdlRun(ddl);
 
         // Loads app/src/main/resources/application.properties (datasource.db.*)
         config.loadFromProperties();
