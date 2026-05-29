@@ -1,6 +1,7 @@
 package company;
 
 import helpers.annotations.CompanyRole;
+import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
