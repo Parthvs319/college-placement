@@ -30,9 +30,12 @@ public class HttpVerticle extends AbstractVerticle {
                         .allowedHeader("Authorization")
         );
 
-        router.route().handler(BodyHandler.create());
+        router.route().handler(BodyHandler.create().setBodyLimit(10 * 1024 * 1024)); // 10 MB
 
         router.get("/").handler(ctx -> ctx.response().end("OK"));
+
+        // Generic upload API (S3 + OCR)
+        router.post("/api/upload").handler(UploadController.INSTANCE::handle);
 
         // Core modules
         router.mountSubRouter("/user", UserRouter.INSTANCE.router(rxVertx));

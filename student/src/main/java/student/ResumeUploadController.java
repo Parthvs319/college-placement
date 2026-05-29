@@ -4,134 +4,134 @@ import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
-import io.vertx.rxjava.ext.web.FileUpload;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import lombok.Data;
 import models.access.middlewear.student.StudentAccessMiddleware;
 import models.body.StudentLoginRequest;
-import models.enums.UserType;
 import models.repos.ResumeRepository;
-import models.repos.StudentRepository;
 import models.services.RabbitMQService;
-import models.services.S3Service;
 import models.sql.Resume;
 import models.sql.Student;
 import io.vertx.core.json.JsonObject;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 
-
+/**
+ * POST /student/me/resume
+ *
+ * Accepts pre-uploaded S3 file details from the generic /api/upload endpoint.
+ * Body (JSON):
+ * {
+ *   "s3Key": "resumes/uuid.pdf",
+ *   "s3Url": "https://...",
+ *   "fileName": "my-resume.pdf",
+ *   "contentType": "application/pdf",
+ *   "fileSize": 102400,
+ *   "extractedText": "...",
+ *   "label": "SDE Resume"  (optional)
+ * }
+ */
 @StudentRole
 public enum ResumeUploadController implements BaseController {
 
     INSTANCE;
 
-    private static final long MAX_SIZE = 5 * 1024 * 1024; // 5 MB
     private static final int MAX_RESUMES = 5;
 
     @Override
     public void handle(RoutingContext event) {
         StudentAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
-                .map(req -> map(req, event))
+                .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
                         error -> ResponseUtils.INSTANCE.handleError(event, error)
                 );
     }
 
-    private Object map(StudentLoginRequest request, RoutingContext event) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.STUDENT)) {
-            throw new RoutingError("Only students can upload resumes");
-        }
-        Student student = StudentRepository.INSTANCE.byUserId(request.getUser().getId());
-        if (student == null) {
-            throw new RoutingError("Student profile not found. Please complete onboarding first.");
-        }
+    private Object map(StudentLoginRequest request) {
+        Student student = request.getStudent();
 
-        // Check max resume limit
         int existingCount = ResumeRepository.INSTANCE.countByStudent(student.getId());
         if (existingCount >= MAX_RESUMES) {
-            throw new RoutingError("Maximum " + MAX_RESUMES + " resumes allowed. Please delete an existing resume first.");
+            throw new RoutingError("Maximum " + MAX_RESUMES + " resumes allowed. Delete an existing resume first.");
         }
 
-        List<FileUpload> uploads = event.fileUploads();
-        if (uploads == null || uploads.isEmpty()) {
-            throw new RoutingError("No file uploaded");
+        var body = request.getRequest();
+        String s3Key = body.get("s3Key");
+        String s3Url = body.get("s3Url");
+        String fileName = body.get("fileName");
+        String contentType = body.get("contentType");
+        String fileSizeStr = body.get("fileSize");
+        String extractedText = body.get("extractedText");
+        String label = body.get("label");
+
+        if (s3Key == null || s3Url == null || fileName == null) {
+            throw new RoutingError("s3Key, s3Url, and fileName are required. Upload the file via /api/upload first.");
         }
-        FileUpload file = uploads.iterator().next();
-        String fileName = file.fileName();
-        long fileSize = file.size();
-        if (fileSize > MAX_SIZE) {
-            throw new RoutingError("Resume too large. Maximum size is 5 MB.");
-        }
-        if (!S3Service.isAllowedType(fileName, ".pdf", ".doc", ".docx")) {
-            throw new RoutingError("Resume must be PDF or DOCX format.");
-        }
 
-        String label = event.request().getParam("label");
-
-        try {
-            byte[] data = Files.readAllBytes(Paths.get(file.uploadedFileName()));
-            String key = S3Service.upload("resumes", fileName, data, file.contentType());
-            String url = S3Service.getPublicUrl(key);
-
-            boolean isPrimary = existingCount == 0;
-
-            Resume resume = new Resume();
-            resume.student = student;
-            resume.fileName = fileName;
-            resume.s3Key = key;
-            resume.url = url;
-            resume.contentType = file.contentType();
-            resume.fileSize = fileSize;
-            resume.primary = isPrimary;
-            resume.label = label;
-            resume.save();
-
-            if (isPrimary) {
-                student.resumeUrl = url;
-                student.update();
-            }
-
+        long fileSize = 0;
+        if (fileSizeStr != null) {
             try {
-                RabbitMQService.publish(RabbitMQService.Q_DOCUMENTS, "OCR_RESUME",
-                        new JsonObject()
-                                .put("resumeId", resume.getId())
-                                .put("s3Key", key)
-                                .put("studentId", student.getId()));
-            } catch (Exception e) {
-                System.out.println("[ResumeUpload] Queue unavailable, OCR will be processed later");
-            }
-            ResumeUploadResponse response = new ResumeUploadResponse();
-            response.id = resume.getId();
-            response.resumeUrl = url;
-            response.key = key;
-            response.fileName = fileName;
-            response.size = fileSize;
-            response.primary = isPrimary;
-            response.label = label;
-            response.message = "Resume uploaded successfully." + (isPrimary ? " Marked as primary." : "")
-                    + " ATS score will be calculated shortly.";
-            return response;
-        } catch (IOException e) {
-            throw new RoutingError("Failed to read uploaded file: " + e.getMessage());
+                fileSize = Long.parseLong(fileSizeStr);
+            } catch (NumberFormatException ignored) {}
         }
+
+        boolean isPrimary = existingCount == 0;
+
+        Resume resume = new Resume();
+        resume.student = student;
+        resume.fileName = fileName;
+        resume.s3Key = s3Key;
+        resume.url = s3Url;
+        resume.contentType = contentType;
+        resume.fileSize = fileSize;
+        resume.primary = isPrimary;
+        resume.label = label;
+        resume.save();
+
+        // Sync legacy field
+        if (isPrimary) {
+            student.resumeUrl = s3Url;
+            student.update();
+        }
+
+        // If OCR text was provided by the upload API, queue ATS scoring directly
+        if (extractedText != null && !extractedText.isEmpty()) {
+            try {
+                RabbitMQService.publish(RabbitMQService.Q_AI, "ATS_SCORE_BASIC",
+                        new JsonObject()
+                                .put("studentId", student.getId())
+                                .put("resumeId", resume.getId())
+                                .put("resumeText", extractedText));
+            } catch (Exception e) {
+                System.out.println("[ResumeUpload] Queue unavailable, ATS scoring skipped");
+            }
+        }
+
+        ResumeResponse response = new ResumeResponse();
+        response.id = resume.getId();
+        response.s3Url = s3Url;
+        response.s3Key = s3Key;
+        response.fileName = fileName;
+        response.fileSize = fileSize;
+        response.primary = isPrimary;
+        response.label = label;
+        response.hasExtractedText = (extractedText != null && !extractedText.isEmpty());
+        response.message = "Resume saved successfully." + (isPrimary ? " Marked as primary." : "")
+                + (response.hasExtractedText ? " ATS scoring queued." : "");
+        return response;
     }
 
     @Data
-    static class ResumeUploadResponse {
+    static class ResumeResponse {
         Long id;
-        String resumeUrl;
-        String key;
+        String s3Url;
+        String s3Key;
         String fileName;
-        long size;
+        long fileSize;
         boolean primary;
         String label;
+        boolean hasExtractedText;
         String message;
     }
 }
