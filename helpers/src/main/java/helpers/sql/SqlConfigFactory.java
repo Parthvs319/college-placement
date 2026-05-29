@@ -24,7 +24,6 @@ public enum SqlConfigFactory {
         config.setDdlGenerate(ddl);
         config.setDdlRun(ddl);
 
-        // Loads app/src/main/resources/application.properties (datasource.db.*)
         config.loadFromProperties();
         String host = System.getenv("MYSQLHOST");
         if (host != null) {
