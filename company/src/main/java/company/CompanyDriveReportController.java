@@ -1,13 +1,11 @@
 package company;
 
-import helpers.annotations.UserAnnotation;
-import helpers.customErrors.RoutingError;
+import helpers.annotations.CompanyRole;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
-import models.enums.UserType;
+import models.access.middlewear.company.CompanyAccessMiddleware;
+import models.body.CompanyLoginRequest;
 import models.repos.DriveApplicationRepository;
 import models.repos.DriveRepository;
 import models.repos.OfferRepository;
@@ -23,7 +21,7 @@ import java.util.List;
  *
  * GET /:companyId/reports/drives
  */
-@UserAnnotation
+@CompanyRole
 public enum CompanyDriveReportController implements BaseController {
 
     INSTANCE;
@@ -32,7 +30,7 @@ public enum CompanyDriveReportController implements BaseController {
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        CompanyAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         csv -> writeCsvResponse(event, "company-drives-report.csv", (String) csv),
@@ -40,12 +38,7 @@ public enum CompanyDriveReportController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COMPANY_HR)) {
-            throw new RoutingError("Not authorized — company HR only");
-        }
-
+    private Object map(CompanyLoginRequest request) {
         Long companyId = Long.parseLong(request.getRoutingContext().pathParam("companyId"));
         List<Drive> drives = DriveRepository.INSTANCE.byCompany(companyId);
 

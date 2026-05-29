@@ -1,15 +1,14 @@
 package college;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.CollegeRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.FileUpload;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import lombok.Data;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
-import models.enums.UserType;
+import models.access.middlewear.college.CollegeAccessMiddleware;
+import models.body.CollegeLoginRequest;
 import models.services.S3Service;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@UserAnnotation
+@CollegeRole
 public enum FileUploadController implements BaseController {
 
     INSTANCE;
@@ -29,7 +28,7 @@ public enum FileUploadController implements BaseController {
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        CollegeAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(req -> map(req, event))
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -37,12 +36,7 @@ public enum FileUploadController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request, RoutingContext event) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)
-                && !userType.equals(UserType.SUPER_ADMIN)) {
-            throw new RoutingError("Not authorized to upload files");
-        }
+    private Object map(CollegeLoginRequest request, RoutingContext event) {
 
         List<FileUpload> uploads = event.fileUploads();
         if (uploads == null || uploads.isEmpty()) {

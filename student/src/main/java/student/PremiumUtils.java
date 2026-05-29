@@ -1,10 +1,8 @@
 package student;
 
 import helpers.customErrors.RoutingError;
-import models.body.UserLoginRequest;
-import models.enums.UserType;
+import models.body.StudentLoginRequest;
 import models.repos.ResumeRepository;
-import models.repos.StudentRepository;
 import models.repos.SubscriptionRepository;
 import models.services.OcrService;
 import models.services.S3Service;
@@ -24,12 +22,8 @@ public final class PremiumUtils {
      * Validate that the request is from a student with an active premium subscription.
      * Returns the Student entity if valid, throws RoutingError otherwise.
      */
-    public static Student getVerifiedPremiumStudent(UserLoginRequest request) {
-        if (!request.getUser().getUserType().equals(UserType.STUDENT)) {
-            throw new RoutingError("Only students can access premium features");
-        }
-
-        Student student = StudentRepository.INSTANCE.byUserId(request.getUser().getId());
+    public static Student getVerifiedPremiumStudent(StudentLoginRequest request) {
+        Student student = request.getStudent();
         if (student == null) {
             throw new RoutingError("Student profile not found");
         }

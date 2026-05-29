@@ -1,48 +1,7 @@
 package models.sql;
 
-import helpers.blueprint.models.BaseModel;
-import io.ebean.annotation.DbJsonB;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import models.enums.Status;
-import models.json.hotel.HotelDetails;
-
-import javax.persistence.*;
-
-@EqualsAndHashCode(callSuper = true)
-@Entity
-@Data
-@Table(name = "hotels")
-public class Hotel extends BaseModel {
-
-    @ManyToOne
-    private User user;
-
-    private String name;
-
-    private Double latitude;
-
-    private Double longitude;
-
-    @ManyToOne
-    private City city;
-
-    public HotelDetails getDetails() {
-        if(this.details == null) {
-            return new HotelDetails();
-        }
-        return details;
-    }
-
-    private Status status = Status.PENDING;
-
-    @DbJsonB
-    private HotelDetails details;
-
-    private boolean verified = false;
-
-    private Long verifiedByUser = 0L;
-
-    private String verifiedBy;
-
+/** @deprecated Legacy entity — scheduled for deletion. */
+@Deprecated
+final class Hotel {
+    private Hotel() {}
 }

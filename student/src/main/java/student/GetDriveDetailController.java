@@ -1,12 +1,12 @@
 package student;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
+import models.access.middlewear.student.StudentAccessMiddleware;
+import models.body.StudentLoginRequest;
 import models.repos.DriveRepository;
 import models.sql.Drive;
 
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 /**
  * Student views details of a specific drive.
  */
-@UserAnnotation
+@StudentRole
 public enum GetDriveDetailController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        StudentAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -30,7 +30,7 @@ public enum GetDriveDetailController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
+    private Object map(StudentLoginRequest request) {
         String driveIdParam = request.getRoutingContext().pathParam("driveId");
         Drive drive = DriveRepository.INSTANCE.byId(Long.parseLong(driveIdParam));
         if (drive == null) {

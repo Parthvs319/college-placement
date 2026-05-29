@@ -1,27 +1,26 @@
 package college;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.CollegeRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
-import models.enums.UserType;
+import models.access.middlewear.college.CollegeAccessMiddleware;
+import models.body.CollegeLoginRequest;
 import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 import models.sql.College;
 
 import java.util.ArrayList;
 
-@UserAnnotation
+@CollegeRole
 public enum UpdateCollegeController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        CollegeAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -29,16 +28,8 @@ public enum UpdateCollegeController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
-            throw new RoutingError("Not authorized to update college");
-        }
-
-        if (request.getUser().college == null) {
-            throw new RoutingError("No college linked to your account");
-        }
-        College college = CollegeRepository.INSTANCE.byId(request.getUser().college.getId());
+    private Object map(CollegeLoginRequest request) {
+        College college = CollegeRepository.INSTANCE.byId(request.getCollege().getId());
         if (college == null) {
             throw new RoutingError("College not found");
         }

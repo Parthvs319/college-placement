@@ -1,14 +1,13 @@
 package college;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.CollegeRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import lombok.Data;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
-import models.enums.UserType;
+import models.access.middlewear.college.CollegeAccessMiddleware;
+import models.body.CollegeLoginRequest;
 import models.repos.StudentRepository;
 import models.sql.Student;
 import models.sql.User;
@@ -23,14 +22,14 @@ import java.util.stream.Collectors;
  * POST /students/verify-bulk
  * Body: { "studentIds": [1, 2, 3, ...] }
  */
-@UserAnnotation
+@CollegeRole
 public enum BulkVerifyStudentsController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        CollegeAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -38,13 +37,8 @@ public enum BulkVerifyStudentsController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO)) {
-            throw new RoutingError("Only TPO and College Admins can verify students");
-        }
-
-        Long myCollegeId = request.getUser().college.getId();
+    private Object map(CollegeLoginRequest request) {
+        Long myCollegeId = request.getCollege().getId();
 
         Object idsObj = request.getRequest().get("studentIds");
         if (idsObj == null || !(idsObj instanceof List)) {

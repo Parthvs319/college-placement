@@ -1,13 +1,13 @@
 package student;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import lombok.Data;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
+import models.access.middlewear.student.StudentAccessMiddleware;
+import models.body.StudentLoginRequest;
 import models.enums.UserType;
 import models.repos.ResumeRepository;
 import models.repos.StudentRepository;
@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
  *
  * GET /me/resumes
  */
-@UserAnnotation
+@StudentRole
 public enum ListResumesController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        StudentAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -39,7 +39,7 @@ public enum ListResumesController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
+    private Object map(StudentLoginRequest request) {
         if (!request.getUser().getUserType().equals(UserType.STUDENT)) {
             throw new RoutingError("Only students can view resumes");
         }

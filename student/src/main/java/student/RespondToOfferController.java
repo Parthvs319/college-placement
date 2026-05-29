@@ -1,13 +1,13 @@
 package student;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.Request;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
+import models.access.middlewear.student.StudentAccessMiddleware;
+import models.body.StudentLoginRequest;
 import models.enums.OfferStatus;
 import models.repos.OfferRepository;
 import models.repos.PlacementPolicyRepository;
@@ -23,14 +23,14 @@ import java.util.ArrayList;
  * Student accepts or declines an offer.
  * Enforces placement policy: dream CTC, block after first accept, max simultaneous offers.
  */
-@UserAnnotation
+@StudentRole
 public enum RespondToOfferController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        StudentAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -38,7 +38,7 @@ public enum RespondToOfferController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
+    private Object map(StudentLoginRequest request) {
         Student student = StudentRepository.INSTANCE.byUserId(request.getUser().getId());
         if (student == null) {
             throw new RoutingError("Student profile not found");

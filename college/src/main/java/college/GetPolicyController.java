@@ -1,26 +1,26 @@
 package college;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.CollegeRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
+import models.access.middlewear.college.CollegeAccessMiddleware;
+import models.body.CollegeLoginRequest;
 import models.json.CollegeDtos;
 import models.repos.PlacementPolicyRepository;
 import models.sql.PlacementPolicy;
 
 import java.util.ArrayList;
 
-@UserAnnotation
+@CollegeRole
 public enum GetPolicyController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        CollegeAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -28,8 +28,8 @@ public enum GetPolicyController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
-        Long collegeId = request.getUser().college.getId();
+    private Object map(CollegeLoginRequest request) {
+        Long collegeId = request.getCollege().getId();
 
         // Return latest policy or by year if query param provided
         String yearParam = request.getRoutingContext().queryParam("year").isEmpty()

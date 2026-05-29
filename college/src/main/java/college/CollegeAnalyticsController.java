@@ -1,26 +1,24 @@
 package college;
 
-import helpers.annotations.UserAnnotation;
-import helpers.customErrors.RoutingError;
+import helpers.annotations.CollegeRole;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import lombok.Data;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
-import models.enums.UserType;
+import models.access.middlewear.college.CollegeAccessMiddleware;
+import models.body.CollegeLoginRequest;
 import models.repos.*;
 
 import java.util.ArrayList;
 
-@UserAnnotation
+@CollegeRole
 public enum CollegeAnalyticsController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        CollegeAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(this::map)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -28,13 +26,8 @@ public enum CollegeAnalyticsController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request) {
-        UserType userType = request.getUser().getUserType();
-        if (!userType.equals(UserType.COLLEGE_ADMIN) && !userType.equals(UserType.TPO) && !userType.equals(UserType.SUPER_ADMIN)) {
-            throw new RoutingError("Not authorized to view analytics");
-        }
-
-        Long collegeId = request.getUser().college.getId();
+    private Object map(CollegeLoginRequest request) {
+        Long collegeId = request.getCollege().getId();
 
         Analytics analytics = new Analytics();
         analytics.totalStudents = StudentRepository.INSTANCE.byCollege(collegeId).size();

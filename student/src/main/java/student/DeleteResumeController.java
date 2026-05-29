@@ -1,12 +1,12 @@
 package student;
 
-import helpers.annotations.UserAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
-import models.access.middlewear.user.UserAccessMiddleware;
-import models.body.UserLoginRequest;
+import models.access.middlewear.student.StudentAccessMiddleware;
+import models.body.StudentLoginRequest;
 import models.enums.UserType;
 import models.repos.ResumeRepository;
 import models.repos.StudentRepository;
@@ -26,14 +26,14 @@ import java.util.Map;
  *
  * DELETE /me/resumes/:resumeId
  */
-@UserAnnotation
+@StudentRole
 public enum DeleteResumeController implements BaseController {
 
     INSTANCE;
 
     @Override
     public void handle(RoutingContext event) {
-        UserAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
+        StudentAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(req -> map(req, event))
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
@@ -41,7 +41,7 @@ public enum DeleteResumeController implements BaseController {
                 );
     }
 
-    private Object map(UserLoginRequest request, RoutingContext event) {
+    private Object map(StudentLoginRequest request, RoutingContext event) {
         if (!request.getUser().getUserType().equals(UserType.STUDENT)) {
             throw new RoutingError("Only students can manage resumes");
         }
