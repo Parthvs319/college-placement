@@ -26,8 +26,6 @@ public enum SqlConfigFactory {
 
         // Loads app/src/main/resources/application.properties (datasource.db.*)
         config.loadFromProperties();
-
-        // Railway / Docker env overrides (optional)
         String host = System.getenv("MYSQLHOST");
         if (host != null) {
             DataSourceConfig ds = config.getDataSourceConfig();
