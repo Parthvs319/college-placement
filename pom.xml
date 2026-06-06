@@ -20,6 +20,7 @@
     <module>company</module>
     <module>student</module>
     <module>drive</module>
+    <module>superadmin</module>
     <module>app</module>
   </modules>
 

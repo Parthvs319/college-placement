@@ -66,7 +66,6 @@ public enum UploadController implements BaseController {
     }
 
     private Object map(UserLoginRequest request, RoutingContext rc) {
-        // Determine upload folder
         String folder = rc.queryParams().get("folder");
         if (folder == null || folder.isEmpty()) {
             folder = "uploads";
