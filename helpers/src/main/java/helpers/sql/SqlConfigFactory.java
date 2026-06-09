@@ -24,6 +24,16 @@ public enum SqlConfigFactory {
         config.setDdlGenerate(ddl);
         config.setDdlRun(ddl);
 
+        // CREATE_ONLY mode: set DDL_CREATE_ONLY=true to skip drop and only create
+        // (uses "create table if not exists" semantics via Ebean's createOnly flag)
+        if (ddl) {
+            boolean createOnly = "true".equalsIgnoreCase(System.getenv("DDL_CREATE_ONLY"));
+            config.setDdlCreateOnly(createOnly);
+            // Disable FK checks during DDL so drops succeed regardless of order
+            config.setDdlInitSql("SET FOREIGN_KEY_CHECKS=0;");
+            config.setDdlSeedSql("SET FOREIGN_KEY_CHECKS=1;");
+        }
+
         config.loadFromProperties();
         String host = System.getenv("MYSQLHOST");
         if (host != null) {
