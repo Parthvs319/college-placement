@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 @Data
 @Table(name = "subscriptions")
 public class Subscription extends BaseModel {
-
     @ManyToOne
     @JoinColumn(name = "student_id")
     public Student student;

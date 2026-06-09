@@ -13,6 +13,7 @@
         <module name="helpers" />
         <module name="auth" />
         <module name="student" />
+        <module name="superadmin" />
         <module name="company" />
         <module name="drive" />
         <module name="user" />
