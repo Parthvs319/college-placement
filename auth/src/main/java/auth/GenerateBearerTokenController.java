@@ -36,8 +36,7 @@ public enum GenerateBearerTokenController implements ParamsController {
 
     private BearerToken map(RequestZipped requestZipped) {
         try {
-            Object raw = requestZipped.getRequest().get("userId");
-            Long userId = raw instanceof Number ? ((Number) raw).longValue() : Long.parseLong(raw.toString());
+            Long userId = requestZipped.getRequest().get("userId");
             User user = UserRepository.INSTANCE.byId(userId);
             if(user == null) {
                 throw new RoutingError("Invalid user id !");
@@ -53,7 +52,7 @@ public enum GenerateBearerTokenController implements ParamsController {
     @Override
     public List<RequestItem> items() {
         List<RequestItem> items = new ArrayList<>();
-        items.add(RequestItem.builder().key("userId").required(true).itemType(RequestItemType.STRING).build());
+        items.add(RequestItem.builder().key("userId").required(true).itemType(RequestItemType.INTEGER).build());
         return items;
     }
 }
