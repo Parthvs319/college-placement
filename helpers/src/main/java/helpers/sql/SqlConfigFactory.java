@@ -1,5 +1,6 @@
 package helpers.sql;
 
+import helpers.blueprint.models.BaseModel;
 import io.ebean.Database;
 import io.ebean.DatabaseFactory;
 import io.ebean.config.DatabaseConfig;
@@ -71,4 +72,32 @@ public enum SqlConfigFactory {
     public static void init() {
         SqlConfigFactory.MASTER.getServer();
     }
+
+    public static void save(BaseModel model) {
+        saveBean(model);
+    }
+
+    public static void saveBean(Object o) {
+        MASTER.getServer().save(o);
+    }
+
+    public static void updateBean(Object o) {
+        MASTER.getServer().update(o);
+    }
+
+    public static void removeBean(Object o) {
+        MASTER.getServer().delete(o);
+    }
+
+    public static void update(BaseModel model) {
+        updateBean(model);
+    }
+
+    public static void delete(BaseModel model) {
+        removeBean(model);
+    }
+
+
+
+
 }

@@ -1,5 +1,6 @@
 package helpers.blueprint.models;
 
+import helpers.sql.SqlConfigFactory;
 import io.ebean.Model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,4 +25,16 @@ public class BaseModel extends Model {
 
     @Column(name = "deleted")
     private boolean deleted = false;
+
+    public void save() {
+        try {
+            if (getCreatedAt() == null || getId() == null)
+                SqlConfigFactory.save(this);
+            else
+                SqlConfigFactory.update(this);
+        } catch (Exception e) {
+            SqlConfigFactory.save(this);
+        }
+    }
+
 }
