@@ -26,7 +26,7 @@ public enum VerifyCollegeController implements BaseController {
                     if (college == null) throw new RoutingError(404, "College not found");
 
                     college.verified = true;
-                    college.save();
+                    college.update();
 
                     return Map.of("message", "College verified successfully", "collegeId", collegeId);
                 })
