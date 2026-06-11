@@ -24,10 +24,10 @@ public enum ToggleCollegeActiveController implements BaseController {
                     Long collegeId = Long.parseLong(event.pathParam("collegeId"));
                     College college = CollegeRepository.INSTANCE.byId(collegeId);
                     if (college == null) throw new RoutingError(404, "College not found");
-
-                    college.active = !college.active;
+                    college.setActive(!college.isActive());
+                    System.out.println("yess : " + college.isActive());
                     college.save();
-
+                    System.out.println("yess : " + college.isActive());
                     return Map.of(
                             "message", college.active ? "College activated" : "College deactivated",
                             "collegeId", collegeId,
