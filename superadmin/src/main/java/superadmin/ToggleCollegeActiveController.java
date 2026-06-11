@@ -26,7 +26,7 @@ public enum ToggleCollegeActiveController implements BaseController {
                     if (college == null) throw new RoutingError(404, "College not found");
                     college.setActive(!college.isActive());
                     System.out.println("yess : " + college.isActive());
-                    college.save();
+                    college.update();
                     System.out.println("yess : " + college.isActive());
                     return Map.of(
                             "message", college.active ? "College activated" : "College deactivated",

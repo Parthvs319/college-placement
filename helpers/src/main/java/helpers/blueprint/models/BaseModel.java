@@ -37,4 +37,8 @@ public class BaseModel extends Model {
         }
     }
 
+    public void update() {
+        SqlConfigFactory.update(this);
+    }
+
 }
