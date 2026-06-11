@@ -150,6 +150,35 @@ public class EmailService {
                 + "</div>";
     }
 
+    public static String buildCollegeOnboardingHtml(String collegeName, String code,
+                                                       String city, String state,
+                                                       String portalUrl) {
+        String location = (city != null && !city.isEmpty()) ? city + (state != null && !state.isEmpty() ? ", " + state : "") : (state != null ? state : "");
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #2563eb;'>Welcome to Applyra!</h2>"
+                + "<p>Your college has been registered on the Applyra Placement Platform.</p>"
+                + "<table style='width: 100%; border-collapse: collapse; margin: 16px 0;'>"
+                + "<tr><td style='padding: 8px; border-bottom: 1px solid #e5e7eb;'><strong>College</strong></td>"
+                + "<td style='padding: 8px; border-bottom: 1px solid #e5e7eb;'>" + collegeName + "</td></tr>"
+                + "<tr><td style='padding: 8px; border-bottom: 1px solid #e5e7eb;'><strong>Code</strong></td>"
+                + "<td style='padding: 8px; border-bottom: 1px solid #e5e7eb;'>" + code + "</td></tr>"
+                + (location.isEmpty() ? "" :
+                   "<tr><td style='padding: 8px; border-bottom: 1px solid #e5e7eb;'><strong>Location</strong></td>"
+                   + "<td style='padding: 8px; border-bottom: 1px solid #e5e7eb;'>" + location + "</td></tr>")
+                + "</table>"
+                + "<div style='background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 16px 0;'>"
+                + "<p style='margin: 0; color: #166534;'><strong>What happens next?</strong></p>"
+                + "<p style='margin: 8px 0 0; color: #166534;'>Our team will review and verify your college. "
+                + "Once verified, a TPO account will be created and you'll receive login credentials to access the placement portal.</p>"
+                + "</div>"
+                + (portalUrl != null && !portalUrl.isEmpty() ?
+                   "<p><a href='" + portalUrl + "' style='background: #2563eb; color: white; padding: 12px 24px; "
+                   + "text-decoration: none; border-radius: 6px; display: inline-block;'>Visit Applyra</a></p>" : "")
+                + "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'>"
+                + "<p style='color: #6b7280; font-size: 12px;'>Sent from Applyra Placement Platform</p>"
+                + "</div>";
+    }
+
     public static String buildCustomHtml(String recipientName, String subject, String body) {
         return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #2563eb;'>" + subject + "</h2>"

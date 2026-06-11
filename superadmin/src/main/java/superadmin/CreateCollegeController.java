@@ -9,6 +9,7 @@ import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.body.SuperAdminLoginRequest;
 import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
+import models.services.EmailService;
 import models.sql.College;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public enum CreateCollegeController implements BaseController {
 
         College college = new College();
         college.name = name;
-        college.code = code.toUpperCase();
+        college.code = code .toUpperCase();
         college.city = body.get("city");
         college.state = body.get("state");
         college.university = body.get("university");
@@ -64,7 +65,6 @@ public enum CreateCollegeController implements BaseController {
         college.verified = false;
         college.active = false;
         college.save();
-
         return CollegeDtos.toCollegeDto(college);
     }
 }
