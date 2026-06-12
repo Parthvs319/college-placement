@@ -10,6 +10,7 @@ public enum SuperAdminRouter implements SubRouterProtocol {
 
     @Override
     public Router router(Vertx vertx) {
+        System.out.println("Here4");
         Router router = Router.router(vertx);
 
         router.get("/analytics").handler(PlatformAnalyticsController.INSTANCE::handle);

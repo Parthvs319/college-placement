@@ -21,6 +21,7 @@ public class HttpVerticle extends AbstractVerticle {
     public void start() throws Exception {
         Vertx rxVertx = Vertx.newInstance(vertx);
         Router router = Router.router(rxVertx);
+        System.out.println("Here");
         router.route().handler(
                 CorsHandler.create("*")
                         .allowedMethod(HttpMethod.GET)
@@ -30,8 +31,11 @@ public class HttpVerticle extends AbstractVerticle {
                         .allowedHeader("Content-Type")
                         .allowedHeader("Authorization")
         );
+        System.out.println("Here2");
 
         router.route().handler(BodyHandler.create().setBodyLimit(10 * 1024 * 1024)); // 10 MB
+
+        System.out.println("Here3");
 
         router.get("/").handler(ctx -> ctx.response().end("OK"));
 
