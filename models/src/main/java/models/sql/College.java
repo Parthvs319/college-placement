@@ -4,7 +4,6 @@ import helpers.blueprint.models.AttrsModel;
 import io.ebean.annotation.DbJsonB;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import models.services.EmailService;
 
 import javax.persistence.*;
 import java.util.List;
@@ -52,19 +51,4 @@ public class College extends AttrsModel {
 
     @OneToMany(mappedBy = "college")
     public List<CompanyCollege> companyColleges;
-
-
-    public void save() {
-        super.save();
-        if (this.contactEmail != null && !this.contactEmail.isBlank()) {
-            String html = EmailService.buildCollegeOnboardingHtml(
-                    this.name, this.code, this.city, this.state, this.website
-            );
-            EmailService.sendEmail(this.contactEmail, "Welcome to Applyra — " + this.name, html)
-                    .subscribe(
-                            sent -> System.out.println("[CreateCollege] Welcome email " + (sent ? "sent" : "failed") + " to " + this.contactEmail),
-                            err -> System.err.println("[CreateCollege] Email error: " + err.getMessage())
-                    );
-        }
-    }
 }

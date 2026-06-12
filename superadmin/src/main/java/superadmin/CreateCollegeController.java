@@ -65,6 +65,25 @@ public enum CreateCollegeController implements BaseController {
         college.verified = false;
         college.active = false;
         college.save();
+
+        // Send welcome email on a separate thread (SMTP is blocking — must NOT run on event loop)
+        if (college.contactEmail != null && !college.contactEmail.isBlank()) {
+            new Thread(() -> {
+                try {
+                    String html = EmailService.buildCollegeOnboardingHtml(
+                            college.name, college.code, college.city, college.state, college.website
+                    );
+                    EmailService.sendEmail(college.contactEmail, "Welcome to Applyra — " + college.name, html)
+                            .subscribe(
+                                    sent -> System.out.println("[CreateCollege] Welcome email " + (sent ? "sent" : "failed") + " to " + college.contactEmail),
+                                    err -> System.err.println("[CreateCollege] Email error: " + err.getMessage())
+                            );
+                } catch (Exception e) {
+                    System.err.println("[CreateCollege] Email thread error: " + e.getMessage());
+                }
+            }, "college-welcome-email").start();
+        }
+
         return CollegeDtos.toCollegeDto(college);
     }
 }
