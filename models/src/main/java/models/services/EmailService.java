@@ -8,24 +8,27 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 /**
- * Email Service using Resend HTTP API.
+ * Email Service using Brevo (Sendinblue) HTTP API.
+ * 300 emails/day free, no domain verification required.
+ *
  * Configure via environment variables:
- * - RESEND_API_KEY: Resend API key (starts with re_)
- * - RESEND_FROM_EMAIL: Sender email (must be verified domain on Resend, or use onboarding@resend.dev for testing)
+ * - BREVO_API_KEY: Brevo API key (from SMTP & API → API Keys tab)
+ * - BREVO_FROM_EMAIL: Sender email (must match your Brevo account email)
+ * - BREVO_FROM_NAME: Sender display name (default "Applyra")
  */
 public class EmailService {
 
-    private static final String RESEND_API_KEY = System.getenv().getOrDefault("RESEND_API_KEY", "");
-    private static final String RESEND_FROM_EMAIL = System.getenv().getOrDefault("RESEND_FROM_EMAIL", "onboarding@resend.dev");
-    private static final String RESEND_FROM_NAME = System.getenv().getOrDefault("RESEND_FROM_NAME", "Applyra");
+    private static final String BREVO_API_KEY = System.getenv().getOrDefault("BREVO_API_KEY", "");
+    private static final String BREVO_FROM_EMAIL = System.getenv().getOrDefault("BREVO_FROM_EMAIL", "parthvs319@gmail.com");
+    private static final String BREVO_FROM_NAME = System.getenv().getOrDefault("BREVO_FROM_NAME", "Applyra");
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
     /**
-     * Send an HTML email to a single recipient via Resend API.
+     * Send an HTML email to a single recipient via Brevo API.
      * Returns true on success. Falls back to console logging if no API key configured.
      */
     public static Single<Boolean> sendEmail(String toEmail, String subject, String htmlBody) {
-        if (RESEND_API_KEY == null || RESEND_API_KEY.isEmpty()) {
+        if (BREVO_API_KEY == null || BREVO_API_KEY.isEmpty()) {
             System.out.println("[Email-DEV] To: " + toEmail + " | Subject: " + subject);
             System.out.println("[Email-DEV] Body: " + htmlBody);
             return Single.just(true);
@@ -33,30 +36,28 @@ public class EmailService {
 
         return Single.fromCallable(() -> {
             try {
-                // Escape JSON special chars in subject and html
-                String escapedSubject = escapeJson(subject);
-                String escapedHtml = escapeJson(htmlBody);
-
-                String from = RESEND_FROM_NAME + " <" + RESEND_FROM_EMAIL + ">";
-                String json = "{\"from\":\"" + escapeJson(from) + "\","
-                        + "\"to\":[\"" + escapeJson(toEmail) + "\"],"
-                        + "\"subject\":\"" + escapedSubject + "\","
-                        + "\"html\":\"" + escapedHtml + "\"}";
+                String json = "{"
+                        + "\"sender\":{\"name\":\"" + escapeJson(BREVO_FROM_NAME) + "\",\"email\":\"" + escapeJson(BREVO_FROM_EMAIL) + "\"},"
+                        + "\"to\":[{\"email\":\"" + escapeJson(toEmail) + "\"}],"
+                        + "\"subject\":\"" + escapeJson(subject) + "\","
+                        + "\"htmlContent\":\"" + escapeJson(htmlBody) + "\""
+                        + "}";
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.resend.com/emails"))
-                        .header("Authorization", "Bearer " + RESEND_API_KEY)
+                        .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                        .header("api-key", BREVO_API_KEY)
                         .header("Content-Type", "application/json")
+                        .header("Accept", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(json))
                         .build();
 
                 HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-                if (response.statusCode() == 200) {
-                    System.out.println("[Email] Sent to " + toEmail + ": " + subject);
+                if (response.statusCode() == 201) {
+                    System.out.println("[Email] Sent to " + toEmail + ": " + subject + " | Response: " + response.body());
                     return true;
                 } else {
-                    System.err.println("[Email] Resend API error (" + response.statusCode() + "): " + response.body());
+                    System.err.println("[Email] Brevo API error (" + response.statusCode() + "): " + response.body());
                     return false;
                 }
             } catch (Exception e) {
