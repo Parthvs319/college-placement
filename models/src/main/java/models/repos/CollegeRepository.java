@@ -18,6 +18,9 @@ public enum CollegeRepository {
     public College byCode(String code) {
         return finder.query().where().eq("code", code).eq("deleted", false).findOne();
     }
+    public College byEmail(String contactEmail) {
+        return finder.query().where().eq("contact_email", contactEmail).eq("deleted", false).findOne();
+    }
 
     public List<College> findAll() {
         return finder.query().where().eq("deleted", false).findList();

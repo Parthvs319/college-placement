@@ -42,6 +42,7 @@ public enum CreateCollegeController implements BaseController {
         var body = request.getRequest();
         String name = body.get("name");
         String code = body.get("code");
+        String contactEmail = body.get("contactEmail");
 
         if (name == null || name.isBlank()) {
             throw new RoutingError("College name is required");
@@ -52,6 +53,9 @@ public enum CreateCollegeController implements BaseController {
         if (CollegeRepository.INSTANCE.byCode(code.toUpperCase()) != null) {
             throw new RoutingError("College with code " + code.toUpperCase() + " already exists");
         }
+        if (CollegeRepository.INSTANCE.byEmail(contactEmail.toUpperCase()) != null) {
+            throw new RoutingError("College with code " + code.toUpperCase() + " already exists");
+        }
 
         College college = new College();
         college.name = name;
@@ -60,7 +64,7 @@ public enum CreateCollegeController implements BaseController {
         college.state = body.get("state");
         college.university = body.get("university");
         college.website = body.get("website");
-        college.contactEmail = body.get("contactEmail");
+        college.contactEmail = contactEmail;
         college.contactPhone = body.get("contactPhone");
         college.verified = false;
         college.active = false;
