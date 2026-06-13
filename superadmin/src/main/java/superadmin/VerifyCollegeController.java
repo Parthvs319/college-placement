@@ -42,14 +42,12 @@ public enum VerifyCollegeController implements BaseController {
         Long collegeId = Long.parseLong(request.getRoutingContext().pathParam("collegeId"));
         College college = CollegeRepository.INSTANCE.byId(collegeId);
         if (college == null) throw new RoutingError(404, "College not found");
-
         if (college.verified) {
             throw new RoutingError("College is already verified");
         }
-
-        college.verified = true;
-        college.active = true;
-        college.save();
+        college.setActive(true);
+        college.setVerified(true);
+        college.update();
 
         List<User> existingTpos = UserRepository.INSTANCE.byCollegeAndType(collegeId, UserType.TPO);
         if (!existingTpos.isEmpty()) {
@@ -61,14 +59,12 @@ public enum VerifyCollegeController implements BaseController {
         }
         String rawPassword = generatePassword(12);
         String tpoEmail = college.contactEmail;
-
         if (tpoEmail == null || tpoEmail.isBlank()) {
             return Map.of(
                     "message", "College verified but no contactEmail set — TPO account not created",
                     "collegeId", collegeId
             );
         }
-
         User existingUser = UserRepository.INSTANCE.byEmail(tpoEmail);
         if (existingUser != null) {
             if (existingUser.college == null) {
