@@ -65,7 +65,7 @@ public enum VerifyCollegeController implements BaseController {
                     "collegeId", collegeId
             );
         }
-        User existingUser = UserRepository.INSTANCE.byEmail(tpoEmail);
+        User existingUser = UserRepository.INSTANCE.byEmailAndUserType(tpoEmail , UserType.TPO);
         if (existingUser != null) {
             if (existingUser.college == null) {
                 existingUser.college = college;
