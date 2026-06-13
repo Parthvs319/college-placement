@@ -14,10 +14,10 @@ import java.util.List;
 @Table(name = "colleges")
 public class College extends AttrsModel {
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     public String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     public String code;                     // e.g. "SGSITS", "IET-DAVV"
 
     public String university;               // affiliated university
