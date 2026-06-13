@@ -2,36 +2,30 @@ package models.services;
 
 import rx.Single;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.util.Properties;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 /**
- * Email Service for sending placement notifications via SMTP.
+ * Email Service using Resend HTTP API.
  * Configure via environment variables:
- * - SMTP_HOST: SMTP server (e.g. smtp.gmail.com)
- * - SMTP_PORT: SMTP port (default 587)
- * - SMTP_USERNAME: SMTP auth username
- * - SMTP_PASSWORD: SMTP auth password / app password
- * - SMTP_FROM_EMAIL: Sender email address
- * - SMTP_FROM_NAME: Sender display name (default "Placement Portal")
+ * - RESEND_API_KEY: Resend API key (starts with re_)
+ * - RESEND_FROM_EMAIL: Sender email (must be verified domain on Resend, or use onboarding@resend.dev for testing)
  */
 public class EmailService {
 
-    private static final String SMTP_HOST = System.getenv().getOrDefault("SMTP_HOST", "");
-    private static final String SMTP_PORT = System.getenv().getOrDefault("SMTP_PORT", "587");
-    private static final String SMTP_USERNAME = System.getenv().getOrDefault("SMTP_USERNAME", "");
-    private static final String SMTP_PASSWORD = System.getenv().getOrDefault("SMTP_PASSWORD", "");
-    private static final String SMTP_FROM_EMAIL = System.getenv().getOrDefault("SMTP_FROM_EMAIL", "noreply@placement.edu");
-    private static final String SMTP_FROM_NAME = System.getenv().getOrDefault("SMTP_FROM_NAME", "Placement Portal");
+    private static final String RESEND_API_KEY = System.getenv().getOrDefault("RESEND_API_KEY", "");
+    private static final String RESEND_FROM_EMAIL = System.getenv().getOrDefault("RESEND_FROM_EMAIL", "onboarding@resend.dev");
+    private static final String RESEND_FROM_NAME = System.getenv().getOrDefault("RESEND_FROM_NAME", "Applyra");
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
     /**
-     * Send an HTML email to a single recipient.
-     * Returns true on success. Falls back to console logging in dev mode.
+     * Send an HTML email to a single recipient via Resend API.
+     * Returns true on success. Falls back to console logging if no API key configured.
      */
     public static Single<Boolean> sendEmail(String toEmail, String subject, String htmlBody) {
-        if (SMTP_HOST == null || SMTP_HOST.isEmpty()) {
+        if (RESEND_API_KEY == null || RESEND_API_KEY.isEmpty()) {
             System.out.println("[Email-DEV] To: " + toEmail + " | Subject: " + subject);
             System.out.println("[Email-DEV] Body: " + htmlBody);
             return Single.just(true);
@@ -39,33 +33,46 @@ public class EmailService {
 
         return Single.fromCallable(() -> {
             try {
-                Properties props = new Properties();
-                props.put("mail.smtp.host", SMTP_HOST);
-                props.put("mail.smtp.port", SMTP_PORT);
-                props.put("mail.smtp.auth", "true");
-                props.put("mail.smtp.starttls.enable", "true");
+                // Escape JSON special chars in subject and html
+                String escapedSubject = escapeJson(subject);
+                String escapedHtml = escapeJson(htmlBody);
 
-                Session session = Session.getInstance(props, new Authenticator() {
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(SMTP_USERNAME, SMTP_PASSWORD);
-                    }
-                });
+                String from = RESEND_FROM_NAME + " <" + RESEND_FROM_EMAIL + ">";
+                String json = "{\"from\":\"" + escapeJson(from) + "\","
+                        + "\"to\":[\"" + escapeJson(toEmail) + "\"],"
+                        + "\"subject\":\"" + escapedSubject + "\","
+                        + "\"html\":\"" + escapedHtml + "\"}";
 
-                MimeMessage message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(SMTP_FROM_EMAIL, SMTP_FROM_NAME));
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
-                message.setSubject(subject);
-                message.setContent(htmlBody, "text/html; charset=utf-8");
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.resend.com/emails"))
+                        .header("Authorization", "Bearer " + RESEND_API_KEY)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
 
-                Transport.send(message);
-                System.out.println("[Email] Sent to " + toEmail + ": " + subject);
-                return true;
+                HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200) {
+                    System.out.println("[Email] Sent to " + toEmail + ": " + subject);
+                    return true;
+                } else {
+                    System.err.println("[Email] Resend API error (" + response.statusCode() + "): " + response.body());
+                    return false;
+                }
             } catch (Exception e) {
                 System.err.println("[Email] Failed to send to " + toEmail + ": " + e.getMessage());
                 return false;
             }
         });
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     // ── HTML Email Builders ──────────────────────────────────────────
