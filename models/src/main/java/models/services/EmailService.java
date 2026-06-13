@@ -186,6 +186,34 @@ public class EmailService {
                 + "</div>";
     }
 
+    public static String buildTpoCredentialsHtml(String collegeName, String email,
+                                                      String password, String collegeCode) {
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #2563eb;'>Your Applyra TPO Account is Ready!</h2>"
+                + "<p>Your college <strong>" + collegeName + "</strong> has been verified on Applyra. "
+                + "A TPO (Training & Placement Officer) account has been created for you.</p>"
+                + "<div style='background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 16px 0;'>"
+                + "<p style='margin: 0 0 12px; font-weight: bold; color: #1e40af;'>Your Login Credentials</p>"
+                + "<table style='width: 100%; border-collapse: collapse;'>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Email</td>"
+                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + email + "</td></tr>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Password</td>"
+                + "<td style='padding: 6px 0; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e293b; "
+                + "background: #f1f5f9; padding: 4px 8px; border-radius: 4px;'>" + password + "</td></tr>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>College Code</td>"
+                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + collegeCode + "</td></tr>"
+                + "</table>"
+                + "</div>"
+                + "<div style='background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin: 16px 0;'>"
+                + "<p style='margin: 0; color: #92400e; font-size: 13px;'>"
+                + "<strong>Important:</strong> Please change your password after your first login. "
+                + "Do not share these credentials with anyone.</p>"
+                + "</div>"
+                + "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'>"
+                + "<p style='color: #6b7280; font-size: 12px;'>Sent from Applyra Placement Platform</p>"
+                + "</div>";
+    }
+
     public static String buildCustomHtml(String recipientName, String subject, String body) {
         return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #2563eb;'>" + subject + "</h2>"
