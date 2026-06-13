@@ -90,21 +90,18 @@ public enum VerifyCollegeController implements BaseController {
         tpo.verified = true;
         tpo.active = true;
         tpo.save();
-
-        new Thread(() -> {
-            try {
-                String html = EmailService.buildTpoCredentialsHtml(
-                        college.name, tpoEmail, rawPassword, college.code
-                );
-                EmailService.sendEmail(tpoEmail, "Your Applyra TPO Login Credentials — " + college.name, html)
-                        .subscribe(
-                                sent -> System.out.println("[VerifyCollege] Credentials email " + (sent ? "sent" : "failed") + " to " + tpoEmail),
-                                err -> System.err.println("[VerifyCollege] Email error: " + err.getMessage())
-                        );
-            } catch (Exception e) {
-                System.err.println("[VerifyCollege] Email thread error: " + e.getMessage());
-            }
-        }, "tpo-credentials-email").start();
+        try {
+            String html = EmailService.buildTpoCredentialsHtml(
+                    college.name, tpoEmail, rawPassword, college.code
+            );
+            EmailService.sendEmail(tpoEmail, "Your Applyra TPO Login Credentials — " + college.name, html)
+                    .subscribe(
+                            sent -> System.out.println("[VerifyCollege] Credentials email " + (sent ? "sent" : "failed") + " to " + tpoEmail),
+                            err -> System.err.println("[VerifyCollege] Email error: " + err.getMessage())
+                    );
+        } catch (Exception e) {
+            System.err.println("[VerifyCollege] Email thread error: " + e.getMessage());
+        }
 
         return Map.of(
                 "message", "College verified and TPO account created. Credentials sent to " + tpoEmail,
