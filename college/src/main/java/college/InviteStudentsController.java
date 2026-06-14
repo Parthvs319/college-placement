@@ -41,7 +41,6 @@ public enum InviteStudentsController implements BaseController {
         if (emailsObj == null || !(emailsObj instanceof List)) {
             throw new RoutingError("emails array is required");
         }
-
         List<String> emails = new ArrayList<>();
         for (Object o : (List<?>) emailsObj) {
             String email = o.toString().trim().toLowerCase();
