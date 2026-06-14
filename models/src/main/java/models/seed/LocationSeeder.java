@@ -11,13 +11,25 @@ import models.sql.States;
 public class LocationSeeder {
 
     public static void seed() {
-        if (DB.find(States.class).findCount() > 0) {
-            System.out.println("[LocationSeeder] States already seeded, skipping.");
+        boolean statesExist = DB.find(States.class).findCount() > 0;
+        int cityCount = DB.find(City.class).findCount();
+
+        if (statesExist && cityCount >= 100) {
+            System.out.println("[LocationSeeder] States and cities already seeded, skipping.");
             return;
         }
-        System.out.println("[LocationSeeder] Seeding states and cities...");
-        seedStates();
-        seedCities();
+
+        if (!statesExist) {
+            System.out.println("[LocationSeeder] Seeding states...");
+            seedStates();
+        }
+
+        if (cityCount < 100) {
+            System.out.println("[LocationSeeder] Cities incomplete (" + cityCount + "), clearing and re-seeding...");
+            DB.sqlUpdate("DELETE FROM cities").execute();
+            seedCities();
+        }
+
         System.out.println("[LocationSeeder] Done. " + DB.find(States.class).findCount() + " states, " + DB.find(City.class).findCount() + " cities.");
     }
 
@@ -201,7 +213,7 @@ public class LocationSeeder {
 
         // Chandigarh
         long ch = stateId("CH");
-        createCity("Chandigarh", ch);
+        for (String c : new String[]{"Chandigarh", "Manimajra", "Mohali Extension", "Panchkula Extension"}) createCity(c, ch);
 
         // Jammu and Kashmir
         long jk = stateId("JK");
@@ -209,7 +221,7 @@ public class LocationSeeder {
 
         // Ladakh
         long la = stateId("LA");
-        for (String c : new String[]{"Leh", "Kargil"}) createCity(c, la);
+        for (String c : new String[]{"Leh", "Kargil", "Diskit", "Padum"}) createCity(c, la);
 
         // Puducherry
         long py = stateId("PY");
@@ -217,14 +229,14 @@ public class LocationSeeder {
 
         // Andaman and Nicobar Islands
         long an = stateId("AN");
-        for (String c : new String[]{"Port Blair"}) createCity(c, an);
+        for (String c : new String[]{"Port Blair", "Car Nicobar", "Mayabunder", "Diglipur"}) createCity(c, an);
 
         // Dadra Nagar Haveli and Daman Diu
         long dn = stateId("DN");
-        for (String c : new String[]{"Silvassa", "Daman", "Diu"}) createCity(c, dn);
+        for (String c : new String[]{"Silvassa", "Daman", "Diu", "Amli"}) createCity(c, dn);
 
         // Lakshadweep
         long ld = stateId("LD");
-        createCity("Kavaratti", ld);
+        for (String c : new String[]{"Kavaratti", "Agatti", "Minicoy", "Andrott"}) createCity(c, ld);
     }
 }

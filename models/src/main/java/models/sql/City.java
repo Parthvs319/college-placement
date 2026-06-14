@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Table(name = "cities")
 public class City extends BaseModel {
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     public String name;
 
     @Column(nullable = false)
