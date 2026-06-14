@@ -67,7 +67,7 @@ public enum OnboardCompanyController implements BaseController {
         String collegeName = request.getCollege().getName();
 
         // Check if company with same name already exists
-        Company existingCompany = CompanyRepository.INSTANCE.byName(name);
+        Company existingCompany = CompanyRepository.INSTANCE.byName(companyName);
         Company company;
         boolean companyCreated = false;
 
@@ -76,15 +76,15 @@ public enum OnboardCompanyController implements BaseController {
             // Check if already linked to this college
             CompanyCollege existingLink = CompanyCollegeRepository.INSTANCE.byCompanyAndCollege(company.getId(), collegeId);
             if (existingLink != null) {
-                throw new RoutingError("Company '" + name + "' is already linked to your college");
+                throw new RoutingError("Company '" + companyName + "' is already linked to your college");
             }
         } else {
             // Create new company
             company = new Company();
-            company.name = name;
+            company.name = companyName;
             company.industry = body.get("industry") != null ? ((String) body.get("industry")).trim() : null;
             company.website = body.get("website") != null ? ((String) body.get("website")).trim() : null;
-            company.contactEmail = contactEmail;
+            company.contactEmail = hrEmail;
             company.contactPhone = body.get("contactPhone") != null ? ((String) body.get("contactPhone")).trim() : null;
             company.description = body.get("description") != null ? ((String) body.get("description")).trim() : null;
             company.headquarters = body.get("headquarters") != null ? ((String) body.get("headquarters")).trim() : null;
@@ -94,15 +94,15 @@ public enum OnboardCompanyController implements BaseController {
         }
 
         // Create or find COMPANY_HR user for this email
-        User hrUser = UserRepository.INSTANCE.byEmail(contactEmail);
+        User hrUser = UserRepository.INSTANCE.byEmail(hrEmail);
         String rawPassword = null;
         boolean userCreated = false;
 
         if (hrUser == null) {
             rawPassword = generatePassword(12);
             hrUser = new User();
-            hrUser.email = contactEmail;
-            hrUser.name = name + " HR";
+            hrUser.email = hrEmail;
+            hrUser.name = companyName + " HR";
             hrUser.password = PasswordUtils.INSTANCE.hash(rawPassword);
             hrUser.userType = UserType.COMPANY_HR;
             hrUser.verified = true;
@@ -122,16 +122,15 @@ public enum OnboardCompanyController implements BaseController {
 
         // Send credentials email if new user was created
         if (userCreated && rawPassword != null) {
-            final String finalEmail = contactEmail;
             final String finalPassword = rawPassword;
             new Thread(() -> {
                 try {
                     String html = EmailService.buildCompanyCredentialsHtml(
-                            name, collegeName, finalEmail, finalPassword
+                            companyName, collegeName, hrEmail, finalPassword
                     );
-                    EmailService.sendEmail(finalEmail, "Your Applyra Company Login — " + collegeName, html)
+                    EmailService.sendEmail(hrEmail, "Your Applyra Company Login — " + collegeName, html)
                             .subscribe(
-                                    sent -> System.out.println("[OnboardCompany] Credentials " + (sent ? "sent" : "failed") + " to " + finalEmail),
+                                    sent -> System.out.println("[OnboardCompany] Credentials " + (sent ? "sent" : "failed") + " to " + hrEmail),
                                     err -> System.err.println("[OnboardCompany] Email error: " + err.getMessage())
                             );
                 } catch (Exception e) {
@@ -142,12 +141,12 @@ public enum OnboardCompanyController implements BaseController {
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", companyCreated
-                ? "Company created and linked to your college. Credentials sent to " + contactEmail
+                ? "Company created and linked to your college. Credentials sent to " + hrEmail
                 : "Existing company linked to your college");
         response.put("companyId", company.getId());
         response.put("companyName", company.name);
         response.put("companyCollegeId", cc.getId());
-        response.put("hrEmail", contactEmail);
+        response.put("hrEmail", hrEmail);
         response.put("userCreated", userCreated);
         return response;
     }
