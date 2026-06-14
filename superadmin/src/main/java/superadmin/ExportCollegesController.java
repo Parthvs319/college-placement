@@ -87,8 +87,18 @@ public enum ExportCollegesController implements BaseController {
 
                         csv.append(escapeCsv(c.getName())).append(",");
                         csv.append(escapeCsv(c.getCode())).append(",");
-                        csv.append(escapeCsv(c.city != null ? c.city : "")).append(",");
-                        csv.append(escapeCsv(c.state != null ? c.state : "")).append(",");
+                        String cityName = "";
+                        String stateName = "";
+                        if (c.cityId != null) {
+                            City ct = io.ebean.DB.find(City.class, c.cityId);
+                            if (ct != null) cityName = ct.name;
+                        }
+                        if (c.stateId != null) {
+                            States st = io.ebean.DB.find(States.class, c.stateId);
+                            if (st != null) stateName = st.name;
+                        }
+                        csv.append(escapeCsv(cityName)).append(",");
+                        csv.append(escapeCsv(stateName)).append(",");
                         csv.append(escapeCsv(c.university != null ? c.university : "")).append(",");
                         csv.append(status).append(",");
                         csv.append(totalStudents).append(",");

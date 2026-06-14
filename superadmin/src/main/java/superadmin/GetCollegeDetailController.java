@@ -4,10 +4,13 @@ import helpers.annotations.SuperAdminRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
+import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.repos.*;
+import models.sql.City;
 import models.sql.College;
+import models.sql.States;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +35,20 @@ public enum GetCollegeDetailController implements BaseController {
                     result.put("code", college.code);
                     result.put("university", college.university);
                     result.put("address", college.address);
-                    result.put("city", college.city);
-                    result.put("state", college.state);
+                    result.put("cityId", college.cityId);
+                    result.put("stateId", college.stateId);
+                    String cityName = null;
+                    String stateName = null;
+                    if (college.cityId != null) {
+                        City ct = DB.find(City.class, college.cityId);
+                        if (ct != null) cityName = ct.name;
+                    }
+                    if (college.stateId != null) {
+                        States st = DB.find(States.class, college.stateId);
+                        if (st != null) stateName = st.name;
+                    }
+                    result.put("city", cityName);
+                    result.put("state", stateName);
                     result.put("pincode", college.pincode);
                     result.put("website", college.website);
                     result.put("logoUrl", college.logoUrl);

@@ -15,7 +15,7 @@ public class City extends BaseModel {
     @Column(nullable = false, unique = true)
     public String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     public Long stateId;
 
 }

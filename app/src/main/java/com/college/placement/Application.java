@@ -11,12 +11,16 @@ import models.services.AIService;
 import models.services.OcrService;
 import models.services.RabbitMQService;
 import models.services.S3Service;
+import models.seed.LocationSeeder;
 import models.services.WhatsAppService;
 
 public class Application {
     public static void main(String[] args) {
         // DB must be ready before HTTP handlers run
         SqlConfigFactory.init();
+
+        // Seed reference data (states, cities) - safe to call multiple times
+        LocationSeeder.seed();
 
         Vertx vertx = Vertx.vertx();
 

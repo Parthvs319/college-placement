@@ -1,5 +1,6 @@
 package models.json;
 
+import io.ebean.DB;
 import lombok.Data;
 import models.sql.*;
 
@@ -248,6 +249,8 @@ public final class CollegeDtos {
         String code;
         String university;
         String address;
+        Long cityId;
+        Long stateId;
         String city;
         String state;
         String website;
@@ -266,8 +269,16 @@ public final class CollegeDtos {
         dto.code = c.code;
         dto.university = c.university;
         dto.address = c.address;
-        dto.city = c.city;
-        dto.state = c.state;
+        dto.cityId = c.cityId;
+        dto.stateId = c.stateId;
+        if (c.cityId != null) {
+            City ct = DB.find(City.class, c.cityId);
+            if (ct != null) dto.city = ct.name;
+        }
+        if (c.stateId != null) {
+            States st = DB.find(States.class, c.stateId);
+            if (st != null) dto.state = st.name;
+        }
         dto.website = c.website;
         dto.logoUrl = c.logoUrl;
         dto.contactEmail = c.contactEmail;

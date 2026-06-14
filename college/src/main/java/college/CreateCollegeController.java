@@ -46,8 +46,10 @@ public enum CreateCollegeController implements BaseController {
         college.name = name;
         college.code = code.toUpperCase();
         college.address = body.get("address");
-        college.city = body.get("city");
-        college.state = body.get("state");
+        String cityIdStr = body.get("cityId");
+        String stateIdStr = body.get("stateId");
+        if (cityIdStr != null && !cityIdStr.isBlank()) college.cityId = Long.parseLong(cityIdStr);
+        if (stateIdStr != null && !stateIdStr.isBlank()) college.stateId = Long.parseLong(stateIdStr);
         college.website = body.get("website");
         college.logoUrl = body.get("logoUrl");
         college.contactEmail = body.get("contactEmail");

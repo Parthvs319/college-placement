@@ -24,9 +24,9 @@ public class College extends AttrsModel {
 
     public String address;
 
-    public String city;
+    public Long cityId;
 
-    public String state;
+    public Long stateId;
 
     public String pincode;
 

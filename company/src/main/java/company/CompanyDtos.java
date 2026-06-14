@@ -1,9 +1,8 @@
 package company;
 
+import io.ebean.DB;
 import lombok.Data;
-import models.sql.Company;
-import models.sql.CompanyCollege;
-import models.sql.Drive;
+import models.sql.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -68,8 +67,14 @@ public final class CompanyDtos {
         if (cc.college != null) {
             dto.collegeId = cc.college.getId();
             dto.collegeName = cc.college.name;
-            dto.collegeCity = cc.college.city;
-            dto.collegeState = cc.college.state;
+            if (cc.college.cityId != null) {
+                City ct = DB.find(City.class, cc.college.cityId);
+                if (ct != null) dto.collegeCity = ct.name;
+            }
+            if (cc.college.stateId != null) {
+                States st = DB.find(States.class, cc.college.stateId);
+                if (st != null) dto.collegeState = st.name;
+            }
         }
         return dto;
     }

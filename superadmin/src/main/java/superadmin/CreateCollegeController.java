@@ -4,21 +4,24 @@ import helpers.annotations.SuperAdminRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
+import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.body.SuperAdminLoginRequest;
 import models.json.CollegeDtos;
 import models.repos.CollegeRepository;
 import models.services.EmailService;
+import models.sql.City;
 import models.sql.College;
+import models.sql.States;
 
 import java.util.ArrayList;
 
 @SuperAdminRole(request = {
         "name:string@required",
         "code:string@required",
-        "city:string",
-        "state:string",
+        "cityId:long",
+        "stateId:long",
         "university:string",
         "website:string",
         "contactEmail:string",
@@ -57,11 +60,32 @@ public enum CreateCollegeController implements BaseController {
             throw new RoutingError("College with code " + code.toUpperCase() + " already exists");
         }
 
+        // Resolve cityId and stateId
+        String cityIdStr = body.get("cityId");
+        String stateIdStr = body.get("stateId");
+        Long cityId = null;
+        Long stateId = null;
+        String cityName = null;
+        String stateName = null;
+
+        if (stateIdStr != null && !stateIdStr.isBlank()) {
+            stateId = Long.parseLong(stateIdStr);
+            States st = DB.find(States.class, stateId);
+            if (st == null) throw new RoutingError("Invalid stateId");
+            stateName = st.name;
+        }
+        if (cityIdStr != null && !cityIdStr.isBlank()) {
+            cityId = Long.parseLong(cityIdStr);
+            City ct = DB.find(City.class, cityId);
+            if (ct == null) throw new RoutingError("Invalid cityId");
+            cityName = ct.name;
+        }
+
         College college = new College();
         college.name = name;
-        college.code = code .toUpperCase();
-        college.city = body.get("city");
-        college.state = body.get("state");
+        college.code = code.toUpperCase();
+        college.cityId = cityId;
+        college.stateId = stateId;
         college.university = body.get("university");
         college.website = body.get("website");
         college.contactEmail = contactEmail;
@@ -70,14 +94,16 @@ public enum CreateCollegeController implements BaseController {
         college.active = false;
         college.save();
 
-        // Send welcome email on a separate thread (SMTP is blocking — must NOT run on event loop)
+        // Send welcome email on a separate thread
         if (college.contactEmail != null && !college.contactEmail.isBlank()) {
+            final String fCityName = cityName;
+            final String fStateName = stateName;
             new Thread(() -> {
                 try {
                     String html = EmailService.buildCollegeOnboardingHtml(
-                            college.name, college.code, college.city, college.state, college.website
+                            college.name, college.code, fCityName, fStateName, college.website
                     );
-                    EmailService.sendEmail(college.contactEmail, "Welcome to Applyra — " + college.name, html)
+                    EmailService.sendEmail(college.contactEmail, "Welcome to Applyra - " + college.name, html)
                             .subscribe(
                                     sent -> System.out.println("[CreateCollege] Welcome email " + (sent ? "sent" : "failed") + " to " + college.contactEmail),
                                     err -> System.err.println("[CreateCollege] Email error: " + err.getMessage())

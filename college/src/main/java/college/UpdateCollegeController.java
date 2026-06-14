@@ -35,8 +35,8 @@ public enum UpdateCollegeController implements BaseController {
         }
         if (request.getRequest().isPresent("name")) college.name = request.getRequest().get("name");
         if (request.getRequest().isPresent("address")) college.address = request.getRequest().get("address");
-        if (request.getRequest().isPresent("city")) college.city = request.getRequest().get("city");
-        if (request.getRequest().isPresent("state")) college.state = request.getRequest().get("state");
+        if (request.getRequest().isPresent("cityId")) college.cityId = Long.parseLong(request.getRequest().get("cityId"));
+        if (request.getRequest().isPresent("stateId")) college.stateId = Long.parseLong(request.getRequest().get("stateId"));
         if (request.getRequest().isPresent("website")) college.website = request.getRequest().get("website");
         if (request.getRequest().isPresent("logoUrl")) college.logoUrl = request.getRequest().get("logoUrl");
         if (request.getRequest().isPresent("contactEmail")) college.contactEmail = request.getRequest().get("contactEmail");

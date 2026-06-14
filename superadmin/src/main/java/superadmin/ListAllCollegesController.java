@@ -3,13 +3,16 @@ package superadmin;
 import helpers.annotations.SuperAdminRole;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
+import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.repos.CompanyCollegeRepository;
 import models.repos.CollegeRepository;
 import models.repos.DriveRepository;
 import models.repos.StudentRepository;
+import models.sql.City;
 import models.sql.College;
+import models.sql.States;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +33,14 @@ public enum ListAllCollegesController implements BaseController {
                         s.setId(c.getId());
                         s.setName(c.name);
                         s.setCode(c.code);
-                        s.setCity(c.city);
-                        s.setState(c.state);
+                        if (c.cityId != null) {
+                            City ct = DB.find(City.class, c.cityId);
+                            if (ct != null) s.setCity(ct.name);
+                        }
+                        if (c.stateId != null) {
+                            States st = DB.find(States.class, c.stateId);
+                            if (st != null) s.setState(st.name);
+                        }
                         s.setUniversity(c.university);
                         s.setVerified(c.verified);
                         s.setActive(c.active);
