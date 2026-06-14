@@ -60,8 +60,8 @@ public enum OnboardCompanyController implements BaseController {
             throw new RoutingError("Contact email is required");
         }
 
-        contactEmail = contactEmail.trim().toLowerCase();
-        name = name.trim();
+        final String hrEmail = contactEmail.trim().toLowerCase();
+        final String companyName = name.trim();
 
         Long collegeId = request.getCollege().getId();
         String collegeName = request.getCollege().getName();
