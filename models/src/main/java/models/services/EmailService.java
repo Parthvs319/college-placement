@@ -215,6 +215,74 @@ public class EmailService {
                 + "</div>";
     }
 
+    public static String buildStudentInviteHtml(String collegeName, String registerUrl) {
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #2563eb;'>You're Invited to Applyra!</h2>"
+                + "<p>Your college <strong>" + collegeName + "</strong> has invited you to join the Applyra Placement Platform.</p>"
+                + "<p>Register now to access placement drives, track applications, and manage your profile.</p>"
+                + "<div style='text-align: center; margin: 24px 0;'>"
+                + "<a href='" + registerUrl + "' style='background: #2563eb; color: white; padding: 14px 32px; "
+                + "text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;'>Register Now</a>"
+                + "</div>"
+                + "<p style='color: #6b7280; font-size: 13px;'>This invite link expires in 7 days. "
+                + "If you didn't expect this email, you can safely ignore it.</p>"
+                + "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'>"
+                + "<p style='color: #6b7280; font-size: 12px;'>Sent from Applyra Placement Platform</p>"
+                + "</div>";
+    }
+
+    public static String buildStudentCredentialsHtml(String collegeName, String email,
+                                                      String password, String enrollmentNumber) {
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #2563eb;'>Your Applyra Student Account is Ready!</h2>"
+                + "<p>Your college <strong>" + collegeName + "</strong> has registered you on the Applyra Placement Platform.</p>"
+                + "<div style='background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 16px 0;'>"
+                + "<p style='margin: 0 0 12px; font-weight: bold; color: #1e40af;'>Your Login Credentials</p>"
+                + "<table style='width: 100%; border-collapse: collapse;'>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Email</td>"
+                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + email + "</td></tr>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Password</td>"
+                + "<td style='padding: 6px 0; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e293b; "
+                + "background: #f1f5f9; padding: 4px 8px; border-radius: 4px;'>" + password + "</td></tr>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Enrollment No.</td>"
+                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + enrollmentNumber + "</td></tr>"
+                + "</table>"
+                + "</div>"
+                + "<div style='background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin: 16px 0;'>"
+                + "<p style='margin: 0; color: #92400e; font-size: 13px;'>"
+                + "<strong>Important:</strong> Please change your password after your first login.</p>"
+                + "</div>"
+                + "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'>"
+                + "<p style='color: #6b7280; font-size: 12px;'>Sent from Applyra Placement Platform</p>"
+                + "</div>";
+    }
+
+    public static String buildCompanyCredentialsHtml(String companyName, String collegeName,
+                                                      String email, String password) {
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #2563eb;'>Your Applyra Company Account is Ready!</h2>"
+                + "<p><strong>" + collegeName + "</strong> has onboarded your company <strong>" + companyName
+                + "</strong> on the Applyra Placement Platform.</p>"
+                + "<p>You can now post placement drives, review applications, and manage candidates.</p>"
+                + "<div style='background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 16px 0;'>"
+                + "<p style='margin: 0 0 12px; font-weight: bold; color: #1e40af;'>Your Login Credentials</p>"
+                + "<table style='width: 100%; border-collapse: collapse;'>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Email</td>"
+                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + email + "</td></tr>"
+                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Password</td>"
+                + "<td style='padding: 6px 0; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e293b; "
+                + "background: #f1f5f9; padding: 4px 8px; border-radius: 4px;'>" + password + "</td></tr>"
+                + "</table>"
+                + "</div>"
+                + "<div style='background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin: 16px 0;'>"
+                + "<p style='margin: 0; color: #92400e; font-size: 13px;'>"
+                + "<strong>Important:</strong> Please change your password after your first login.</p>"
+                + "</div>"
+                + "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'>"
+                + "<p style='color: #6b7280; font-size: 12px;'>Sent from Applyra Placement Platform</p>"
+                + "</div>";
+    }
+
     public static String buildCustomHtml(String recipientName, String subject, String body) {
         return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #2563eb;'>" + subject + "</h2>"

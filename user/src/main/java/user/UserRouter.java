@@ -15,6 +15,7 @@ public enum UserRouter implements SubRouterProtocol {
         router.get("/:type/getAllUsers").handler(GetAllUsersByTypeController.INSTANCE::handle);
         router.post("/signUp").handler(UserSignUpController.INSTANCE::handle);
         router.post("/login").handler(UserLoginController.INSTANCE::handle);
+        router.post("/register/invite").handler(StudentRegisterByInviteController.INSTANCE::handle);
         router.post("/deactivateUser").handler(DeactivateUserController.INSTANCE::handle);
         router.post("/activateUser").handler(ActivateUserController.INSTANCE::handle);
 
