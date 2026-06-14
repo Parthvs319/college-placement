@@ -26,6 +26,7 @@ public class SuperAdminDtos {
         double overallPlacementRate;
         BigDecimal averageCtc;
         BigDecimal highestCtc;
+        BigDecimal lowestCtc;
     }
 
     @Data

@@ -65,6 +65,7 @@ public enum PlatformAnalyticsController implements BaseController {
                     // CTC stats from offers
                     BigDecimal totalCtc = BigDecimal.ZERO;
                     BigDecimal highest = BigDecimal.ZERO;
+                    BigDecimal lowest = null;
                     int ctcCount = 0;
                     for (Offer o : allOffers) {
                         if (o.getDrive() != null && o.getDrive().ctcOffered != null) {
@@ -74,9 +75,13 @@ public enum PlatformAnalyticsController implements BaseController {
                             if (ctc.compareTo(highest) > 0) {
                                 highest = ctc;
                             }
+                            if (lowest == null || ctc.compareTo(lowest) < 0) {
+                                lowest = ctc;
+                            }
                         }
                     }
                     a.setHighestCtc(highest);
+                    a.setLowestCtc(lowest != null ? lowest : BigDecimal.ZERO);
                     if (ctcCount > 0) {
                         a.setAverageCtc(totalCtc.divide(BigDecimal.valueOf(ctcCount), 2, RoundingMode.HALF_UP));
                     }
