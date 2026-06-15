@@ -12,6 +12,7 @@ import models.repos.DriveRepository;
 import models.repos.StudentRepository;
 import models.sql.City;
 import models.sql.College;
+import models.sql.CompanyCollege;
 import models.sql.States;
 
 import java.util.ArrayList;
@@ -50,7 +51,11 @@ public enum ListAllCollegesController implements BaseController {
                         s.setStudentCount(totalStudents);
                         s.setPlacedCount(placedStudents);
                         s.setDriveCount(DriveRepository.INSTANCE.byCollege(c.getId()).size());
-                        s.setCompanyCount(CompanyCollegeRepository.INSTANCE.byCollege(c.getId()).size());
+                        List<CompanyCollege> companyColleges = CompanyCollegeRepository.INSTANCE.byCollege(c.getId());
+                        s.setCompanyCount(companyColleges.size());
+                        s.setStartupCount((int) companyColleges.stream()
+                                .filter(cc -> cc.company != null && cc.company.startup)
+                                .count());
                         s.setPlacementRate(totalStudents > 0 ? (double) placedStudents / totalStudents * 100 : 0);
                         return s;
                     }).collect(Collectors.toList());

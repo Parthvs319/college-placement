@@ -37,6 +37,8 @@ public enum ListAllSubscriptionsController implements BaseController {
                         }
                         if (s.getCollege() != null) {
                             o.setCollegeName(s.getCollege().name);
+                        } else if (s.getStudent() != null && s.getStudent().college != null) {
+                            o.setCollegeName(s.getStudent().college.name);
                         }
                         return o;
                     }).collect(Collectors.toList());

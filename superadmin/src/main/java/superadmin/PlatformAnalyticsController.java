@@ -64,14 +64,17 @@ public enum PlatformAnalyticsController implements BaseController {
                         );
                     }
 
-                    // CTC stats from offers
+                    // CTC stats from offers (use offer-level ctcOffered directly)
                     BigDecimal totalCtc = BigDecimal.ZERO;
                     BigDecimal highest = BigDecimal.ZERO;
                     BigDecimal lowest = null;
                     int ctcCount = 0;
                     for (Offer o : allOffers) {
-                        if (o.getDrive() != null && o.getDrive().ctcOffered != null) {
-                            BigDecimal ctc = o.getDrive().ctcOffered;
+                        BigDecimal ctc = o.ctcOffered;
+                        if (ctc == null && o.getDrive() != null) {
+                            ctc = o.getDrive().ctcOffered;
+                        }
+                        if (ctc != null && ctc.compareTo(BigDecimal.ZERO) > 0) {
                             totalCtc = totalCtc.add(ctc);
                             ctcCount++;
                             if (ctc.compareTo(highest) > 0) {

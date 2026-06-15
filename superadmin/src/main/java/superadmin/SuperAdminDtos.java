@@ -44,6 +44,7 @@ public class SuperAdminDtos {
         int placedCount;
         int driveCount;
         int companyCount;
+        int startupCount;
         double placementRate;
     }
 
@@ -59,6 +60,8 @@ public class SuperAdminDtos {
         String collegeName;
         Long collegeId;
         Long studentId;
+        String companyName;
+        String createdAt;
     }
 
     @Data

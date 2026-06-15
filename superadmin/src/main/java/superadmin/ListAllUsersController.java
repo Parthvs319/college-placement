@@ -6,8 +6,10 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.enums.UserType;
+import models.repos.CompanyCollegeRepository;
 import models.repos.StudentRepository;
 import models.repos.UserRepository;
+import models.sql.CompanyCollege;
 import models.sql.Student;
 import models.sql.User;
 
@@ -52,6 +54,9 @@ public enum ListAllUsersController implements BaseController {
                         s.setUserType(u.userType.getValue());
                         s.setVerified(u.verified);
                         s.setActive(u.active);
+                        if (u.getCreatedAt() != null) {
+                            s.setCreatedAt(u.getCreatedAt().toString());
+                        }
                         if (u.college != null) {
                             s.setCollegeName(u.college.name);
                             s.setCollegeId(u.college.getId());
@@ -59,6 +64,17 @@ public enum ListAllUsersController implements BaseController {
                         if (u.userType == UserType.STUDENT) {
                             Student st = StudentRepository.INSTANCE.byUserId(u.getId());
                             if (st != null) s.setStudentId(st.getId());
+                        }
+                        if (u.userType == UserType.COMPANY_HR) {
+                            List<CompanyCollege> managed = CompanyCollegeRepository.INSTANCE.byManagedUser(u.getId());
+                            if (!managed.isEmpty()) {
+                                String names = managed.stream()
+                                        .filter(cc -> cc.company != null)
+                                        .map(cc -> cc.company.name)
+                                        .distinct()
+                                        .collect(Collectors.joining(", "));
+                                if (!names.isEmpty()) s.setCompanyName(names);
+                            }
                         }
                         return s;
                     }).collect(Collectors.toList());
