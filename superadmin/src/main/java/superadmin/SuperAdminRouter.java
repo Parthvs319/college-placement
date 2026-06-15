@@ -28,6 +28,9 @@ public enum SuperAdminRouter implements SubRouterProtocol {
         router.get("/students").handler(ListAllStudentsController.INSTANCE::handle);
         router.get("/students/:studentId").handler(GetStudentDetailController.INSTANCE::handle);
 
+        router.get("/tpo/:userId").handler(GetTpoDetailController.INSTANCE::handle);
+        router.get("/company-hr/:userId").handler(GetCompanyHrDetailController.INSTANCE::handle);
+
         router.get("/companies").handler(ListAllCompaniesController.INSTANCE::handle);
 
         router.get("/drives").handler(ListAllDrivesController.INSTANCE::handle);
