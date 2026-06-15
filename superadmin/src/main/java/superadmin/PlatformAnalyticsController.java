@@ -43,7 +43,9 @@ public enum PlatformAnalyticsController implements BaseController {
                     a.setPlacedStudents(placedStudents);
                     a.setUnplacedStudents(totalStudents - placedStudents);
 
-                    a.setTotalCompanies(CompanyRepository.INSTANCE.findAll().size());
+                    List<Company> allCompanies = CompanyRepository.INSTANCE.findAll();
+                    a.setTotalCompanies(allCompanies.size());
+                    a.setStartupCount((int) allCompanies.stream().filter(c -> c.startup).count());
 
                     List<Drive> allDrives = DriveRepository.INSTANCE.where().findList();
                     a.setTotalDrives(allDrives.size());

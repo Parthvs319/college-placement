@@ -6,7 +6,9 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.enums.UserType;
+import models.repos.StudentRepository;
 import models.repos.UserRepository;
+import models.sql.Student;
 import models.sql.User;
 
 import java.util.ArrayList;
@@ -53,6 +55,10 @@ public enum ListAllUsersController implements BaseController {
                         if (u.college != null) {
                             s.setCollegeName(u.college.name);
                             s.setCollegeId(u.college.getId());
+                        }
+                        if (u.userType == UserType.STUDENT) {
+                            Student st = StudentRepository.INSTANCE.byUserId(u.getId());
+                            if (st != null) s.setStudentId(st.getId());
                         }
                         return s;
                     }).collect(Collectors.toList());

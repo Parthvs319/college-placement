@@ -19,6 +19,7 @@ public class SuperAdminDtos {
         int placedStudents;
         int unplacedStudents;
         int totalCompanies;
+        int startupCount;
         int totalDrives;
         int activeDrives;
         int totalOffers;
@@ -57,6 +58,7 @@ public class SuperAdminDtos {
         boolean active;
         String collegeName;
         Long collegeId;
+        Long studentId;
     }
 
     @Data
@@ -92,6 +94,7 @@ public class SuperAdminDtos {
         String name;
         String industry;
         String website;
+        boolean startup;
         int collegeCount;
         int driveCount;
         int totalOffers;

@@ -32,6 +32,7 @@ public enum ListAllCompaniesController implements BaseController {
                         s.setName(c.name);
                         s.setIndustry(c.industry);
                         s.setWebsite(c.website);
+                        s.setStartup(c.startup);
                         s.setCollegeCount(CompanyCollegeRepository.INSTANCE.byCompany(c.getId()).size());
 
                         List<Drive> drives = DriveRepository.INSTANCE.byCompany(c.getId());

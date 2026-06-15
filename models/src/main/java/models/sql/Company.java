@@ -30,6 +30,8 @@ public class Company extends AttrsModel {
 
     public String contactPhone;
 
+    public boolean startup = false;
+
     public boolean active = true;
 
     @OneToMany(mappedBy = "company")
