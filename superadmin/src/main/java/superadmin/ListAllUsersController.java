@@ -57,9 +57,9 @@ public enum ListAllUsersController implements BaseController {
                         if (u.getCreatedAt() != null) {
                             s.setCreatedAt(u.getCreatedAt().toString());
                         }
-                        if (u.college != null) {
-                            s.setCollegeName(u.college.name);
-                            s.setCollegeId(u.college.getId());
+                        if (u.getCollege() != null) {
+                            s.setCollegeName(u.getCollege().getName());
+                            s.setCollegeId(u.getCollege().getId());
                         }
                         if (u.userType == UserType.STUDENT) {
                             Student st = StudentRepository.INSTANCE.byUserId(u.getId());
