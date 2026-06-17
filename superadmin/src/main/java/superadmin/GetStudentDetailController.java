@@ -36,10 +36,10 @@ public enum GetStudentDetailController implements BaseController {
 
                     // Basic info
                     detail.id = student.getId();
-                    detail.name = student.user != null ? student.user.name : null;
-                    detail.email = student.user != null ? student.user.email : null;
-                    detail.mobile = student.user != null ? student.user.mobile : null;
-                    detail.verified = student.user != null && student.user.verified;
+                    detail.name = student.getUser() != null ? student.getUser().getName() : null;
+                    detail.email = student.getUser() != null ? student.getUser().getEmail() : null;
+                    detail.mobile = student.getUser() != null ? student.getUser().getMobile() : null;
+                    detail.verified = student.getUser() != null && student.getUser().isVerified();
                     detail.active = student.user != null && student.user.active;
 
                     // Academic info
