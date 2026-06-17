@@ -70,9 +70,9 @@ public enum GetStudentDetailController implements BaseController {
 
                     // College info
                     if (student.college != null) {
-                        detail.collegeId = student.college.getId();
-                        detail.collegeName = student.college.name;
-                        detail.collegeCode = student.college.code;
+                        detail.collegeId = student.getCollege().getId();
+                        detail.collegeName = student.getCollege().getName();
+                        detail.collegeCode = student.getCollege().getCode();
                     }
 
                     // Drives applied
@@ -83,8 +83,8 @@ public enum GetStudentDetailController implements BaseController {
                         ai.status = app.status != null ? app.status.name() : null;
                         if (app.drive != null) {
                             ai.driveId = app.drive.getId();
-                            ai.driveTitle = app.drive.title;
-                            ai.ctcOffered = app.drive.ctcOffered;
+                            ai.driveTitle = app.getDrive().getTitle();
+                            ai.ctcOffered = app.getDrive().getCtcOffered();
                             ai.driveStatus = app.drive.status != null ? app.drive.status.name() : null;
                             if (app.drive.companyCollege != null && app.drive.companyCollege.company != null) {
                                 ai.companyName = app.drive.companyCollege.company.name;
