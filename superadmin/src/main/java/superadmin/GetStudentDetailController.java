@@ -4,6 +4,7 @@ import helpers.annotations.SuperAdminRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
+import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.repos.*;
@@ -75,8 +76,16 @@ public enum GetStudentDetailController implements BaseController {
                         detail.collegeCode = student.getCollege().getCode();
                     }
 
-                    // Drives applied
-                    List<DriveApplication> apps = DriveApplicationRepository.INSTANCE.byStudent(studentId);
+                    // Drives applied (eager fetch drive -> companyCollege -> company)
+                    List<DriveApplication> apps = DB.find(DriveApplication.class)
+                            .fetch("drive")
+                            .fetch("drive.companyCollege")
+                            .fetch("drive.companyCollege.company")
+                            .where()
+                            .eq("student.id", studentId)
+                            .eq("deleted", false)
+                            .orderBy("createdAt desc")
+                            .findList();
                     detail.applications = apps.stream().map(app -> {
                         ApplicationInfo ai = new ApplicationInfo();
                         ai.applicationId = app.getId();
@@ -94,8 +103,16 @@ public enum GetStudentDetailController implements BaseController {
                         return ai;
                     }).collect(Collectors.toList());
 
-                    // Offers
-                    List<Offer> offers = OfferRepository.INSTANCE.byStudent(studentId);
+                    // Offers (eager fetch drive -> companyCollege -> company)
+                    List<Offer> offers = DB.find(Offer.class)
+                            .fetch("drive")
+                            .fetch("drive.companyCollege")
+                            .fetch("drive.companyCollege.company")
+                            .where()
+                            .eq("student.id", studentId)
+                            .eq("deleted", false)
+                            .orderBy("createdAt desc")
+                            .findList();
                     detail.offers = offers.stream().map(o -> {
                         OfferInfo oi = new OfferInfo();
                         oi.offerId = o.getId();
