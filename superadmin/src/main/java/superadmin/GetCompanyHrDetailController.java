@@ -53,8 +53,8 @@ public enum GetCompanyHrDetailController implements BaseController {
                     detail.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
 
                     if (user.college != null) {
-                        detail.collegeId = user.college.getId();
-                        detail.collegeName = user.college.name;
+                        detail.collegeId = user.getCollege().getId();
+                        detail.collegeName = user.getCollege().getName();
                     }
 
                     // Find company-college links managed by this HR
@@ -71,12 +71,12 @@ public enum GetCompanyHrDetailController implements BaseController {
                     detail.companies = companiesMap.values().stream().map(c -> {
                         CompanyInfo ci = new CompanyInfo();
                         ci.companyId = c.getId();
-                        ci.name = c.name;
-                        ci.industry = c.industry;
-                        ci.website = c.website;
-                        ci.headquarters = c.headquarters;
-                        ci.startup = c.startup;
-                        ci.description = c.description;
+                        ci.name = c.getName();
+                        ci.industry = c.getIndustry();
+                        ci.website = c.getWebsite();
+                        ci.headquarters = c.getHeadquarters();
+                        ci.startup = c.isStartup();
+                        ci.description = c.getDescription();
                         return ci;
                     }).collect(Collectors.toList());
 
