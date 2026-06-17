@@ -39,39 +39,33 @@ public enum GetTpoDetailController implements BaseController {
 
                     TpoDetail detail = new TpoDetail();
 
-                    // Basic info
                     detail.id = user.getId();
                     detail.name = user.name;
                     detail.email = user.email;
-                    detail.mobile = user.mobile;
+                    detail.mobile = user.getMobile();
                     detail.userType = user.userType.getValue();
-                    detail.verified = user.verified;
+                    detail.verified = user.isVerified();
                     detail.active = user.active;
                     detail.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
 
-                    // College info
                     if (user.college != null) {
                         College c = user.college;
                         detail.collegeId = c.getId();
-                        detail.collegeName = c.name;
-                        detail.collegeCode = c.code;
+                        detail.collegeName = c.getName();
+                        detail.collegeCode = c.getCode();
                         detail.collegeUniversity = c.university;
                         detail.collegeWebsite = c.website;
-                        detail.collegeContactEmail = c.contactEmail;
-                        detail.collegeContactPhone = c.contactPhone;
-                        detail.collegeVerified = c.verified;
-                        detail.collegeActive = c.active;
-                        detail.collegeDepartments = c.departments;
-
+                        detail.collegeContactEmail = c.getContactEmail();
+                        detail.collegeContactPhone = c.getContactPhone();
+                        detail.collegeVerified = c.isVerified();
+                        detail.collegeActive = c.isActive();
+                        detail.collegeDepartments = c.getDepartments();
                         Long collegeId = c.getId();
-
-                        // Student stats
                         List<Student> students = StudentRepository.INSTANCE.byCollege(collegeId);
                         detail.totalStudents = students.size();
                         detail.placedStudents = (int) students.stream().filter(s -> s.placed).count();
                         detail.unplacedStudents = detail.totalStudents - detail.placedStudents;
 
-                        // Company links
                         List<CompanyCollege> ccList = CompanyCollegeRepository.INSTANCE.byCollege(collegeId);
                         detail.totalCompaniesLinked = ccList.size();
 
@@ -95,7 +89,6 @@ public enum GetTpoDetailController implements BaseController {
                             detail.placementRate = Math.round((double) detail.placedStudents / detail.totalStudents * 100);
                         }
 
-                        // Recent drives (last 10)
                         detail.recentDrives = drives.stream().limit(10).map(d -> {
                             DriveInfo di = new DriveInfo();
                             di.driveId = d.getId();
