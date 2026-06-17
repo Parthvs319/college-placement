@@ -109,10 +109,10 @@ public enum GetTpoDetailController implements BaseController {
                         detail.linkedCompanies = ccList.stream().map(cc -> {
                             CompanyLink cl = new CompanyLink();
                             if (cc.company != null) {
-                                cl.companyId = cc.company.getId();
-                                cl.companyName = cc.company.name;
-                                cl.industry = cc.company.industry;
-                                cl.startup = cc.company.startup;
+                                cl.companyId = cc.getCompany().getId();
+                                cl.companyName = cc.getCompany().getName();
+                                cl.industry = cc.getCompany().getIndustry();
+                                cl.startup = cc.getCompany().isStartup();
                             }
                             cl.active = cc.active;
                             List<Drive> compDrives = DriveRepository.INSTANCE.byCompanyCollege(cc.getId());
