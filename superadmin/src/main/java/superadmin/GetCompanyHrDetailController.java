@@ -91,9 +91,9 @@ public enum GetCompanyHrDetailController implements BaseController {
                             .map(cc -> {
                                 CollegeLink cl = new CollegeLink();
                                 cl.collegeId = cc.college.getId();
-                                cl.collegeName = cc.college.name;
-                                cl.collegeCode = cc.college.code;
-                                cl.active = cc.active;
+                                cl.collegeName = cc.getCollege().getName();
+                                cl.collegeCode = cc.getCollege().getCode();
+                                cl.active = cc.isActive();
                                 return cl;
                             })
                             .collect(Collectors.toList());
