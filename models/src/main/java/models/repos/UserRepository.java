@@ -48,6 +48,13 @@ public enum UserRepository {
         return finder.query().where().eq("deleted", false).findList();
     }
 
+    public List<User> findRecent(int limit) {
+        return finder.query().where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .setMaxRows(limit)
+                .findList();
+    }
+
     public ExpressionList<User> where() {
         return finder.query().where().eq("deleted", false);
     }

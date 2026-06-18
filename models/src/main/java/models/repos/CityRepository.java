@@ -13,6 +13,10 @@ public enum CityRepository {
 
     public SqlFinder<Long, City> citySqlFinder = new SqlFinder<>(City.class);
 
+    public City byId(Long id) {
+        return citySqlFinder.query().where().eq("id", id).findOne();
+    }
+
     public List<City> finder() {
         return citySqlFinder.query().where().findList();
     }

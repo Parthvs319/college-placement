@@ -3,9 +3,9 @@ package superadmin;
 import helpers.annotations.SuperAdminRole;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
-import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
+import models.repos.*;
 import models.sql.*;
 
 import java.sql.Timestamp;
@@ -35,11 +35,7 @@ public enum PlatformActivityController implements BaseController {
 
                     List<SuperAdminDtos.ActivityEvent> activities = new ArrayList<>();
 
-                    // 1. Recent colleges added
-                    List<College> recentColleges = DB.find(College.class)
-                            .orderBy("createdAt desc")
-                            .setMaxRows(10)
-                            .findList();
+                    List<College> recentColleges = CollegeRepository.INSTANCE.findRecent(10);
                     for (College c : recentColleges) {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         if (c.verified) {
@@ -53,7 +49,7 @@ public enum PlatformActivityController implements BaseController {
                         }
                         String cityName = "";
                         if (c.cityId != null) {
-                            City city = DB.find(City.class, c.cityId);
+                            City city = CityRepository.INSTANCE.byId(c.cityId);
                             if (city != null) cityName = ", " + city.name;
                         }
                         e.setDescription(c.name + " (" + c.code + ")" + cityName);
@@ -61,14 +57,7 @@ public enum PlatformActivityController implements BaseController {
                         activities.add(e);
                     }
 
-                    // 2. Recent drives created
-                    List<Drive> recentDrives = DB.find(Drive.class)
-                            .fetch("companyCollege")
-                            .fetch("companyCollege.company")
-                            .fetch("companyCollege.college")
-                            .orderBy("createdAt desc")
-                            .setMaxRows(10)
-                            .findList();
+                    List<Drive> recentDrives = DriveRepository.INSTANCE.findRecent(10);
                     for (Drive d : recentDrives) {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         String companyName = "";
@@ -92,16 +81,7 @@ public enum PlatformActivityController implements BaseController {
                         activities.add(e);
                     }
 
-                    // 3. Recent offers made
-                    List<Offer> recentOffers = DB.find(Offer.class)
-                            .fetch("student")
-                            .fetch("student.user")
-                            .fetch("drive")
-                            .fetch("drive.companyCollege")
-                            .fetch("drive.companyCollege.company")
-                            .orderBy("createdAt desc")
-                            .setMaxRows(10)
-                            .findList();
+                    List<Offer> recentOffers = OfferRepository.INSTANCE.findRecent(10);
                     for (Offer o : recentOffers) {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         e.setType("offer_made");
@@ -120,14 +100,7 @@ public enum PlatformActivityController implements BaseController {
                         activities.add(e);
                     }
 
-                    // 4. Recent applications
-                    List<DriveApplication> recentApps = DB.find(DriveApplication.class)
-                            .fetch("student")
-                            .fetch("student.user")
-                            .fetch("drive")
-                            .orderBy("createdAt desc")
-                            .setMaxRows(10)
-                            .findList();
+                    List<DriveApplication> recentApps = DriveApplicationRepository.INSTANCE.findRecent(10);
                     for (DriveApplication app : recentApps) {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         e.setType("application_submitted");
@@ -143,11 +116,7 @@ public enum PlatformActivityController implements BaseController {
                         activities.add(e);
                     }
 
-                    // 5. Recent user registrations
-                    List<User> recentUsers = DB.find(User.class)
-                            .orderBy("createdAt desc")
-                            .setMaxRows(10)
-                            .findList();
+                    List<User> recentUsers = UserRepository.INSTANCE.findRecent(10);
                     for (User u : recentUsers) {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         e.setType("user_registered");
@@ -159,7 +128,6 @@ public enum PlatformActivityController implements BaseController {
                         activities.add(e);
                     }
 
-                    // Sort all by timestamp descending and take limit
                     activities.sort((a, b) -> {
                         if (a.getTimestamp() == null && b.getTimestamp() == null) return 0;
                         if (a.getTimestamp() == null) return 1;

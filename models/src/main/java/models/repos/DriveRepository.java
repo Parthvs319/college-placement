@@ -66,6 +66,17 @@ public enum DriveRepository {
                 .findList();
     }
 
+    public List<Drive> findRecent(int limit) {
+        return finder.query()
+                .fetch("companyCollege")
+                .fetch("companyCollege.company")
+                .fetch("companyCollege.college")
+                .where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .setMaxRows(limit)
+                .findList();
+    }
+
     public ExpressionList<Drive> where() {
         return finder.query().where().eq("deleted", false);
     }

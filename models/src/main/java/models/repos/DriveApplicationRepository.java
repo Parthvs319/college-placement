@@ -62,6 +62,17 @@ public enum DriveApplicationRepository {
                 .findCount();
     }
 
+    public List<DriveApplication> findRecent(int limit) {
+        return finder.query()
+                .fetch("student")
+                .fetch("student.user")
+                .fetch("drive")
+                .where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .setMaxRows(limit)
+                .findList();
+    }
+
     public ExpressionList<DriveApplication> where() {
         return finder.query().where().eq("deleted", false);
     }

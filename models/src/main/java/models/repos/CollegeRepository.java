@@ -30,6 +30,13 @@ public enum CollegeRepository {
         return finder.query().where().eq("active", true).eq("deleted", false).findList();
     }
 
+    public List<College> findRecent(int limit) {
+        return finder.query().where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .setMaxRows(limit)
+                .findList();
+    }
+
     public ExpressionList<College> where() {
         return finder.query().where().eq("deleted", false);
     }

@@ -74,6 +74,19 @@ public enum OfferRepository {
                 .findCount();
     }
 
+    public List<Offer> findRecent(int limit) {
+        return finder.query()
+                .fetch("student")
+                .fetch("student.user")
+                .fetch("drive")
+                .fetch("drive.companyCollege")
+                .fetch("drive.companyCollege.company")
+                .where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .setMaxRows(limit)
+                .findList();
+    }
+
     public ExpressionList<Offer> where() {
         return finder.query().where().eq("deleted", false);
     }
