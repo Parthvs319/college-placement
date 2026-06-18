@@ -22,10 +22,14 @@ public enum ListAllOffersController implements BaseController {
         SuperAdminAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(req -> {
                     String collegeIdParam = event.request().getParam("collegeId");
+                    String yearParam = event.request().getParam("academicYear");
 
                     var query = OfferRepository.INSTANCE.where();
                     if (collegeIdParam != null && !collegeIdParam.isEmpty()) {
                         query.eq("drive.companyCollege.college.id", Long.parseLong(collegeIdParam));
+                    }
+                    if (yearParam != null && !yearParam.isEmpty()) {
+                        query.eq("drive.academicYear", Integer.parseInt(yearParam));
                     }
 
                     List<Offer> offers = query.orderBy("createdAt desc").findList();

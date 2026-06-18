@@ -22,6 +22,12 @@ public enum PlatformAnalyticsController implements BaseController {
     public void handle(RoutingContext event) {
         SuperAdminAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(req -> {
+                    String yearParam = event.request().getParam("academicYear");
+                    Integer academicYear = null;
+                    if (yearParam != null && !yearParam.isEmpty()) {
+                        academicYear = Integer.parseInt(yearParam);
+                    }
+
                     SuperAdminDtos.PlatformAnalytics a = new SuperAdminDtos.PlatformAnalytics();
 
                     List<College> colleges = CollegeRepository.INSTANCE.findAll();
@@ -47,7 +53,11 @@ public enum PlatformAnalyticsController implements BaseController {
                     a.setTotalCompanies(allCompanies.size());
                     a.setStartupCount((int) allCompanies.stream().filter(c -> c.startup).count());
 
-                    List<Drive> allDrives = DriveRepository.INSTANCE.where().findList();
+                    var driveQuery = DriveRepository.INSTANCE.where();
+                    if (academicYear != null) {
+                        driveQuery.eq("academicYear", academicYear);
+                    }
+                    List<Drive> allDrives = driveQuery.findList();
                     a.setTotalDrives(allDrives.size());
                     a.setActiveDrives((int) allDrives.stream()
                             .filter(d -> d.status != null
@@ -55,7 +65,11 @@ public enum PlatformAnalyticsController implements BaseController {
                                     && !d.status.name().equals("CANCELLED"))
                             .count());
 
-                    List<Offer> allOffers = OfferRepository.INSTANCE.where().findList();
+                    var offerQuery = OfferRepository.INSTANCE.where();
+                    if (academicYear != null) {
+                        offerQuery.eq("drive.academicYear", academicYear);
+                    }
+                    List<Offer> allOffers = offerQuery.findList();
                     a.setTotalOffers(allOffers.size());
 
                     if (totalStudents > 0) {

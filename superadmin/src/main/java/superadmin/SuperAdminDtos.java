@@ -128,4 +128,13 @@ public class SuperAdminDtos {
         String startDate;
         String endDate;
     }
+
+    @Data
+    public static class ActivityEvent {
+        String type;        // "college_added", "drive_created", "offer_made", "application_submitted", "user_registered", "college_verified", "drive_completed"
+        String title;       // short headline e.g. "New drive created"
+        String description; // detail e.g. "Google SDE Intern at SGSITS"
+        String timestamp;   // ISO string
+        String color;       // "green", "blue", "amber", "purple"
+    }
 }

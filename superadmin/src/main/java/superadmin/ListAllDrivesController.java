@@ -25,6 +25,7 @@ public enum ListAllDrivesController implements BaseController {
                 .map(req -> {
                     String collegeIdParam = event.request().getParam("collegeId");
                     String statusParam = event.request().getParam("status");
+                    String yearParam = event.request().getParam("academicYear");
 
                     var query = DriveRepository.INSTANCE.where();
 
@@ -33,6 +34,9 @@ public enum ListAllDrivesController implements BaseController {
                     }
                     if (statusParam != null && !statusParam.isEmpty()) {
                         query.eq("status", statusParam);
+                    }
+                    if (yearParam != null && !yearParam.isEmpty()) {
+                        query.eq("academicYear", Integer.parseInt(yearParam));
                     }
 
                     List<Drive> drives = query.orderBy("driveDate desc").findList();

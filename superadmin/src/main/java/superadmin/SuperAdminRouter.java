@@ -14,6 +14,7 @@ public enum SuperAdminRouter implements SubRouterProtocol {
         Router router = Router.router(vertx);
 
         router.get("/analytics").handler(PlatformAnalyticsController.INSTANCE::handle);
+        router.get("/activity").handler(PlatformActivityController.INSTANCE::handle);
 
         router.get("/colleges").handler(ListAllCollegesController.INSTANCE::handle);
         router.post("/colleges").handler(ctx -> {
