@@ -75,6 +75,17 @@ public enum SubscriptionRepository {
                 .findList();
     }
 
+    public List<Subscription> findRecent(int limit) {
+        return finder.query()
+                .fetch("student")
+                .fetch("student.user")
+                .fetch("college")
+                .where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .setMaxRows(limit)
+                .findList();
+    }
+
     public ExpressionList<Subscription> where() {
         return finder.query().where().eq("deleted", false);
     }

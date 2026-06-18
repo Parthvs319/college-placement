@@ -35,26 +35,48 @@ public enum PlatformActivityController implements BaseController {
 
                     List<SuperAdminDtos.ActivityEvent> activities = new ArrayList<>();
 
+                    // 1. Recent colleges - registered, verified, activated/deactivated
                     List<College> recentColleges = CollegeRepository.INSTANCE.findRecent(10);
                     for (College c : recentColleges) {
-                        SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
-                        if (c.verified) {
-                            e.setType("college_verified");
-                            e.setTitle("College verified");
-                            e.setColor("green");
-                        } else {
-                            e.setType("college_added");
-                            e.setTitle("New college registered");
-                            e.setColor("amber");
-                        }
                         String cityName = "";
                         if (c.cityId != null) {
                             City city = CityRepository.INSTANCE.byId(c.cityId);
                             if (city != null) cityName = ", " + city.name;
                         }
-                        e.setDescription(c.name + " (" + c.code + ")" + cityName);
-                        e.setTimestamp(tsToString(c.getCreatedAt()));
-                        activities.add(e);
+                        String desc = c.name + " (" + c.code + ")" + cityName;
+
+                        // Registration event (uses createdAt)
+                        SuperAdminDtos.ActivityEvent regEvent = new SuperAdminDtos.ActivityEvent();
+                        if (c.verified) {
+                            regEvent.setType("college_verified");
+                            regEvent.setTitle("College verified");
+                            regEvent.setColor("green");
+                        } else {
+                            regEvent.setType("college_added");
+                            regEvent.setTitle("New college registered");
+                            regEvent.setColor("amber");
+                        }
+                        regEvent.setDescription(desc);
+                        regEvent.setTimestamp(tsToString(c.getCreatedAt()));
+                        activities.add(regEvent);
+
+                        // If updatedAt differs from createdAt, college was toggled - show activate/deactivate
+                        if (c.getUpdatedAt() != null && c.getCreatedAt() != null
+                                && c.getUpdatedAt().getTime() - c.getCreatedAt().getTime() > 5000) {
+                            SuperAdminDtos.ActivityEvent toggleEvent = new SuperAdminDtos.ActivityEvent();
+                            if (c.active) {
+                                toggleEvent.setType("college_activated");
+                                toggleEvent.setTitle("College activated");
+                                toggleEvent.setColor("green");
+                            } else {
+                                toggleEvent.setType("college_deactivated");
+                                toggleEvent.setTitle("College deactivated");
+                                toggleEvent.setColor("amber");
+                            }
+                            toggleEvent.setDescription(desc);
+                            toggleEvent.setTimestamp(tsToString(c.getUpdatedAt()));
+                            activities.add(toggleEvent);
+                        }
                     }
 
                     List<Drive> recentDrives = DriveRepository.INSTANCE.findRecent(10);
@@ -116,15 +138,68 @@ public enum PlatformActivityController implements BaseController {
                         activities.add(e);
                     }
 
+                    // 5. Recent users - registered, activated/deactivated
                     List<User> recentUsers = UserRepository.INSTANCE.findRecent(10);
                     for (User u : recentUsers) {
-                        SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
-                        e.setType("user_registered");
-                        e.setTitle("User registered");
-                        e.setColor("purple");
                         String role = u.userType != null ? u.userType.name() : "USER";
-                        e.setDescription(u.name + " (" + role.replace("_", " ") + ")");
-                        e.setTimestamp(tsToString(u.getCreatedAt()));
+                        String desc = u.name + " (" + role.replace("_", " ") + ")";
+
+                        // Registration event
+                        SuperAdminDtos.ActivityEvent regEvent = new SuperAdminDtos.ActivityEvent();
+                        regEvent.setType("user_registered");
+                        regEvent.setTitle("User registered");
+                        regEvent.setColor("purple");
+                        regEvent.setDescription(desc);
+                        regEvent.setTimestamp(tsToString(u.getCreatedAt()));
+                        activities.add(regEvent);
+
+                        // If updatedAt differs from createdAt, user was toggled
+                        if (u.getUpdatedAt() != null && u.getCreatedAt() != null
+                                && u.getUpdatedAt().getTime() - u.getCreatedAt().getTime() > 5000) {
+                            SuperAdminDtos.ActivityEvent toggleEvent = new SuperAdminDtos.ActivityEvent();
+                            if (u.active) {
+                                toggleEvent.setType("user_activated");
+                                toggleEvent.setTitle("User activated");
+                                toggleEvent.setColor("green");
+                            } else {
+                                toggleEvent.setType("user_deactivated");
+                                toggleEvent.setTitle("User deactivated");
+                                toggleEvent.setColor("amber");
+                            }
+                            toggleEvent.setDescription(desc);
+                            toggleEvent.setTimestamp(tsToString(u.getUpdatedAt()));
+                            activities.add(toggleEvent);
+                        }
+                    }
+
+                    // 6. Recent subscriptions
+                    List<Subscription> recentSubs = SubscriptionRepository.INSTANCE.findRecent(10);
+                    for (Subscription s : recentSubs) {
+                        SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
+                        String studentName = "";
+                        String collegeName = "";
+                        if (s.student != null && s.student.user != null) studentName = s.student.user.name;
+                        if (s.college != null) collegeName = s.college.name;
+
+                        String tierStr = s.tier != null ? s.tier.name() : "FREE";
+                        if (s.active) {
+                            e.setType("subscription_created");
+                            e.setTitle("New " + tierStr.toLowerCase() + " subscription");
+                            e.setColor("green");
+                        } else {
+                            e.setType("subscription_expired");
+                            e.setTitle("Subscription expired");
+                            e.setColor("amber");
+                        }
+
+                        if (!studentName.isEmpty()) {
+                            e.setDescription(studentName + " - " + tierStr);
+                        } else if (!collegeName.isEmpty()) {
+                            e.setDescription(collegeName + " - " + tierStr);
+                        } else {
+                            e.setDescription(tierStr + " subscription");
+                        }
+                        e.setTimestamp(tsToString(s.getCreatedAt()));
                         activities.add(e);
                     }
 
