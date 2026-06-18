@@ -2,13 +2,13 @@ package student;
 
 import helpers.customErrors.RoutingError;
 import models.body.StudentLoginRequest;
+import models.enums.CreditTransactionType;
 import models.repos.ResumeRepository;
-import models.repos.SubscriptionRepository;
+import models.services.CreditService;
 import models.services.OcrService;
 import models.services.S3Service;
 import models.sql.Resume;
 import models.sql.Student;
-import models.sql.Subscription;
 
 /**
  * Shared utilities for premium AI feature controllers.
@@ -20,32 +20,28 @@ public final class PremiumUtils {
 
     /**
      * Validate that the request is from a student with an active premium subscription.
+     * Consumes one credit and logs the transaction.
      * Returns the Student entity if valid, throws RoutingError otherwise.
      */
-    public static Student getVerifiedPremiumStudent(StudentLoginRequest request) {
+    public static Student getVerifiedPremiumStudent(StudentLoginRequest request,
+                                                     CreditTransactionType featureType,
+                                                     String description) {
         Student student = request.getStudent();
         if (student == null) {
             throw new RoutingError("Student profile not found");
         }
 
-        // Check student-level subscription first, then college-level
-        Subscription sub = SubscriptionRepository.INSTANCE.activeByStudent(student.getId());
-        if (sub == null) {
-            sub = SubscriptionRepository.INSTANCE.activeByCollege(student.college.getId());
-        }
-        if (sub == null) {
-            throw new RoutingError("Premium subscription required. Upgrade to access AI features.");
-        }
-
-        // Check credits
-        if (!sub.hasCredits()) {
-            throw new RoutingError("Monthly AI credits exhausted. Credits reset next month.");
-        }
-
-        // Consume one credit
-        sub.useCredit();
+        // CreditService handles subscription lookup, credit check, deduction, and logging
+        CreditService.INSTANCE.consumeCredit(student, featureType, description);
 
         return student;
+    }
+
+    /**
+     * Overload for backward compatibility - uses AI_OTHER as default type.
+     */
+    public static Student getVerifiedPremiumStudent(StudentLoginRequest request) {
+        return getVerifiedPremiumStudent(request, CreditTransactionType.AI_OTHER, "AI feature usage");
     }
 
     /**

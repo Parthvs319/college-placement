@@ -44,6 +44,8 @@ public enum SuperAdminRouter implements SubRouterProtocol {
         router.post("/users/:userId/toggle-active").handler(ToggleUserActiveController.INSTANCE::handle);
 
         router.get("/subscriptions").handler(ListAllSubscriptionsController.INSTANCE::handle);
+        router.get("/subscriptions/:subscriptionId/credits").handler(CreditHistoryController.INSTANCE::handle);
+        router.post("/subscriptions/:subscriptionId/top-up").handler(CreditTopUpController.INSTANCE::handle);
 
         return router;
     }

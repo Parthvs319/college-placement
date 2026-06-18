@@ -127,6 +127,9 @@ public class SuperAdminDtos {
         String collegeName;
         String startDate;
         String endDate;
+        int totalCredits;
+        int usedCredits;
+        int remainingCredits;
     }
 
     @Data
@@ -136,5 +139,18 @@ public class SuperAdminDtos {
         String description; // detail e.g. "Google SDE Intern at SGSITS"
         String timestamp;   // ISO string
         String color;       // "green", "blue", "amber", "purple"
+    }
+
+    @Data
+    public static class CreditTransactionDto {
+        Long id;
+        String type;            // CreditTransactionType name
+        int amount;             // positive for top-up, negative for usage
+        int balanceAfter;
+        String description;
+        String paymentReference;
+        String studentName;
+        String collegeName;
+        String createdAt;
     }
 }
