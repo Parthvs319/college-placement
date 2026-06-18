@@ -21,8 +21,7 @@ public enum ListAllSubscriptionsController implements BaseController {
     public void handle(RoutingContext event) {
         SuperAdminAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
                 .map(req -> {
-                    List<Subscription> subs = SubscriptionRepository.INSTANCE.where()
-                            .orderBy("createdAt desc").findList();
+                    List<Subscription> subs = SubscriptionRepository.INSTANCE.findAllEager();
 
                     return subs.stream().map(s -> {
                         SuperAdminDtos.SubscriptionOverview o = new SuperAdminDtos.SubscriptionOverview();
@@ -36,9 +35,9 @@ public enum ListAllSubscriptionsController implements BaseController {
                             o.setStudentName(s.getStudent().user.name);
                         }
                         if (s.getCollege() != null) {
-                            o.setCollegeName(s.getCollege().name);
-                        } else if (s.getStudent() != null && s.getStudent().college != null) {
-                            o.setCollegeName(s.getStudent().college.name);
+                            o.setCollegeName(s.getCollege().getName());
+                        } else if (s.getStudent() != null && s.getStudent().getCollege() != null) {
+                            o.setCollegeName(s.getStudent().getCollege().getName());
                         }
                         return o;
                     }).collect(Collectors.toList());

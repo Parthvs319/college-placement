@@ -86,6 +86,17 @@ public enum SubscriptionRepository {
                 .findList();
     }
 
+    public List<Subscription> findAllEager() {
+        return finder.query()
+                .fetch("student")
+                .fetch("student.user")
+                .fetch("student.college")
+                .fetch("college")
+                .where().eq("deleted", false)
+                .orderBy("createdAt desc")
+                .findList();
+    }
+
     public ExpressionList<Subscription> where() {
         return finder.query().where().eq("deleted", false);
     }
