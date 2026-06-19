@@ -60,6 +60,7 @@ public class SuperAdminDtos {
         String collegeName;
         Long collegeId;
         Long studentId;
+        Long companyId;
         String companyName;
         String createdAt;
     }

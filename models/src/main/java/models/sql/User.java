@@ -25,10 +25,15 @@ public class User extends BaseModel {
     @Column(nullable = false)
     public UserType userType;
 
-    /** College this user belongs to (null for SUPER_ADMIN) */
+    /** College this user belongs to (for TPO, COLLEGE_ADMIN, STUDENT) */
     @ManyToOne
     @JoinColumn(name = "college_id")
     public College college;
+
+    /** Company this user belongs to (for COMPANY_HR) */
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    public Company company;
 
     public boolean verified = false;
 

@@ -66,14 +66,20 @@ public enum ListAllUsersController implements BaseController {
                             if (st != null) s.setStudentId(st.getId());
                         }
                         if (u.userType == UserType.COMPANY_HR) {
-                            List<CompanyCollege> managed = CompanyCollegeRepository.INSTANCE.byManagedUser(u.getId());
-                            if (!managed.isEmpty()) {
-                                String names = managed.stream()
-                                        .filter(cc -> cc.company != null)
-                                        .map(cc -> cc.company.name)
-                                        .distinct()
-                                        .collect(Collectors.joining(", "));
-                                if (!names.isEmpty()) s.setCompanyName(names);
+                            if (u.company != null) {
+                                s.setCompanyId(u.company.getId());
+                                s.setCompanyName(u.company.name);
+                            } else {
+                                // Fallback: check company_colleges managed_by_user_id
+                                List<CompanyCollege> managed = CompanyCollegeRepository.INSTANCE.byManagedUser(u.getId());
+                                if (!managed.isEmpty()) {
+                                    String names = managed.stream()
+                                            .filter(cc -> cc.company != null)
+                                            .map(cc -> cc.company.name)
+                                            .distinct()
+                                            .collect(Collectors.joining(", "));
+                                    if (!names.isEmpty()) s.setCompanyName(names);
+                                }
                             }
                         }
                         return s;

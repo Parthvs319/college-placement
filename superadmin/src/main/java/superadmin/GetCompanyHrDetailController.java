@@ -57,6 +57,12 @@ public enum GetCompanyHrDetailController implements BaseController {
                         detail.collegeName = user.getCollege().getName();
                     }
 
+                    // Direct company link
+                    if (user.company != null) {
+                        detail.companyId = user.company.getId();
+                        detail.companyName = user.company.name;
+                    }
+
                     // Find company-college links managed by this HR
                     List<CompanyCollege> managed = CompanyCollegeRepository.INSTANCE.byManagedUser(userId);
 
@@ -168,6 +174,8 @@ public enum GetCompanyHrDetailController implements BaseController {
         String createdAt;
         Long collegeId;
         String collegeName;
+        Long companyId;
+        String companyName;
 
         // Companies managed
         List<CompanyInfo> companies;

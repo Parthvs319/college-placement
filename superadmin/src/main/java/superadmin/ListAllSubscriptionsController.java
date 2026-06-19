@@ -32,7 +32,7 @@ public enum ListAllSubscriptionsController implements BaseController {
                         o.setEndDate(s.getEndDate() != null ? s.getEndDate().toString() : null);
 
                         if (s.getStudent() != null && s.getStudent().user != null) {
-                            o.setStudentName(s.getStudent().user.name);
+                            o.setStudentName(s.getStudent().getUser().getName());
                         }
                         if (s.getCollege() != null) {
                             o.setCollegeName(s.getCollege().getName());

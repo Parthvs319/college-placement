@@ -45,11 +45,17 @@ public enum UserRepository {
     }
 
     public List<User> findAll() {
-        return finder.query().where().eq("deleted", false).findList();
+        return finder.query()
+                .fetch("college")
+                .fetch("company")
+                .where().eq("deleted", false).findList();
     }
 
     public List<User> findRecent(int limit) {
-        return finder.query().where().eq("deleted", false)
+        return finder.query()
+                .fetch("college")
+                .fetch("company")
+                .where().eq("deleted", false)
                 .orderBy("createdAt desc")
                 .setMaxRows(limit)
                 .findList();

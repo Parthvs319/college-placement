@@ -7,6 +7,27 @@
 CREATE DATABASE IF NOT EXISTS college_placement;
 USE college_placement;
 
+-- ── States ──────────────────────────────────────────────────
+CREATE TABLE states (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL UNIQUE,
+    code            VARCHAR(10)  NOT NULL UNIQUE,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted         BOOLEAN      NOT NULL DEFAULT FALSE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Cities ──────────────────────────────────────────────────
+CREATE TABLE cities (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    state_id        BIGINT       NOT NULL,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted         BOOLEAN      NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (state_id) REFERENCES states(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ── Users ────────────────────────────────────────────────────
 CREATE TABLE users (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -16,6 +37,7 @@ CREATE TABLE users (
     password        VARCHAR(255),
     user_type       VARCHAR(20)  NOT NULL,
     college_id      BIGINT,
+    company_id      BIGINT,
     verified        BOOLEAN      NOT NULL DEFAULT FALSE,
     active          BOOLEAN      NOT NULL DEFAULT TRUE,
     current_otp     VARCHAR(10),
@@ -46,6 +68,8 @@ CREATE TABLE colleges (
     address         TEXT,
     city            VARCHAR(100),
     state           VARCHAR(100),
+    city_id         BIGINT,
+    state_id        BIGINT,
     pincode         VARCHAR(10),
     website         VARCHAR(500),
     logo_url        VARCHAR(500),
@@ -62,6 +86,10 @@ CREATE TABLE colleges (
 
 -- FK: users → colleges
 ALTER TABLE users ADD FOREIGN KEY (college_id) REFERENCES colleges(id);
+
+-- FK: colleges → cities, states
+ALTER TABLE colleges ADD FOREIGN KEY (city_id) REFERENCES cities(id);
+ALTER TABLE colleges ADD FOREIGN KEY (state_id) REFERENCES states(id);
 
 -- ── Students ─────────────────────────────────────────────────
 CREATE TABLE students (
@@ -109,12 +137,16 @@ CREATE TABLE companies (
     headquarters    VARCHAR(255),
     contact_email   VARCHAR(255),
     contact_phone   VARCHAR(20),
+    startup         BOOLEAN      NOT NULL DEFAULT FALSE,
     active          BOOLEAN      NOT NULL DEFAULT TRUE,
     attrs           JSON,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted         BOOLEAN      NOT NULL DEFAULT FALSE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- FK: users → companies (for COMPANY_HR users)
+ALTER TABLE users ADD FOREIGN KEY (company_id) REFERENCES companies(id);
 
 -- ── Company ↔ College Junction ───────────────────────────────
 CREATE TABLE company_colleges (
@@ -315,6 +347,66 @@ CREATE TABLE pyqs (
     FOREIGN KEY (company_id)                REFERENCES companies(id),
     FOREIGN KEY (college_id)                REFERENCES colleges(id),
     FOREIGN KEY (contributed_by_student_id) REFERENCES students(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Subscriptions ────────────────────────────────────────────
+CREATE TABLE subscriptions (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id          BIGINT,
+    college_id          BIGINT,
+    tier                VARCHAR(20)   NOT NULL DEFAULT 'FREE',
+    start_date          TIMESTAMP     NULL,
+    end_date            TIMESTAMP     NULL,
+    total_credits       INT           NOT NULL DEFAULT 50,
+    used_credits        INT           NOT NULL DEFAULT 0,
+    credits_reset_at    TIMESTAMP     NULL,
+    payment_reference   VARCHAR(255),
+    active              BOOLEAN       NOT NULL DEFAULT TRUE,
+    created_at          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted             BOOLEAN       NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (college_id) REFERENCES colleges(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Credit Transactions ─────────────────────────────────────
+CREATE TABLE credit_transactions (
+    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
+    subscription_id     BIGINT       NOT NULL,
+    student_id          BIGINT,
+    college_id          BIGINT,
+    type                VARCHAR(50)  NOT NULL,
+    amount              INT          NOT NULL,
+    balance_after       INT          NOT NULL,
+    description         VARCHAR(500),
+    payment_reference   VARCHAR(255),
+    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted             BOOLEAN      NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions(id),
+    FOREIGN KEY (student_id)      REFERENCES students(id),
+    FOREIGN KEY (college_id)      REFERENCES colleges(id),
+    INDEX idx_ct_subscription (subscription_id),
+    INDEX idx_ct_student (student_id),
+    INDEX idx_ct_college (college_id),
+    INDEX idx_ct_type (type),
+    INDEX idx_ct_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── Invite Tokens ───────────────────────────────────────────
+CREATE TABLE invite_tokens (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    college_id      BIGINT       NOT NULL,
+    token           VARCHAR(255) NOT NULL UNIQUE,
+    email           VARCHAR(255),
+    department      VARCHAR(50),
+    passing_year    INT,
+    used            BOOLEAN      NOT NULL DEFAULT FALSE,
+    expires_at      TIMESTAMP    NULL,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted         BOOLEAN      NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (college_id) REFERENCES colleges(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ── Indexes for common queries ───────────────────────────────
