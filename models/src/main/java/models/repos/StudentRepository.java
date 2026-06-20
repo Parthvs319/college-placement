@@ -72,4 +72,12 @@ public enum StudentRepository {
     public ExpressionList<Student> where() {
         return finder.query().where().eq("deleted", false);
     }
+
+    /** where() with eager-fetched user and college relationships */
+    public ExpressionList<Student> whereWithFetch() {
+        return finder.query()
+                .fetch("user")
+                .fetch("college")
+                .where().eq("deleted", false);
+    }
 }

@@ -28,7 +28,7 @@ public enum ListAllStudentsController implements BaseController {
                     String deptParam = event.request().getParam("department");
                     String placedParam = event.request().getParam("placed");
 
-                    var query = StudentRepository.INSTANCE.where();
+                    var query = StudentRepository.INSTANCE.whereWithFetch();
 
                     if (collegeIdParam != null && !collegeIdParam.isEmpty()) {
                         query.eq("college.id", Long.parseLong(collegeIdParam));
@@ -45,14 +45,14 @@ public enum ListAllStudentsController implements BaseController {
                     return students.stream().map(s -> {
                         SuperAdminDtos.StudentOverview o = new SuperAdminDtos.StudentOverview();
                         o.setId(s.getId());
-                        o.setName(s.user != null ? s.user.name : null);
-                        o.setEmail(s.user != null ? s.user.email : null);
-                        o.setDepartment(s.department);
-                        o.setCgpa(s.cgpa);
-                        o.setCollegeName(s.college != null ? s.college.name : null);
+                        o.setName(s.user != null ? s.user.getName() : null);
+                        o.setEmail(s.user != null ? s.user.getEmail() : null);
+                        o.setDepartment(s.getDepartment());
+                        o.setCgpa(s.getCgpa());
+                        o.setCollegeName(s.getCollege() != null ? s.getCollege().getName() : null);
                         o.setCollegeId(s.college != null ? s.college.getId() : null);
-                        o.setVerified(s.user != null && s.user.verified);
-                        o.setPlaced(s.placed);
+                        o.setVerified(s.getUser() != null && s.getUser().isVerified());
+                        o.setPlaced(s.isPlaced());
                         o.setApplicationCount(DriveApplicationRepository.INSTANCE.byStudent(s.getId()).size());
                         o.setOfferCount(OfferRepository.INSTANCE.byStudent(s.getId()).size());
                         return o;
