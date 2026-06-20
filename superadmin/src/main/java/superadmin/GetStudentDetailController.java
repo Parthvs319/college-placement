@@ -97,6 +97,7 @@ public enum GetStudentDetailController implements BaseController {
                             ai.ctcOffered = app.getDrive().getCtcOffered();
                             ai.driveStatus = app.getDrive().getStatus() != null ? app.getDrive().getStatus().name() : null;
                             if (app.getDrive().getCompanyCollege() != null && app.getDrive().getCompanyCollege().getCompany() != null) {
+                                ai.companyId = app.getDrive().getCompanyCollege().getCompany().getId();
                                 ai.companyName = app.getDrive().getCompanyCollege().getCompany().getName();
                             }
                         }
@@ -123,8 +124,10 @@ public enum GetStudentDetailController implements BaseController {
                         oi.status = o.getStatus() != null ? o.getStatus().name() : null;
                         oi.offerLetterUrl = o.getOfferLetterUrl();
                         if (o.getDrive() != null) {
+                            oi.driveId = o.getDrive().getId();
                             oi.driveTitle = o.getDrive().getTitle();
                             if (o.getDrive().getCompanyCollege() != null && o.getDrive().getCompanyCollege().getCompany() != null) {
+                                oi.companyId = o.getDrive().getCompanyCollege().getCompany().getId();
                                 oi.companyName = o.getDrive().getCompanyCollege().getCompany().getName();
                             }
                         }
@@ -132,8 +135,21 @@ public enum GetStudentDetailController implements BaseController {
                         return oi;
                     }).collect(Collectors.toList());
 
-                    // Subscription
+                    // Subscriptions
                     List<Subscription> subs = SubscriptionRepository.INSTANCE.byStudent(studentId);
+                    detail.subscriptions = subs.stream().map(sub -> {
+                        SubscriptionInfo si = new SubscriptionInfo();
+                        si.id = sub.getId();
+                        si.tier = sub.getTier() != null ? sub.getTier().name() : "FREE";
+                        si.active = sub.isActive();
+                        si.startDate = sub.getStartDate() != null ? sub.getStartDate().toString() : null;
+                        si.endDate = sub.getEndDate() != null ? sub.getEndDate().toString() : null;
+                        si.totalCredits = sub.getTotalCredits();
+                        si.usedCredits = sub.getUsedCredits();
+                        return si;
+                    }).collect(Collectors.toList());
+
+                    // Keep top-level fields for backward compat
                     if (!subs.isEmpty()) {
                         Subscription sub = subs.get(0);
                         detail.subscriptionTier = sub.getTier() != null ? sub.getTier().name() : "FREE";
@@ -205,7 +221,8 @@ public enum GetStudentDetailController implements BaseController {
         List<ApplicationInfo> applications;
         List<OfferInfo> offers;
 
-        // Subscription
+        // Subscriptions
+        List<SubscriptionInfo> subscriptions;
         String subscriptionTier;
         boolean subscriptionActive;
         String subscriptionStartDate;
@@ -221,6 +238,7 @@ public enum GetStudentDetailController implements BaseController {
     public static class ApplicationInfo {
         Long applicationId;
         Long driveId;
+        Long companyId;
         String driveTitle;
         String companyName;
         BigDecimal ctcOffered;
@@ -232,6 +250,8 @@ public enum GetStudentDetailController implements BaseController {
     @Data
     public static class OfferInfo {
         Long offerId;
+        Long driveId;
+        Long companyId;
         String companyName;
         String driveTitle;
         BigDecimal ctcOffered;
@@ -240,5 +260,16 @@ public enum GetStudentDetailController implements BaseController {
         String status;
         String offerLetterUrl;
         String createdAt;
+    }
+
+    @Data
+    public static class SubscriptionInfo {
+        Long id;
+        String tier;
+        boolean active;
+        String startDate;
+        String endDate;
+        int totalCredits;
+        int usedCredits;
     }
 }
