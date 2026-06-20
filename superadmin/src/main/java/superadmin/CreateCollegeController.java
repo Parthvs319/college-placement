@@ -72,40 +72,40 @@ public enum CreateCollegeController implements BaseController {
             stateId = Long.parseLong(stateIdStr);
             States st = DB.find(States.class, stateId);
             if (st == null) throw new RoutingError("Invalid stateId");
-            stateName = st.name;
+            stateName = st.getName();
         }
         if (cityIdStr != null && !cityIdStr.isBlank()) {
             cityId = Long.parseLong(cityIdStr);
             City ct = DB.find(City.class, cityId);
             if (ct == null) throw new RoutingError("Invalid cityId");
-            cityName = ct.name;
+            cityName = ct.getName();
         }
 
         College college = new College();
-        college.name = name;
-        college.code = code.toUpperCase();
-        college.cityId = cityId;
-        college.stateId = stateId;
-        college.university = body.get("university");
-        college.website = body.get("website");
-        college.contactEmail = contactEmail;
-        college.contactPhone = body.get("contactPhone");
-        college.verified = false;
-        college.active = false;
+        college.setName(name);
+        college.setCode(code.toUpperCase());
+        college.setCityId(cityId);
+        college.setStateId(stateId);
+        college.setUniversity(body.get("university"));
+        college.setWebsite(body.get("website"));
+        college.setContactEmail(contactEmail);
+        college.setContactPhone(body.get("contactPhone"));
+        college.setVerified(false);
+        college.setActive(false);
         college.save();
 
         // Send welcome email on a separate thread
-        if (college.contactEmail != null && !college.contactEmail.isBlank()) {
+        if (college.getContactEmail() != null && !college.getContactEmail().isBlank()) {
             final String fCityName = cityName;
             final String fStateName = stateName;
             new Thread(() -> {
                 try {
                     String html = EmailService.buildCollegeOnboardingHtml(
-                            college.name, college.code, fCityName, fStateName, college.website
+                            college.getName(), college.getCode(), fCityName, fStateName, college.getWebsite()
                     );
-                    EmailService.sendEmail(college.contactEmail, "Welcome to Applyra - " + college.name, html)
+                    EmailService.sendEmail(college.getContactEmail(), "Welcome to Applyra - " + college.getName(), html)
                             .subscribe(
-                                    sent -> System.out.println("[CreateCollege] Welcome email " + (sent ? "sent" : "failed") + " to " + college.contactEmail),
+                                    sent -> System.out.println("[CreateCollege] Welcome email " + (sent ? "sent" : "failed") + " to " + college.getContactEmail()),
                                     err -> System.err.println("[CreateCollege] Email error: " + err.getMessage())
                             );
                 } catch (Exception e) {

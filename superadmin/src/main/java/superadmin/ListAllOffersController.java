@@ -41,18 +41,18 @@ public enum ListAllOffersController implements BaseController {
                         ov.setCreatedAt(o.getCreatedAt() != null ? o.getCreatedAt().toString() : null);
 
                         if (o.getStudent() != null) {
-                            ov.setStudentName(o.getStudent().user != null ? o.getStudent().user.name : null);
-                            ov.setStudentEmail(o.getStudent().user != null ? o.getStudent().user.email : null);
-                            if (o.getStudent().college != null) {
-                                ov.setCollegeName(o.getStudent().college.name);
+                            ov.setStudentName(o.getStudent().getUser() != null ? o.getStudent().getUser().getName() : null);
+                            ov.setStudentEmail(o.getStudent().getUser() != null ? o.getStudent().getUser().getEmail() : null);
+                            if (o.getStudent().getCollege() != null) {
+                                ov.setCollegeName(o.getStudent().getCollege().getName());
                             }
                         }
 
                         if (o.getDrive() != null) {
-                            ov.setDriveName(o.getDrive().title);
-                            ov.setCtc(o.getDrive().ctcOffered);
-                            if (o.getDrive().companyCollege != null && o.getDrive().companyCollege.getCompany() != null) {
-                                ov.setCompanyName(o.getDrive().companyCollege.getCompany().name);
+                            ov.setDriveName(o.getDrive().getTitle());
+                            ov.setCtc(o.getDrive().getCtcOffered());
+                            if (o.getDrive().getCompanyCollege() != null && o.getDrive().getCompanyCollege().getCompany() != null) {
+                                ov.setCompanyName(o.getDrive().getCompanyCollege().getCompany().getName());
                             }
                         }
 

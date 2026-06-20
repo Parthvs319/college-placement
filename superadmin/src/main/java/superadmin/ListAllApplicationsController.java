@@ -46,15 +46,15 @@ public enum ListAllApplicationsController implements BaseController {
 
                         if (a.getStudent() != null) {
                             m.put("studentId", a.getStudent().getId());
-                            m.put("studentName", a.getStudent().user != null ? a.getStudent().user.name : null);
-                            m.put("collegeName", a.getStudent().college != null ? a.getStudent().college.name : null);
+                            m.put("studentName", a.getStudent().getUser() != null ? a.getStudent().getUser().getName() : null);
+                            m.put("collegeName", a.getStudent().getCollege() != null ? a.getStudent().getCollege().getName() : null);
                         }
 
                         if (a.getDrive() != null) {
                             m.put("driveId", a.getDrive().getId());
-                            m.put("driveTitle", a.getDrive().title);
-                            if (a.getDrive().companyCollege != null && a.getDrive().companyCollege.company != null) {
-                                m.put("companyName", a.getDrive().companyCollege.company.name);
+                            m.put("driveTitle", a.getDrive().getTitle());
+                            if (a.getDrive().getCompanyCollege() != null && a.getDrive().getCompanyCollege().getCompany() != null) {
+                                m.put("companyName", a.getDrive().getCompanyCollege().getCompany().getName());
                             }
                         }
                         return m;

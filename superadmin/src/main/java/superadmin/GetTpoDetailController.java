@@ -40,21 +40,21 @@ public enum GetTpoDetailController implements BaseController {
                     TpoDetail detail = new TpoDetail();
 
                     detail.id = user.getId();
-                    detail.name = user.name;
-                    detail.email = user.email;
+                    detail.name = user.getName();
+                    detail.email = user.getEmail();
                     detail.mobile = user.getMobile();
-                    detail.userType = user.userType.getValue();
+                    detail.userType = user.getUserType().getValue();
                     detail.verified = user.isVerified();
-                    detail.active = user.active;
+                    detail.active = user.isActive();
                     detail.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
 
-                    if (user.college != null) {
-                        College c = user.college;
+                    if (user.getCollege() != null) {
+                        College c = user.getCollege();
                         detail.collegeId = c.getId();
                         detail.collegeName = c.getName();
                         detail.collegeCode = c.getCode();
-                        detail.collegeUniversity = c.university;
-                        detail.collegeWebsite = c.website;
+                        detail.collegeUniversity = c.getUniversity();
+                        detail.collegeWebsite = c.getWebsite();
                         detail.collegeContactEmail = c.getContactEmail();
                         detail.collegeContactPhone = c.getContactPhone();
                         detail.collegeVerified = c.isVerified();
@@ -63,7 +63,7 @@ public enum GetTpoDetailController implements BaseController {
                         Long collegeId = c.getId();
                         List<Student> students = StudentRepository.INSTANCE.byCollege(collegeId);
                         detail.totalStudents = students.size();
-                        detail.placedStudents = (int) students.stream().filter(s -> s.placed).count();
+                        detail.placedStudents = (int) students.stream().filter(s -> s.isPlaced()).count();
                         detail.unplacedStudents = detail.totalStudents - detail.placedStudents;
 
                         List<CompanyCollege> ccList = CompanyCollegeRepository.INSTANCE.byCollege(collegeId);
@@ -73,9 +73,9 @@ public enum GetTpoDetailController implements BaseController {
                         List<Drive> drives = DriveRepository.INSTANCE.byCollege(collegeId);
                         detail.totalDrives = drives.size();
                         detail.activeDrives = (int) drives.stream()
-                                .filter(d -> d.status != null
-                                        && !d.status.name().equals("COMPLETED")
-                                        && !d.status.name().equals("CANCELLED"))
+                                .filter(d -> d.getStatus() != null
+                                        && !d.getStatus().name().equals("COMPLETED")
+                                        && !d.getStatus().name().equals("CANCELLED"))
                                 .count();
 
                         int totalOffers = 0;
@@ -92,29 +92,29 @@ public enum GetTpoDetailController implements BaseController {
                         detail.recentDrives = drives.stream().limit(10).map(d -> {
                             DriveInfo di = new DriveInfo();
                             di.driveId = d.getId();
-                            di.title = d.title;
-                            di.status = d.status != null ? d.status.name() : null;
-                            di.ctcOffered = d.ctcOffered;
-                            di.employmentType = d.employmentType != null ? d.employmentType.name() : null;
-                            di.driveDate = d.driveDate != null ? d.driveDate.toString() : null;
-                            if (d.companyCollege != null && d.companyCollege.company != null) {
-                                di.companyName = d.companyCollege.company.name;
+                            di.title = d.getTitle();
+                            di.status = d.getStatus() != null ? d.getStatus().name() : null;
+                            di.ctcOffered = d.getCtcOffered();
+                            di.employmentType = d.getEmploymentType() != null ? d.getEmploymentType().name() : null;
+                            di.driveDate = d.getDriveDate() != null ? d.getDriveDate().toString() : null;
+                            if (d.getCompanyCollege() != null && d.getCompanyCollege().getCompany() != null) {
+                                di.companyName = d.getCompanyCollege().getCompany().getName();
                             }
-                            di.applicationCount = d.applications != null ? d.applications.size() : 0;
-                            di.offerCount = d.offers != null ? d.offers.size() : 0;
+                            di.applicationCount = d.getApplications() != null ? d.getApplications().size() : 0;
+                            di.offerCount = d.getOffers() != null ? d.getOffers().size() : 0;
                             return di;
                         }).collect(Collectors.toList());
 
                         // Linked companies
                         detail.linkedCompanies = ccList.stream().map(cc -> {
                             CompanyLink cl = new CompanyLink();
-                            if (cc.company != null) {
+                            if (cc.getCompany() != null) {
                                 cl.companyId = cc.getCompany().getId();
                                 cl.companyName = cc.getCompany().getName();
                                 cl.industry = cc.getCompany().getIndustry();
                                 cl.startup = cc.getCompany().isStartup();
                             }
-                            cl.active = cc.active;
+                            cl.active = cc.isActive();
                             List<Drive> compDrives = DriveRepository.INSTANCE.byCompanyCollege(cc.getId());
                             cl.driveCount = compDrives.size();
                             int offers = 0;

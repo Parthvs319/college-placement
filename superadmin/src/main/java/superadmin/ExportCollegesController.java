@@ -49,9 +49,9 @@ public enum ExportCollegesController implements BaseController {
                         List<Drive> drives = DriveRepository.INSTANCE.byCollege(c.getId());
                         int totalDrives = drives.size();
                         long activeDrives = drives.stream()
-                                .filter(d -> d.status != null
-                                        && !d.status.name().equals("COMPLETED")
-                                        && !d.status.name().equals("CANCELLED"))
+                                .filter(d -> d.getStatus() != null
+                                        && !d.getStatus().name().equals("COMPLETED")
+                                        && !d.getStatus().name().equals("CANCELLED"))
                                 .count();
 
                         // Companies linked to this college
@@ -68,9 +68,9 @@ public enum ExportCollegesController implements BaseController {
                         for (Drive d : drives) {
                             List<Offer> offers = OfferRepository.INSTANCE.byDrive(d.getId());
                             totalOffers += offers.size();
-                            if (d.ctcOffered != null) {
+                            if (d.getCtcOffered() != null) {
                                 for (Offer o : offers) {
-                                    BigDecimal ctc = d.ctcOffered;
+                                    BigDecimal ctc = d.getCtcOffered();
                                     totalCtc = totalCtc.add(ctc);
                                     ctcCount++;
                                     if (ctc.compareTo(highestCtc) > 0) highestCtc = ctc;
@@ -83,23 +83,23 @@ public enum ExportCollegesController implements BaseController {
                                 ? totalCtc.divide(BigDecimal.valueOf(ctcCount), 2, RoundingMode.HALF_UP)
                                 : BigDecimal.ZERO;
 
-                        String status = !c.verified ? "Pending" : (c.active ? "Active" : "Inactive");
+                        String status = !c.isVerified() ? "Pending" : (c.isActive() ? "Active" : "Inactive");
 
                         csv.append(escapeCsv(c.getName())).append(",");
                         csv.append(escapeCsv(c.getCode())).append(",");
                         String cityName = "";
                         String stateName = "";
-                        if (c.cityId != null) {
-                            City ct = io.ebean.DB.find(City.class, c.cityId);
-                            if (ct != null) cityName = ct.name;
+                        if (c.getCityId() != null) {
+                            City ct = io.ebean.DB.find(City.class, c.getCityId());
+                            if (ct != null) cityName = ct.getName();
                         }
-                        if (c.stateId != null) {
-                            States st = io.ebean.DB.find(States.class, c.stateId);
-                            if (st != null) stateName = st.name;
+                        if (c.getStateId() != null) {
+                            States st = io.ebean.DB.find(States.class, c.getStateId());
+                            if (st != null) stateName = st.getName();
                         }
                         csv.append(escapeCsv(cityName)).append(",");
                         csv.append(escapeCsv(stateName)).append(",");
-                        csv.append(escapeCsv(c.university != null ? c.university : "")).append(",");
+                        csv.append(escapeCsv(c.getUniversity() != null ? c.getUniversity() : "")).append(",");
                         csv.append(status).append(",");
                         csv.append(totalStudents).append(",");
                         csv.append(placedStudents).append(",");

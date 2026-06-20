@@ -51,9 +51,9 @@ public enum CreditTopUpController implements BaseController {
                     Map<String, Object> result = new HashMap<>();
                     result.put("success", true);
                     result.put("subscriptionId", sub.getId());
-                    result.put("totalCredits", sub.totalCredits);
-                    result.put("usedCredits", sub.usedCredits);
-                    result.put("remainingCredits", sub.totalCredits - sub.usedCredits);
+                    result.put("totalCredits", sub.getTotalCredits());
+                    result.put("usedCredits", sub.getUsedCredits());
+                    result.put("remainingCredits", sub.getTotalCredits() - sub.getUsedCredits());
                     result.put("creditsAdded", credits);
                     return result;
                 })

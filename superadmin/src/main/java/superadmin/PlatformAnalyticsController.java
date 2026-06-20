@@ -32,7 +32,7 @@ public enum PlatformAnalyticsController implements BaseController {
 
                     List<College> colleges = CollegeRepository.INSTANCE.findAll();
                     a.setTotalColleges(colleges.size());
-                    a.setActiveColleges((int) colleges.stream().filter(c -> c.active).count());
+                    a.setActiveColleges((int) colleges.stream().filter(c -> c.isActive()).count());
 
                     List<User> users = UserRepository.INSTANCE.findAll();
                     a.setTotalUsers(users.size());
@@ -51,7 +51,7 @@ public enum PlatformAnalyticsController implements BaseController {
 
                     List<Company> allCompanies = CompanyRepository.INSTANCE.findAll();
                     a.setTotalCompanies(allCompanies.size());
-                    a.setStartupCount((int) allCompanies.stream().filter(c -> c.startup).count());
+                    a.setStartupCount((int) allCompanies.stream().filter(c -> c.isStartup()).count());
 
                     var driveQuery = DriveRepository.INSTANCE.where();
                     if (academicYear != null) {
@@ -60,9 +60,9 @@ public enum PlatformAnalyticsController implements BaseController {
                     List<Drive> allDrives = driveQuery.findList();
                     a.setTotalDrives(allDrives.size());
                     a.setActiveDrives((int) allDrives.stream()
-                            .filter(d -> d.status != null
-                                    && !d.status.name().equals("COMPLETED")
-                                    && !d.status.name().equals("CANCELLED"))
+                            .filter(d -> d.getStatus() != null
+                                    && !d.getStatus().name().equals("COMPLETED")
+                                    && !d.getStatus().name().equals("CANCELLED"))
                             .count());
 
                     var offerQuery = OfferRepository.INSTANCE.where();
@@ -84,9 +84,9 @@ public enum PlatformAnalyticsController implements BaseController {
                     BigDecimal lowest = null;
                     int ctcCount = 0;
                     for (Offer o : allOffers) {
-                        BigDecimal ctc = o.ctcOffered;
+                        BigDecimal ctc = o.getCtcOffered();
                         if (ctc == null && o.getDrive() != null) {
-                            ctc = o.getDrive().ctcOffered;
+                            ctc = o.getDrive().getCtcOffered();
                         }
                         if (ctc != null && ctc.compareTo(BigDecimal.ZERO) > 0) {
                             totalCtc = totalCtc.add(ctc);

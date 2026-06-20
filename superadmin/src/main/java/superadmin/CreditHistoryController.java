@@ -32,18 +32,18 @@ public enum CreditHistoryController implements BaseController {
                     return txns.stream().map(t -> {
                         SuperAdminDtos.CreditTransactionDto dto = new SuperAdminDtos.CreditTransactionDto();
                         dto.setId(t.getId());
-                        dto.setType(t.type != null ? t.type.name() : null);
-                        dto.setAmount(t.amount);
-                        dto.setBalanceAfter(t.balanceAfter);
-                        dto.setDescription(t.description);
-                        dto.setPaymentReference(t.paymentReference);
+                        dto.setType(t.getType() != null ? t.getType().name() : null);
+                        dto.setAmount(t.getAmount());
+                        dto.setBalanceAfter(t.getBalanceAfter());
+                        dto.setDescription(t.getDescription());
+                        dto.setPaymentReference(t.getPaymentReference());
                         dto.setCreatedAt(t.getCreatedAt() != null ? t.getCreatedAt().toInstant().toString() : null);
 
-                        if (t.student != null && t.student.user != null) {
-                            dto.setStudentName(t.student.user.name);
+                        if (t.getStudent() != null && t.getStudent().getUser() != null) {
+                            dto.setStudentName(t.getStudent().getUser().getName());
                         }
-                        if (t.college != null) {
-                            dto.setCollegeName(t.college.name);
+                        if (t.getCollege() != null) {
+                            dto.setCollegeName(t.getCollege().getName());
                         }
                         return dto;
                     }).collect(Collectors.toList());

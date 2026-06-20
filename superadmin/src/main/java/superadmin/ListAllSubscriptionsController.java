@@ -31,7 +31,7 @@ public enum ListAllSubscriptionsController implements BaseController {
                         o.setStartDate(s.getStartDate() != null ? s.getStartDate().toString() : null);
                         o.setEndDate(s.getEndDate() != null ? s.getEndDate().toString() : null);
 
-                        if (s.getStudent() != null && s.getStudent().user != null) {
+                        if (s.getStudent() != null && s.getStudent().getUser() != null) {
                             o.setStudentName(s.getStudent().getUser().getName());
                         }
                         if (s.getCollege() != null) {
@@ -40,9 +40,9 @@ public enum ListAllSubscriptionsController implements BaseController {
                             o.setCollegeName(s.getStudent().getCollege().getName());
                         }
 
-                        o.setTotalCredits(s.totalCredits);
-                        o.setUsedCredits(s.usedCredits);
-                        o.setRemainingCredits(s.totalCredits - s.usedCredits);
+                        o.setTotalCredits(s.getTotalCredits());
+                        o.setUsedCredits(s.getUsedCredits());
+                        o.setRemainingCredits(s.getTotalCredits() - s.getUsedCredits());
                         return o;
                     }).collect(Collectors.toList());
                 })

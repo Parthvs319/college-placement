@@ -44,18 +44,18 @@ public enum ListAllDrivesController implements BaseController {
                     return drives.stream().map(d -> {
                         SuperAdminDtos.DriveOverview o = new SuperAdminDtos.DriveOverview();
                         o.setId(d.getId());
-                        o.setTitle(d.title);
-                        o.setStatus(d.status != null ? d.status.name() : null);
-                        o.setEmploymentType(d.employmentType != null ? d.employmentType.name() : null);
-                        o.setCtcOffered(d.ctcOffered);
-                        o.setDriveDate(d.driveDate != null ? d.driveDate.toString() : null);
+                        o.setTitle(d.getTitle());
+                        o.setStatus(d.getStatus() != null ? d.getStatus().name() : null);
+                        o.setEmploymentType(d.getEmploymentType() != null ? d.getEmploymentType().name() : null);
+                        o.setCtcOffered(d.getCtcOffered());
+                        o.setDriveDate(d.getDriveDate() != null ? d.getDriveDate().toString() : null);
 
-                        if (d.companyCollege != null) {
-                            if (d.companyCollege.getCompany() != null) {
-                                o.setCompanyName(d.companyCollege.getCompany().name);
+                        if (d.getCompanyCollege() != null) {
+                            if (d.getCompanyCollege().getCompany() != null) {
+                                o.setCompanyName(d.getCompanyCollege().getCompany().getName());
                             }
-                            if (d.companyCollege.getCollege() != null) {
-                                o.setCollegeName(d.companyCollege.getCollege().name);
+                            if (d.getCompanyCollege().getCollege() != null) {
+                                o.setCollegeName(d.getCompanyCollege().getCollege().getName());
                             }
                         }
 

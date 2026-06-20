@@ -39,15 +39,15 @@ public enum PlatformActivityController implements BaseController {
                     List<College> recentColleges = CollegeRepository.INSTANCE.findRecent(10);
                     for (College c : recentColleges) {
                         String cityName = "";
-                        if (c.cityId != null) {
-                            City city = CityRepository.INSTANCE.byId(c.cityId);
-                            if (city != null) cityName = ", " + city.name;
+                        if (c.getCityId() != null) {
+                            City city = CityRepository.INSTANCE.byId(c.getCityId());
+                            if (city != null) cityName = ", " + city.getName();
                         }
-                        String desc = c.name + " (" + c.code + ")" + cityName;
+                        String desc = c.getName() + " (" + c.getCode() + ")" + cityName;
 
                         // Registration event (uses createdAt)
                         SuperAdminDtos.ActivityEvent regEvent = new SuperAdminDtos.ActivityEvent();
-                        if (c.verified) {
+                        if (c.isVerified()) {
                             regEvent.setType("college_verified");
                             regEvent.setTitle("College verified");
                             regEvent.setColor("green");
@@ -64,7 +64,7 @@ public enum PlatformActivityController implements BaseController {
                         if (c.getUpdatedAt() != null && c.getCreatedAt() != null
                                 && c.getUpdatedAt().getTime() - c.getCreatedAt().getTime() > 5000) {
                             SuperAdminDtos.ActivityEvent toggleEvent = new SuperAdminDtos.ActivityEvent();
-                            if (c.active) {
+                            if (c.isActive()) {
                                 toggleEvent.setType("college_activated");
                                 toggleEvent.setTitle("College activated");
                                 toggleEvent.setColor("green");
@@ -84,12 +84,12 @@ public enum PlatformActivityController implements BaseController {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         String companyName = "";
                         String collegeName = "";
-                        if (d.companyCollege != null) {
-                            if (d.companyCollege.getCompany() != null) companyName = d.companyCollege.getCompany().name;
-                            if (d.companyCollege.getCollege() != null) collegeName = d.companyCollege.getCollege().name;
+                        if (d.getCompanyCollege() != null) {
+                            if (d.getCompanyCollege().getCompany() != null) companyName = d.getCompanyCollege().getCompany().getName();
+                            if (d.getCompanyCollege().getCollege() != null) collegeName = d.getCompanyCollege().getCollege().getName();
                         }
 
-                        if (d.status != null && d.status.name().equals("COMPLETED")) {
+                        if (d.getStatus() != null && d.getStatus().name().equals("COMPLETED")) {
                             e.setType("drive_completed");
                             e.setTitle("Drive completed");
                             e.setColor("green");
@@ -98,7 +98,7 @@ public enum PlatformActivityController implements BaseController {
                             e.setTitle("New drive created");
                             e.setColor("blue");
                         }
-                        e.setDescription(d.title + " by " + companyName + " at " + collegeName);
+                        e.setDescription(d.getTitle() + " by " + companyName + " at " + collegeName);
                         e.setTimestamp(tsToString(d.getCreatedAt()));
                         activities.add(e);
                     }
@@ -112,11 +112,11 @@ public enum PlatformActivityController implements BaseController {
 
                         String studentName = "";
                         String companyName = "";
-                        if (o.student != null && o.student.user != null) studentName = o.student.user.name;
-                        if (o.drive != null && o.drive.companyCollege != null && o.drive.companyCollege.getCompany() != null) {
-                            companyName = o.drive.companyCollege.getCompany().name;
+                        if (o.getStudent() != null && o.getStudent().getUser() != null) studentName = o.getStudent().getUser().getName();
+                        if (o.getDrive() != null && o.getDrive().getCompanyCollege() != null && o.getDrive().getCompanyCollege().getCompany() != null) {
+                            companyName = o.getDrive().getCompanyCollege().getCompany().getName();
                         }
-                        String ctcStr = o.ctcOffered != null ? " - " + o.ctcOffered.toPlainString() + " LPA" : "";
+                        String ctcStr = o.getCtcOffered() != null ? " - " + o.getCtcOffered().toPlainString() + " LPA" : "";
                         e.setDescription(studentName + " from " + companyName + ctcStr);
                         e.setTimestamp(tsToString(o.getCreatedAt()));
                         activities.add(e);
@@ -131,8 +131,8 @@ public enum PlatformActivityController implements BaseController {
 
                         String studentName = "";
                         String driveTitle = "";
-                        if (app.student != null && app.student.user != null) studentName = app.student.user.name;
-                        if (app.drive != null) driveTitle = app.drive.title;
+                        if (app.getStudent() != null && app.getStudent().getUser() != null) studentName = app.getStudent().getUser().getName();
+                        if (app.getDrive() != null) driveTitle = app.getDrive().getTitle();
                         e.setDescription(studentName + " applied to " + driveTitle);
                         e.setTimestamp(tsToString(app.getCreatedAt()));
                         activities.add(e);
@@ -141,8 +141,8 @@ public enum PlatformActivityController implements BaseController {
                     // 5. Recent users - registered, activated/deactivated
                     List<User> recentUsers = UserRepository.INSTANCE.findRecent(10);
                     for (User u : recentUsers) {
-                        String role = u.userType != null ? u.userType.name() : "USER";
-                        String desc = u.name + " (" + role.replace("_", " ") + ")";
+                        String role = u.getUserType() != null ? u.getUserType().name() : "USER";
+                        String desc = u.getName() + " (" + role.replace("_", " ") + ")";
 
                         // Registration event
                         SuperAdminDtos.ActivityEvent regEvent = new SuperAdminDtos.ActivityEvent();
@@ -157,7 +157,7 @@ public enum PlatformActivityController implements BaseController {
                         if (u.getUpdatedAt() != null && u.getCreatedAt() != null
                                 && u.getUpdatedAt().getTime() - u.getCreatedAt().getTime() > 5000) {
                             SuperAdminDtos.ActivityEvent toggleEvent = new SuperAdminDtos.ActivityEvent();
-                            if (u.active) {
+                            if (u.isActive()) {
                                 toggleEvent.setType("user_activated");
                                 toggleEvent.setTitle("User activated");
                                 toggleEvent.setColor("green");
@@ -178,11 +178,11 @@ public enum PlatformActivityController implements BaseController {
                         SuperAdminDtos.ActivityEvent e = new SuperAdminDtos.ActivityEvent();
                         String studentName = "";
                         String collegeName = "";
-                        if (s.student != null && s.student.user != null) studentName = s.student.user.name;
-                        if (s.college != null) collegeName = s.college.name;
+                        if (s.getStudent() != null && s.getStudent().getUser() != null) studentName = s.getStudent().getUser().getName();
+                        if (s.getCollege() != null) collegeName = s.getCollege().getName();
 
-                        String tierStr = s.tier != null ? s.tier.name() : "FREE";
-                        if (s.active) {
+                        String tierStr = s.getTier() != null ? s.getTier().name() : "FREE";
+                        if (s.isActive()) {
                             e.setType("subscription_created");
                             e.setTitle("New " + tierStr.toLowerCase() + " subscription");
                             e.setColor("green");

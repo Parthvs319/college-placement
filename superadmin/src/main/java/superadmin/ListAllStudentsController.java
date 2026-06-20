@@ -45,12 +45,12 @@ public enum ListAllStudentsController implements BaseController {
                     return students.stream().map(s -> {
                         SuperAdminDtos.StudentOverview o = new SuperAdminDtos.StudentOverview();
                         o.setId(s.getId());
-                        o.setName(s.user != null ? s.user.getName() : null);
-                        o.setEmail(s.user != null ? s.user.getEmail() : null);
+                        o.setName(s.getUser() != null ? s.getUser().getName() : null);
+                        o.setEmail(s.getUser() != null ? s.getUser().getEmail() : null);
                         o.setDepartment(s.getDepartment());
                         o.setCgpa(s.getCgpa());
                         o.setCollegeName(s.getCollege() != null ? s.getCollege().getName() : null);
-                        o.setCollegeId(s.college != null ? s.college.getId() : null);
+                        o.setCollegeId(s.getCollege() != null ? s.getCollege().getId() : null);
                         o.setVerified(s.getUser() != null && s.getUser().isVerified());
                         o.setPlaced(s.isPlaced());
                         o.setApplicationCount(DriveApplicationRepository.INSTANCE.byStudent(s.getId()).size());

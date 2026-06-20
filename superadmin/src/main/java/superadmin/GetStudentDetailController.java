@@ -41,36 +41,36 @@ public enum GetStudentDetailController implements BaseController {
                     detail.email = student.getUser() != null ? student.getUser().getEmail() : null;
                     detail.mobile = student.getUser() != null ? student.getUser().getMobile() : null;
                     detail.verified = student.getUser() != null && student.getUser().isVerified();
-                    detail.active = student.user != null && student.user.active;
+                    detail.active = student.getUser() != null && student.getUser().isActive();
 
                     // Academic info
-                    detail.enrollmentNumber = student.enrollmentNumber;
-                    detail.department = student.department;
-                    detail.passingYear = student.passingYear;
-                    detail.cgpa = student.cgpa;
-                    detail.activeBacklogs = student.activeBacklogs;
-                    detail.totalBacklogs = student.totalBacklogs;
-                    detail.tenthPercentage = student.tenthPercentage;
-                    detail.twelfthPercentage = student.twelfthPercentage;
-                    detail.diplomaPercentage = student.diplomaPercentage;
-                    detail.gender = student.gender;
-                    detail.dateOfBirth = student.dateOfBirth;
+                    detail.enrollmentNumber = student.getEnrollmentNumber();
+                    detail.department = student.getDepartment();
+                    detail.passingYear = student.getPassingYear();
+                    detail.cgpa = student.getCgpa();
+                    detail.activeBacklogs = student.getActiveBacklogs();
+                    detail.totalBacklogs = student.getTotalBacklogs();
+                    detail.tenthPercentage = student.getTenthPercentage();
+                    detail.twelfthPercentage = student.getTwelfthPercentage();
+                    detail.diplomaPercentage = student.getDiplomaPercentage();
+                    detail.gender = student.getGender();
+                    detail.dateOfBirth = student.getDateOfBirth();
 
                     // Skills and links
-                    detail.skills = student.skills;
-                    detail.certifications = student.certifications;
-                    detail.linkedinUrl = student.linkedinUrl;
-                    detail.githubUrl = student.githubUrl;
-                    detail.portfolioUrl = student.portfolioUrl;
-                    detail.atsScore = student.atsScore;
+                    detail.skills = student.getSkills();
+                    detail.certifications = student.getCertifications();
+                    detail.linkedinUrl = student.getLinkedinUrl();
+                    detail.githubUrl = student.getGithubUrl();
+                    detail.portfolioUrl = student.getPortfolioUrl();
+                    detail.atsScore = student.getAtsScore();
 
                     // Placement status
-                    detail.placed = student.placed;
-                    detail.optedOut = student.optedOut;
-                    detail.currentCtc = student.currentCtc;
+                    detail.placed = student.isPlaced();
+                    detail.optedOut = student.isOptedOut();
+                    detail.currentCtc = student.getCurrentCtc();
 
                     // College info
-                    if (student.college != null) {
+                    if (student.getCollege() != null) {
                         detail.collegeId = student.getCollege().getId();
                         detail.collegeName = student.getCollege().getName();
                         detail.collegeCode = student.getCollege().getCode();
@@ -89,14 +89,14 @@ public enum GetStudentDetailController implements BaseController {
                     detail.applications = apps.stream().map(app -> {
                         ApplicationInfo ai = new ApplicationInfo();
                         ai.applicationId = app.getId();
-                        ai.status = app.status != null ? app.status.name() : null;
-                        if (app.drive != null) {
-                            ai.driveId = app.drive.getId();
+                        ai.status = app.getStatus() != null ? app.getStatus().name() : null;
+                        if (app.getDrive() != null) {
+                            ai.driveId = app.getDrive().getId();
                             ai.driveTitle = app.getDrive().getTitle();
                             ai.ctcOffered = app.getDrive().getCtcOffered();
-                            ai.driveStatus = app.drive.status != null ? app.drive.status.name() : null;
-                            if (app.drive.companyCollege != null && app.drive.companyCollege.company != null) {
-                                ai.companyName = app.drive.companyCollege.company.name;
+                            ai.driveStatus = app.getDrive().getStatus() != null ? app.getDrive().getStatus().name() : null;
+                            if (app.getDrive().getCompanyCollege() != null && app.getDrive().getCompanyCollege().getCompany() != null) {
+                                ai.companyName = app.getDrive().getCompanyCollege().getCompany().getName();
                             }
                         }
                         ai.appliedAt = app.getCreatedAt() != null ? app.getCreatedAt().toString() : null;
@@ -116,15 +116,15 @@ public enum GetStudentDetailController implements BaseController {
                     detail.offers = offers.stream().map(o -> {
                         OfferInfo oi = new OfferInfo();
                         oi.offerId = o.getId();
-                        oi.ctcOffered = o.ctcOffered;
-                        oi.designation = o.designation;
-                        oi.location = o.location;
-                        oi.status = o.status != null ? o.status.name() : null;
-                        oi.offerLetterUrl = o.offerLetterUrl;
-                        if (o.drive != null) {
-                            oi.driveTitle = o.drive.title;
-                            if (o.drive.companyCollege != null && o.drive.companyCollege.company != null) {
-                                oi.companyName = o.drive.companyCollege.company.name;
+                        oi.ctcOffered = o.getCtcOffered();
+                        oi.designation = o.getDesignation();
+                        oi.location = o.getLocation();
+                        oi.status = o.getStatus() != null ? o.getStatus().name() : null;
+                        oi.offerLetterUrl = o.getOfferLetterUrl();
+                        if (o.getDrive() != null) {
+                            oi.driveTitle = o.getDrive().getTitle();
+                            if (o.getDrive().getCompanyCollege() != null && o.getDrive().getCompanyCollege().getCompany() != null) {
+                                oi.companyName = o.getDrive().getCompanyCollege().getCompany().getName();
                             }
                         }
                         oi.createdAt = o.getCreatedAt() != null ? o.getCreatedAt().toString() : null;
@@ -135,20 +135,20 @@ public enum GetStudentDetailController implements BaseController {
                     List<Subscription> subs = SubscriptionRepository.INSTANCE.byStudent(studentId);
                     if (!subs.isEmpty()) {
                         Subscription sub = subs.get(0);
-                        detail.subscriptionTier = sub.tier != null ? sub.tier.name() : "FREE";
-                        detail.subscriptionActive = sub.active;
-                        detail.subscriptionStartDate = sub.startDate != null ? sub.startDate.toString() : null;
-                        detail.subscriptionEndDate = sub.endDate != null ? sub.endDate.toString() : null;
-                        detail.totalCredits = sub.totalCredits;
-                        detail.usedCredits = sub.usedCredits;
+                        detail.subscriptionTier = sub.getTier() != null ? sub.getTier().name() : "FREE";
+                        detail.subscriptionActive = sub.isActive();
+                        detail.subscriptionStartDate = sub.getStartDate() != null ? sub.getStartDate().toString() : null;
+                        detail.subscriptionEndDate = sub.getEndDate() != null ? sub.getEndDate().toString() : null;
+                        detail.totalCredits = sub.getTotalCredits();
+                        detail.usedCredits = sub.getUsedCredits();
                     } else {
                         detail.subscriptionTier = "FREE";
                         detail.subscriptionActive = false;
                     }
 
                     // Resumes
-                    if (student.resumes != null) {
-                        detail.resumeCount = student.resumes.size();
+                    if (student.getResumes() != null) {
+                        detail.resumeCount = student.getResumes().size();
                     }
 
                     return detail;

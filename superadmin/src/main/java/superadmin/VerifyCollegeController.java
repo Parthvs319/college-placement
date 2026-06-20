@@ -42,7 +42,7 @@ public enum VerifyCollegeController implements BaseController {
         Long collegeId = Long.parseLong(request.getRoutingContext().pathParam("collegeId"));
         College college = CollegeRepository.INSTANCE.byId(collegeId);
         if (college == null) throw new RoutingError(404, "College not found");
-        if (college.verified) {
+        if (college.isVerified()) {
             throw new RoutingError("College is already verified");
         }
         college.setActive(true);
@@ -54,11 +54,11 @@ public enum VerifyCollegeController implements BaseController {
             return Map.of(
                     "message", "College verified successfully. TPO account already exists.",
                     "collegeId", collegeId,
-                    "tpoEmail", existingTpos.get(0).email
+                    "tpoEmail", existingTpos.get(0).getEmail()
             );
         }
         String rawPassword = generatePassword(12);
-        String tpoEmail = college.contactEmail;
+        String tpoEmail = college.getContactEmail();
         if (tpoEmail == null || tpoEmail.isBlank()) {
             return Map.of(
                     "message", "College verified but no contactEmail set — TPO account not created",
@@ -67,11 +67,11 @@ public enum VerifyCollegeController implements BaseController {
         }
         User existingUser = UserRepository.INSTANCE.byEmailAndUserType(tpoEmail , UserType.TPO);
         if (existingUser != null) {
-            if (existingUser.college == null) {
-                existingUser.college = college;
-                existingUser.userType = UserType.TPO;
-                existingUser.verified = true;
-                existingUser.active = true;
+            if (existingUser.getCollege() == null) {
+                existingUser.setCollege(college);
+                existingUser.setUserType(UserType.TPO);
+                existingUser.setVerified(true);
+                existingUser.setActive(true);
                 existingUser.save();
             }
             return Map.of(
@@ -82,19 +82,19 @@ public enum VerifyCollegeController implements BaseController {
         }
 
         User tpo = new User();
-        tpo.email = tpoEmail;
-        tpo.password = PasswordUtils.INSTANCE.hash(rawPassword);
-        tpo.name = college.name + " TPO";
-        tpo.userType = UserType.TPO;
-        tpo.college = college;
-        tpo.verified = true;
-        tpo.active = true;
+        tpo.setEmail(tpoEmail);
+        tpo.setPassword(PasswordUtils.INSTANCE.hash(rawPassword));
+        tpo.setName(college.getName() + " TPO");
+        tpo.setUserType(UserType.TPO);
+        tpo.setCollege(college);
+        tpo.setVerified(true);
+        tpo.setActive(true);
         tpo.save();
         try {
             String html = EmailService.buildTpoCredentialsHtml(
-                    college.name, tpoEmail, rawPassword, college.code
+                    college.getName(), tpoEmail, rawPassword, college.getCode()
             );
-            EmailService.sendEmail(tpoEmail, "Your Applyra TPO Login Credentials — " + college.name, html)
+            EmailService.sendEmail(tpoEmail, "Your Applyra TPO Login Credentials — " + college.getName(), html)
                     .subscribe(
                             sent -> System.out.println("[VerifyCollege] Credentials email " + (sent ? "sent" : "failed") + " to " + tpoEmail),
                             err -> System.err.println("[VerifyCollege] Email error: " + err.getMessage())

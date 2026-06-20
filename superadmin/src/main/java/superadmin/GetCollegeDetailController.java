@@ -31,32 +31,32 @@ public enum GetCollegeDetailController implements BaseController {
 
                     Map<String, Object> result = new HashMap<>();
                     result.put("id", college.getId());
-                    result.put("name", college.name);
-                    result.put("code", college.code);
-                    result.put("university", college.university);
-                    result.put("address", college.address);
-                    result.put("cityId", college.cityId);
-                    result.put("stateId", college.stateId);
+                    result.put("name", college.getName());
+                    result.put("code", college.getCode());
+                    result.put("university", college.getUniversity());
+                    result.put("address", college.getAddress());
+                    result.put("cityId", college.getCityId());
+                    result.put("stateId", college.getStateId());
                     String cityName = null;
                     String stateName = null;
-                    if (college.cityId != null) {
-                        City ct = DB.find(City.class, college.cityId);
-                        if (ct != null) cityName = ct.name;
+                    if (college.getCityId() != null) {
+                        City ct = DB.find(City.class, college.getCityId());
+                        if (ct != null) cityName = ct.getName();
                     }
-                    if (college.stateId != null) {
-                        States st = DB.find(States.class, college.stateId);
-                        if (st != null) stateName = st.name;
+                    if (college.getStateId() != null) {
+                        States st = DB.find(States.class, college.getStateId());
+                        if (st != null) stateName = st.getName();
                     }
                     result.put("city", cityName);
                     result.put("state", stateName);
-                    result.put("pincode", college.pincode);
-                    result.put("website", college.website);
-                    result.put("logoUrl", college.logoUrl);
-                    result.put("contactEmail", college.contactEmail);
-                    result.put("contactPhone", college.contactPhone);
-                    result.put("departments", college.departments);
-                    result.put("verified", college.verified);
-                    result.put("active", college.active);
+                    result.put("pincode", college.getPincode());
+                    result.put("website", college.getWebsite());
+                    result.put("logoUrl", college.getLogoUrl());
+                    result.put("contactEmail", college.getContactEmail());
+                    result.put("contactPhone", college.getContactPhone());
+                    result.put("departments", college.getDepartments());
+                    result.put("verified", college.isVerified());
+                    result.put("active", college.isActive());
 
                     int total = StudentRepository.INSTANCE.byCollege(collegeId).size();
                     int placed = StudentRepository.INSTANCE.findPlaced(collegeId).size();
@@ -71,11 +71,11 @@ public enum GetCollegeDetailController implements BaseController {
                     result.put("users", UserRepository.INSTANCE.byCollege(collegeId).stream().map(u -> {
                         Map<String, Object> um = new HashMap<>();
                         um.put("id", u.getId());
-                        um.put("name", u.name);
-                        um.put("email", u.email);
-                        um.put("userType", u.userType.getValue());
-                        um.put("verified", u.verified);
-                        um.put("active", u.active);
+                        um.put("name", u.getName());
+                        um.put("email", u.getEmail());
+                        um.put("userType", u.getUserType().getValue());
+                        um.put("verified", u.isVerified());
+                        um.put("active", u.isActive());
                         return um;
                     }).toList());
 

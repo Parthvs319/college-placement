@@ -25,16 +25,16 @@ public enum ToggleUserActiveController implements BaseController {
                     Long userId = Long.parseLong(event.pathParam("userId"));
                     User user = UserRepository.INSTANCE.byId(userId);
                     if (user == null) throw new RoutingError(404, "User not found");
-                    if (user.userType == UserType.SUPER_ADMIN && !user.getId().equals(req.getUser().getId())) {
+                    if (user.getUserType() == UserType.SUPER_ADMIN && !user.getId().equals(req.getUser().getId())) {
                         throw new RoutingError(403, "Cannot modify another super admin");
                     }
                     user.setActive(!user.isActive());
                     user.update();
 
                     return Map.of(
-                            "message", user.active ? "User activated" : "User deactivated",
+                            "message", user.isActive() ? "User activated" : "User deactivated",
                             "userId", userId,
-                            "active", user.active
+                            "active", user.isActive()
                     );
                 })
                 .subscribe(

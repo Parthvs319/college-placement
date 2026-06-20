@@ -44,23 +44,23 @@ public enum GetCompanyHrDetailController implements BaseController {
 
                     // Basic info
                     detail.id = user.getId();
-                    detail.name = user.name;
-                    detail.email = user.email;
-                    detail.mobile = user.mobile;
-                    detail.userType = user.userType.getValue();
-                    detail.verified = user.verified;
-                    detail.active = user.active;
+                    detail.name = user.getName();
+                    detail.email = user.getEmail();
+                    detail.mobile = user.getMobile();
+                    detail.userType = user.getUserType().getValue();
+                    detail.verified = user.isVerified();
+                    detail.active = user.isActive();
                     detail.createdAt = user.getCreatedAt() != null ? user.getCreatedAt().toString() : null;
 
-                    if (user.college != null) {
+                    if (user.getCollege() != null) {
                         detail.collegeId = user.getCollege().getId();
                         detail.collegeName = user.getCollege().getName();
                     }
 
                     // Direct company link
-                    if (user.company != null) {
-                        detail.companyId = user.company.getId();
-                        detail.companyName = user.company.name;
+                    if (user.getCompany() != null) {
+                        detail.companyId = user.getCompany().getId();
+                        detail.companyName = user.getCompany().getName();
                     }
 
                     // Find company-college links managed by this HR
@@ -69,8 +69,8 @@ public enum GetCompanyHrDetailController implements BaseController {
                     // Companies
                     Map<Long, Company> companiesMap = new HashMap<>();
                     for (CompanyCollege cc : managed) {
-                        if (cc.company != null) {
-                            companiesMap.put(cc.company.getId(), cc.company);
+                        if (cc.getCompany() != null) {
+                            companiesMap.put(cc.getCompany().getId(), cc.getCompany());
                         }
                     }
 
@@ -88,15 +88,15 @@ public enum GetCompanyHrDetailController implements BaseController {
 
                     // Linked colleges
                     Set<Long> collegeIds = managed.stream()
-                            .filter(cc -> cc.college != null)
-                            .map(cc -> cc.college.getId())
+                            .filter(cc -> cc.getCollege() != null)
+                            .map(cc -> cc.getCollege().getId())
                             .collect(Collectors.toSet());
 
                     detail.linkedColleges = managed.stream()
-                            .filter(cc -> cc.college != null)
+                            .filter(cc -> cc.getCollege() != null)
                             .map(cc -> {
                                 CollegeLink cl = new CollegeLink();
-                                cl.collegeId = cc.college.getId();
+                                cl.collegeId = cc.getCollege().getId();
                                 cl.collegeName = cc.getCollege().getName();
                                 cl.collegeCode = cc.getCollege().getCode();
                                 cl.active = cc.isActive();
@@ -117,24 +117,24 @@ public enum GetCompanyHrDetailController implements BaseController {
                         for (Drive d : drives) {
                             DriveInfo di = new DriveInfo();
                             di.driveId = d.getId();
-                            di.title = d.title;
-                            di.status = d.status != null ? d.status.name() : null;
-                            di.ctcOffered = d.ctcOffered;
-                            di.employmentType = d.employmentType != null ? d.employmentType.name() : null;
-                            di.driveDate = d.driveDate != null ? d.driveDate.toString() : null;
-                            di.collegeName = cc.college != null ? cc.college.name : null;
-                            if (cc.company != null) di.companyName = cc.company.name;
+                            di.title = d.getTitle();
+                            di.status = d.getStatus() != null ? d.getStatus().name() : null;
+                            di.ctcOffered = d.getCtcOffered();
+                            di.employmentType = d.getEmploymentType() != null ? d.getEmploymentType().name() : null;
+                            di.driveDate = d.getDriveDate() != null ? d.getDriveDate().toString() : null;
+                            di.collegeName = cc.getCollege() != null ? cc.getCollege().getName() : null;
+                            if (cc.getCompany() != null) di.companyName = cc.getCompany().getName();
 
-                            int appCount = d.applications != null ? d.applications.size() : 0;
-                            int offCount = d.offers != null ? d.offers.size() : 0;
+                            int appCount = d.getApplications() != null ? d.getApplications().size() : 0;
+                            int offCount = d.getOffers() != null ? d.getOffers().size() : 0;
                             di.applicationCount = appCount;
                             di.offerCount = offCount;
 
                             totalApplications += appCount;
                             totalOffers += offCount;
 
-                            if (d.ctcOffered != null && d.ctcOffered.compareTo(highestCtc) > 0) {
-                                highestCtc = d.ctcOffered;
+                            if (d.getCtcOffered() != null && d.getCtcOffered().compareTo(highestCtc) > 0) {
+                                highestCtc = d.getCtcOffered();
                             }
 
                             allDrives.add(di);

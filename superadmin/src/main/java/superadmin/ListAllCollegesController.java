@@ -32,19 +32,19 @@ public enum ListAllCollegesController implements BaseController {
                     return colleges.stream().map(c -> {
                         SuperAdminDtos.CollegeSummary s = new SuperAdminDtos.CollegeSummary();
                         s.setId(c.getId());
-                        s.setName(c.name);
-                        s.setCode(c.code);
-                        if (c.cityId != null) {
-                            City ct = DB.find(City.class, c.cityId);
-                            if (ct != null) s.setCity(ct.name);
+                        s.setName(c.getName());
+                        s.setCode(c.getCode());
+                        if (c.getCityId() != null) {
+                            City ct = DB.find(City.class, c.getCityId());
+                            if (ct != null) s.setCity(ct.getName());
                         }
-                        if (c.stateId != null) {
-                            States st = DB.find(States.class, c.stateId);
-                            if (st != null) s.setState(st.name);
+                        if (c.getStateId() != null) {
+                            States st = DB.find(States.class, c.getStateId());
+                            if (st != null) s.setState(st.getName());
                         }
-                        s.setUniversity(c.university);
-                        s.setVerified(c.verified);
-                        s.setActive(c.active);
+                        s.setUniversity(c.getUniversity());
+                        s.setVerified(c.isVerified());
+                        s.setActive(c.isActive());
 
                         int totalStudents = StudentRepository.INSTANCE.byCollege(c.getId()).size();
                         int placedStudents = StudentRepository.INSTANCE.findPlaced(c.getId()).size();
@@ -54,7 +54,7 @@ public enum ListAllCollegesController implements BaseController {
                         List<CompanyCollege> companyColleges = CompanyCollegeRepository.INSTANCE.byCollege(c.getId());
                         s.setCompanyCount(companyColleges.size());
                         s.setStartupCount((int) companyColleges.stream()
-                                .filter(cc -> cc.company != null && cc.company.startup)
+                                .filter(cc -> cc.getCompany() != null && cc.getCompany().isStartup())
                                 .count());
                         s.setPlacementRate(totalStudents > 0 ? (double) placedStudents / totalStudents * 100 : 0);
                         return s;

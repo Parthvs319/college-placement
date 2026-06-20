@@ -41,19 +41,19 @@ public enum ListAllUsersController implements BaseController {
                         users = UserRepository.INSTANCE.findAll();
                         if (typeParam != null && !typeParam.isEmpty()) {
                             UserType filterType = UserType.valueOf(typeParam);
-                            users = users.stream().filter(u -> u.userType == filterType).collect(Collectors.toList());
+                            users = users.stream().filter(u -> u.getUserType() == filterType).collect(Collectors.toList());
                         }
                     }
 
                     return users.stream().map(u -> {
                         SuperAdminDtos.UserSummary s = new SuperAdminDtos.UserSummary();
                         s.setId(u.getId());
-                        s.setName(u.name);
-                        s.setEmail(u.email);
-                        s.setMobile(u.mobile);
-                        s.setUserType(u.userType.getValue());
-                        s.setVerified(u.verified);
-                        s.setActive(u.active);
+                        s.setName(u.getName());
+                        s.setEmail(u.getEmail());
+                        s.setMobile(u.getMobile());
+                        s.setUserType(u.getUserType().getValue());
+                        s.setVerified(u.isVerified());
+                        s.setActive(u.isActive());
                         if (u.getCreatedAt() != null) {
                             s.setCreatedAt(u.getCreatedAt().toString());
                         }
@@ -61,21 +61,21 @@ public enum ListAllUsersController implements BaseController {
                             s.setCollegeName(u.getCollege().getName());
                             s.setCollegeId(u.getCollege().getId());
                         }
-                        if (u.userType == UserType.STUDENT) {
+                        if (u.getUserType() == UserType.STUDENT) {
                             Student st = StudentRepository.INSTANCE.byUserId(u.getId());
                             if (st != null) s.setStudentId(st.getId());
                         }
-                        if (u.userType == UserType.COMPANY_HR) {
-                            if (u.company != null) {
-                                s.setCompanyId(u.company.getId());
-                                s.setCompanyName(u.company.name);
+                        if (u.getUserType() == UserType.COMPANY_HR) {
+                            if (u.getCompany() != null) {
+                                s.setCompanyId(u.getCompany().getId());
+                                s.setCompanyName(u.getCompany().getName());
                             } else {
                                 // Fallback: check company_colleges managed_by_user_id
                                 List<CompanyCollege> managed = CompanyCollegeRepository.INSTANCE.byManagedUser(u.getId());
                                 if (!managed.isEmpty()) {
                                     String names = managed.stream()
-                                            .filter(cc -> cc.company != null)
-                                            .map(cc -> cc.company.name)
+                                            .filter(cc -> cc.getCompany() != null)
+                                            .map(cc -> cc.getCompany().getName())
                                             .distinct()
                                             .collect(Collectors.joining(", "));
                                     if (!names.isEmpty()) s.setCompanyName(names);

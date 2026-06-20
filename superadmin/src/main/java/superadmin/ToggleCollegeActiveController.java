@@ -29,9 +29,9 @@ public enum ToggleCollegeActiveController implements BaseController {
                     college.update();
                     System.out.println("yess : " + college.isActive());
                     return Map.of(
-                            "message", college.active ? "College activated" : "College deactivated",
+                            "message", college.isActive() ? "College activated" : "College deactivated",
                             "collegeId", collegeId,
-                            "active", college.active
+                            "active", college.isActive()
                     );
                 })
                 .subscribe(
