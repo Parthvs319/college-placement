@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -73,6 +74,8 @@ public class Student extends AttrsModel {
 
     // current placement status
     public boolean placed = false;
+
+    public Timestamp placedAt;              // when the student got placed (offer accepted)
 
     public BigDecimal currentCtc;           // CTC of accepted offer (if any)
 

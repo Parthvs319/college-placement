@@ -100,6 +100,7 @@ public class ApplicationConsumer {
 
         // Mark student as placed
         student.placed = true;
+        student.placedAt = new java.sql.Timestamp(System.currentTimeMillis());
         student.currentCtc = offer.ctcOffered;
         student.update();
 

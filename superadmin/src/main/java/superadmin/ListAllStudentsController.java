@@ -53,6 +53,7 @@ public enum ListAllStudentsController implements BaseController {
                         o.setCollegeId(s.getCollege() != null ? s.getCollege().getId() : null);
                         o.setVerified(s.getUser() != null && s.getUser().isVerified());
                         o.setPlaced(s.isPlaced());
+                        o.setPlacedAt(s.getPlacedAt() != null ? s.getPlacedAt().toString() : null);
                         o.setApplicationCount(DriveApplicationRepository.INSTANCE.byStudent(s.getId()).size());
                         o.setOfferCount(OfferRepository.INSTANCE.byStudent(s.getId()).size());
                         return o;

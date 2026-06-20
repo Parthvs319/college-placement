@@ -66,6 +66,7 @@ public enum GetStudentDetailController implements BaseController {
 
                     // Placement status
                     detail.placed = student.isPlaced();
+                    detail.placedAt = student.getPlacedAt() != null ? student.getPlacedAt().toString() : null;
                     detail.optedOut = student.isOptedOut();
                     detail.currentCtc = student.getCurrentCtc();
 
@@ -191,6 +192,7 @@ public enum GetStudentDetailController implements BaseController {
 
         // Placement
         boolean placed;
+        String placedAt;
         boolean optedOut;
         BigDecimal currentCtc;
 

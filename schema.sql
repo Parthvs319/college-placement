@@ -116,6 +116,7 @@ CREATE TABLE students (
     ats_score           INT,
     opted_out           BOOLEAN      NOT NULL DEFAULT FALSE,
     placed              BOOLEAN      NOT NULL DEFAULT FALSE,
+    placed_at           TIMESTAMP    NULL,
     current_ctc         DECIMAL(12,2),
     attrs               JSON,
     created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,

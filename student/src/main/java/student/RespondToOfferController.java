@@ -89,6 +89,7 @@ public enum RespondToOfferController implements BaseController {
 
             // Update student placement status
             student.placed = true;
+            student.placedAt = new Timestamp(System.currentTimeMillis());
             student.currentCtc = offer.ctcOffered;
             student.update();
 

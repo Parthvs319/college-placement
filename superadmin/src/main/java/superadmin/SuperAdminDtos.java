@@ -115,6 +115,7 @@ public class SuperAdminDtos {
         Long collegeId;
         boolean verified;
         boolean placed;
+        String placedAt;
         int applicationCount;
         int offerCount;
     }
