@@ -79,13 +79,14 @@ public enum AnalyzeContractController implements BaseController {
         out.put("validTo",           result.validTo);
         out.put("tpoEmail",          result.tpoEmail);
         out.put("tpoName",           result.tpoName);
+        out.put("collegeName",       result.collegeName);
         out.put("extractionMethod",  result.extractionMethod);
         out.put("confidence",        result.confidence);
         out.put("rawTextPreview",    preview);
         out.put("textLength",        result.rawText != null ? result.rawText.length() : 0);
 
         boolean anyFieldFound = result.contractAmount != null || result.validFrom != null
-                || result.validTo != null || result.tpoEmail != null;
+                || result.validTo != null || result.tpoEmail != null || result.collegeName != null;
         out.put("success", anyFieldFound);
         out.put("message", anyFieldFound
                 ? "Contract analyzed successfully via " + result.extractionMethod
