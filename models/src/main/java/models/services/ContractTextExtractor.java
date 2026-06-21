@@ -77,6 +77,7 @@ public class ContractTextExtractor {
     public static ContractExtractResult extract(byte[] pdfBytes) {
         ContractExtractResult result = new ContractExtractResult();
 
+        System.out.println("GEMINI_API_KEY : " + GEMINI_API_KEY);
         if (GEMINI_API_KEY != null && !GEMINI_API_KEY.isBlank()) {
             // ── Gemini path ───────────────────────────────────────────
             String text = extractWithPdfBox(pdfBytes);
