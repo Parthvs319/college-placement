@@ -63,6 +63,31 @@ public class SuperAdminDtos {
         Long companyId;
         String companyName;
         String createdAt;
+
+        // Student-specific fields
+        boolean placed;
+        String placedCompanyName;
+        BigDecimal currentCtc;
+        String department;
+        int passingYear;
+        BigDecimal cgpa;
+
+        // HR-specific fields
+        int collegeAssociatedCount;
+        int totalStudentsPicked;
+        BigDecimal hrHighestCtc;
+        BigDecimal hrLowestCtc;
+        int hrDriveCount;
+
+        // TPO / College Admin specific fields
+        int totalFinalYearStudents;
+        int totalPlaced;
+        int totalUnplaced;
+        int totalCompaniesOnboarded;
+        BigDecimal tpoHighestCtc;
+        BigDecimal tpoLowestCtc;
+        int internshipCount;
+        int fullTimeOfferCount;
     }
 
     @Data
