@@ -45,7 +45,7 @@ public class ContractTextExtractor {
     // Google Gemini API config
     private static final String GEMINI_API_KEY = System.getenv("GEMINI_API_KEY");
     private static final String GEMINI_API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
 
     // ── Public Result ─────────────────────────────────────────────────
 
