@@ -74,69 +74,80 @@ public enum UploadContractController implements BaseController {
         String tpoEmail          = rc.request().formAttributes().get("tpoEmail");
         String tpoName           = rc.request().formAttributes().get("tpoName");
         String contractLabel     = rc.request().formAttributes().get("contractLabel");
+        String contractTypeRaw   = rc.request().formAttributes().get("contractType");
 
-        if (contractAmountStr == null || contractAmountStr.isBlank()) {
-            throw new RoutingError("contractAmount is required");
-        }
+        String contractType = (contractTypeRaw != null && contractTypeRaw.equalsIgnoreCase("FREE_TRIAL"))
+                ? "FREE_TRIAL" : "PAID";
+        boolean isFreeTrial = "FREE_TRIAL".equals(contractType);
+
+        // Amount: required for PAID; defaults to 0 for FREE_TRIAL
         BigDecimal contractAmount;
-        try {
-            contractAmount = new BigDecimal(contractAmountStr.trim());
-        } catch (NumberFormatException e) {
-            throw new RoutingError("Invalid contractAmount — must be a number");
-        }
-        if (contractAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RoutingError("contractAmount must be greater than 0");
+        if (contractAmountStr != null && !contractAmountStr.isBlank()) {
+            try {
+                contractAmount = new BigDecimal(contractAmountStr.trim());
+            } catch (NumberFormatException e) {
+                throw new RoutingError("Invalid contractAmount — must be a number");
+            }
+        } else if (isFreeTrial) {
+            contractAmount = BigDecimal.ZERO;
+        } else {
+            throw new RoutingError("contractAmount is required for paid contracts");
         }
 
         // Default label
         if (contractLabel == null || contractLabel.isBlank()) {
-            contractLabel = "Applyra Contract " + LocalDate.now().getYear();
+            contractLabel = "Applyra " + (isFreeTrial ? "Free Trial" : "Contract") + " " + LocalDate.now().getYear();
         }
 
-        // ── Read uploaded file ────────────────────────────────────
+        // ── Read uploaded file (optional for FREE_TRIAL) ──────────
         List<FileUpload> uploads = rc.fileUploads();
-        if (uploads == null || uploads.isEmpty()) {
-            throw new RoutingError("No contract file uploaded. Send multipart/form-data with a 'file' field.");
+        boolean hasFile = uploads != null && !uploads.isEmpty() && uploads.get(0).size() > 0;
+
+        if (!hasFile && !isFreeTrial) {
+            throw new RoutingError("Contract PDF is required for paid contracts.");
         }
 
-        FileUpload fu = uploads.get(0);
-        if (fu.size() == 0) throw new RoutingError("Uploaded file is empty");
-        if (fu.size() > 20 * 1024 * 1024) throw new RoutingError("File too large — max 20 MB");
+        String s3Key   = null;
+        String fileUrl = null;
+        byte[] fileBytes   = null;
+        String pdfFileName = null;
+        CollegeDocument doc = null;
 
-        String contentType = fu.contentType();
-        if (!contentType.equals("application/pdf") && !contentType.contains("pdf")) {
-            // Warn but don't block — some browsers send different MIME types
-            System.out.println("[Contract] Non-PDF content type: " + contentType);
+        if (hasFile) {
+            FileUpload fu = uploads.get(0);
+            if (fu.size() > 20 * 1024 * 1024) throw new RoutingError("File too large — max 20 MB");
+
+            String contentType = fu.contentType();
+            try {
+                fileBytes = Files.readAllBytes(Paths.get(fu.uploadedFileName()));
+            } catch (Exception e) {
+                throw new RoutingError("Failed to read uploaded contract file: " + e.getMessage());
+            }
+
+            // Upload to S3
+            s3Key   = S3Service.upload("contracts", fu.fileName(), fileBytes, contentType);
+            fileUrl = S3Service.getDownloadUrl(s3Key);
+            pdfFileName = fu.fileName();
+
+            // Save CollegeDocument
+            doc = new CollegeDocument();
+            doc.setCollege(college);
+            doc.setDocumentType("APPLYRA_CONTRACT");
+            doc.setLabel(contractLabel);
+            doc.setFileName(fu.fileName());
+            doc.setFileUrl(fileUrl);
+            doc.setContentType(contentType);
+            doc.setFileSizeBytes(fu.size());
+            if (validTo != null && !validTo.isBlank()) doc.setExpiryDate(validTo);
+            doc.save();
         }
-
-        byte[] fileBytes;
-        try {
-            fileBytes = Files.readAllBytes(Paths.get(fu.uploadedFileName()));
-        } catch (Exception e) {
-            throw new RoutingError("Failed to read uploaded contract file: " + e.getMessage());
-        }
-
-        // ── Upload to S3 ──────────────────────────────────────────
-        String s3Key  = S3Service.upload("contracts", fu.fileName(), fileBytes, contentType);
-        String fileUrl = S3Service.getDownloadUrl(s3Key);
-
-        // ── Save CollegeDocument ──────────────────────────────────
-        CollegeDocument doc = new CollegeDocument();
-        doc.setCollege(college);
-        doc.setDocumentType("APPLYRA_CONTRACT");
-        doc.setLabel(contractLabel);
-        doc.setFileName(fu.fileName());
-        doc.setFileUrl(fileUrl);
-        doc.setContentType(contentType);
-        doc.setFileSizeBytes(fu.size());
-        if (validTo != null && !validTo.isBlank()) doc.setExpiryDate(validTo);
-        doc.save();
 
         // ── Save CollegeContract ──────────────────────────────────
         CollegeContract contract = new CollegeContract();
         contract.setCollege(college);
-        contract.setDocument(doc);
+        if (doc != null) contract.setDocument(doc);
         contract.setContractAmount(contractAmount);
+        contract.setContractType(contractType);
         contract.setValidFrom(validFrom != null && !validFrom.isBlank() ? validFrom : null);
         contract.setValidTo(validTo != null && !validTo.isBlank() ? validTo : null);
         contract.setStatus("ACTIVE");
@@ -178,28 +189,47 @@ public enum UploadContractController implements BaseController {
             }
 
             // Send onboarding email (fire-and-forget on a background thread)
-            final String fTpoEmail = tpoEmail;
-            final String fTpoName  = tpoName != null && !tpoName.isBlank() ? tpoName.trim() : "Placement Officer";
-            final String fPassword = generatedPassword;
-            final String fContractUrl = fileUrl;
-            final String fCollegeName = college.getName();
-            final String fCollegeCode = college.getCode();
-            final String fValidFrom   = validFrom;
-            final String fValidTo     = validTo;
-            final String portalUrl    = System.getenv().getOrDefault("PORTAL_URL", "https://applyra.in");
+            final String fTpoEmail      = tpoEmail;
+            final String fTpoName       = tpoName != null && !tpoName.isBlank() ? tpoName.trim() : "Placement Officer";
+            final String fPassword      = generatedPassword;
+            final String fContractUrl   = fileUrl;
+            final String fCollegeName   = college.getName();
+            final String fCollegeCode   = college.getCode();
+            final String fValidFrom     = validFrom;
+            final String fValidTo       = validTo;
+            final String fContractType  = contractType;
+            final String fPdfFileName   = pdfFileName;
+            final byte[] fFileBytes     = fileBytes;
+            final String fAmountDisplay = isFreeTrial ? "Free Trial"
+                    : "₹" + contractAmount.toPlainString();
+            final String portalUrl      = System.getenv().getOrDefault("PORTAL_URL", "https://applyra.in");
 
             new Thread(() -> {
                 try {
                     String html = EmailService.buildContractWithCredentialsHtml(
                             fTpoName, fCollegeName, fCollegeCode,
-                            fTpoEmail, fPassword != null ? fPassword : "(existing account — use your current password)",
-                            fContractUrl, fValidFrom, fValidTo, portalUrl
+                            fTpoEmail,
+                            fPassword != null ? fPassword : "(existing account — use your current password)",
+                            fContractUrl, fValidFrom, fValidTo, portalUrl,
+                            fAmountDisplay, fContractType
                     );
-                    EmailService.sendEmail(fTpoEmail, "Applyra Contract & TPO Credentials — " + fCollegeName, html)
-                            .subscribe(
-                                    sent -> System.out.println("[Contract] Email " + (sent ? "sent" : "failed") + " to " + fTpoEmail),
-                                    err  -> System.err.println("[Contract] Email error: " + err.getMessage())
-                            );
+                    String subject = "Applyra " + (isFreeTrial ? "Free Trial" : "Contract")
+                            + " & TPO Credentials — " + fCollegeName;
+
+                    // Attach PDF if available
+                    if (fFileBytes != null && fPdfFileName != null) {
+                        EmailService.sendEmailWithAttachment(fTpoEmail, subject, html, fFileBytes, fPdfFileName)
+                                .subscribe(
+                                        sent -> System.out.println("[Contract] Email+attachment " + (sent ? "sent" : "failed") + " to " + fTpoEmail),
+                                        err  -> System.err.println("[Contract] Email error: " + err.getMessage())
+                                );
+                    } else {
+                        EmailService.sendEmail(fTpoEmail, subject, html)
+                                .subscribe(
+                                        sent -> System.out.println("[Contract] Email " + (sent ? "sent" : "failed") + " to " + fTpoEmail),
+                                        err  -> System.err.println("[Contract] Email error: " + err.getMessage())
+                                );
+                    }
                 } catch (Exception e) {
                     System.err.println("[Contract] Email thread error: " + e.getMessage());
                 }
@@ -208,11 +238,12 @@ public enum UploadContractController implements BaseController {
 
         // ── Build response ────────────────────────────────────────
         Map<String, Object> result = new HashMap<>();
-        result.put("contractId", contract.getId());
-        result.put("documentId", doc.getId());
-        result.put("s3Key",       s3Key);
-        result.put("fileUrl",     fileUrl);
-        result.put("fileName",    fu.fileName());
+        result.put("contractId",    contract.getId());
+        result.put("contractType",  contractType);
+        if (doc != null)    result.put("documentId", doc.getId());
+        if (s3Key != null)  result.put("s3Key",      s3Key);
+        if (fileUrl != null) result.put("fileUrl",   fileUrl);
+        if (pdfFileName != null) result.put("fileName", pdfFileName);
         result.put("contractAmount", contractAmount);
         result.put("validFrom",   contract.getValidFrom());
         result.put("validTo",     contract.getValidTo());
@@ -222,7 +253,7 @@ public enum UploadContractController implements BaseController {
             result.put("tpoEmail", tpoUser.getEmail());
             result.put("tpoName",  tpoUser.getName());
         }
-        result.put("message", "Contract uploaded successfully" +
+        result.put("message", "Contract saved successfully" +
                 (generatedPassword != null ? " and TPO account created — credentials emailed to " + tpoEmail : ""));
 
         return result;

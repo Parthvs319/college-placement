@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Base64;
 
 /**
  * Email Service using Brevo (Sendinblue) HTTP API.
@@ -62,6 +63,56 @@ public class EmailService {
                 }
             } catch (Exception e) {
                 System.err.println("[Email] Failed to send to " + toEmail + ": " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Send an HTML email with a single file attachment via Brevo API.
+     *
+     * @param attachmentBytes  raw bytes of the file to attach (e.g. PDF)
+     * @param attachmentName   filename shown to recipient (e.g. "contract.pdf")
+     */
+    public static Single<Boolean> sendEmailWithAttachment(
+            String toEmail, String subject, String htmlBody,
+            byte[] attachmentBytes, String attachmentName) {
+
+        if (BREVO_API_KEY == null || BREVO_API_KEY.isEmpty()) {
+            System.out.println("[Email-DEV] To: " + toEmail + " | Subject: " + subject + " | Attachment: " + attachmentName);
+            return Single.just(true);
+        }
+
+        return Single.fromCallable(() -> {
+            try {
+                String base64Content = Base64.getEncoder().encodeToString(attachmentBytes);
+                String json = "{"
+                        + "\"sender\":{\"name\":\"" + escapeJson(BREVO_FROM_NAME) + "\",\"email\":\"" + escapeJson(BREVO_FROM_EMAIL) + "\"},"
+                        + "\"to\":[{\"email\":\"" + escapeJson(toEmail) + "\"}],"
+                        + "\"subject\":\"" + escapeJson(subject) + "\","
+                        + "\"htmlContent\":\"" + escapeJson(htmlBody) + "\","
+                        + "\"attachment\":[{\"content\":\"" + base64Content + "\",\"name\":\"" + escapeJson(attachmentName) + "\"}]"
+                        + "}";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                        .header("api-key", BREVO_API_KEY)
+                        .header("Content-Type", "application/json")
+                        .header("Accept", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
+
+                HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 201) {
+                    System.out.println("[Email] Sent (with attachment) to " + toEmail + ": " + subject);
+                    return true;
+                } else {
+                    System.err.println("[Email] Brevo attachment email error (" + response.statusCode() + "): " + response.body());
+                    return false;
+                }
+            } catch (Exception e) {
+                System.err.println("[Email] Failed to send attachment email to " + toEmail + ": " + e.getMessage());
                 return false;
             }
         });
@@ -302,56 +353,101 @@ public class EmailService {
             String email, String password,
             String contractDownloadUrl, String validFrom, String validTo,
             String portalUrl) {
+        return buildContractWithCredentialsHtml(tpoName, collegeName, collegeCode,
+                email, password, contractDownloadUrl, validFrom, validTo, portalUrl,
+                null, "PAID");
+    }
 
-        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
-                + "<h2 style='color: #1a73e8;'>Welcome to Applyra — Contract &amp; Account Details</h2>"
-                + "<p>Hi " + escapeJson(tpoName) + ",</p>"
-                + "<p>Your institution <strong>" + escapeJson(collegeName) + "</strong> has been formally onboarded on the "
-                + "<strong>Applyra Placement Intelligence Platform</strong>. Please find your signed contract and login credentials below.</p>"
+    /**
+     * Full version — includes contract amount, type, and proper login URL.
+     *
+     * @param contractAmount  formatted amount string e.g. "₹1,50,000" or "Free Trial"
+     * @param contractType    "PAID" or "FREE_TRIAL"
+     */
+    public static String buildContractWithCredentialsHtml(
+            String tpoName, String collegeName, String collegeCode,
+            String email, String password,
+            String contractDownloadUrl, String validFrom, String validTo,
+            String portalUrl, String contractAmount, String contractType) {
 
-                // Contract section
-                + "<div style='background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:20px 0;'>"
-                + "<p style='margin:0 0 10px; font-weight:bold; color:#1e40af; font-size:14px;'>📄 Your Contract</p>"
+        boolean isFreeTrial = "FREE_TRIAL".equalsIgnoreCase(contractType);
+        String loginUrl = (portalUrl != null && !portalUrl.isEmpty())
+                ? (portalUrl.endsWith("/") ? portalUrl + "login" : portalUrl + "/login")
+                : "";
+
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0 0 24px;'>"
+
+                // Header
+                + "<div style='background:#1a73e8; padding:28px 32px; border-radius:10px 10px 0 0;'>"
+                + "<h1 style='color:white; margin:0; font-size:22px; font-weight:800; letter-spacing:-0.5px;'>Applyra</h1>"
+                + "<p style='color:rgba(255,255,255,0.85); margin:6px 0 0; font-size:13px;'>Placement Intelligence Platform</p>"
+                + "</div>"
+
+                // Body
+                + "<div style='padding:28px 32px; background:#ffffff; border:1px solid #e5e7eb; border-top:none;'>"
+                + "<h2 style='color:#111827; font-size:18px; margin:0 0 8px;'>Welcome to Applyra!</h2>"
+                + "<p style='color:#374151; font-size:14px; margin:0 0 20px;'>Hi <strong>" + escapeJson(tpoName) + "</strong>, your institution "
+                + "<strong>" + escapeJson(collegeName) + "</strong> has been formally onboarded on Applyra.</p>"
+
+                // Contract details box
+                + "<div style='background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:0 0 20px;'>"
+                + "<p style='margin:0 0 12px; font-weight:700; color:#1e40af; font-size:14px;'>📄 Contract Details</p>"
                 + "<table style='width:100%; border-collapse:collapse;'>"
-                + "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>College</td>"
-                + "<td style='padding:5px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(collegeName) + " (" + escapeJson(collegeCode) + ")</td></tr>"
-                + (validFrom != null ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Valid From</td>"
-                + "<td style='padding:5px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(validFrom) + "</td></tr>" : "")
-                + (validTo != null ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Valid Until</td>"
-                + "<td style='padding:5px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(validTo) + "</td></tr>" : "")
+                + "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px; width:130px;'>College</td>"
+                + "<td style='padding:5px 0; font-weight:600; color:#1e293b; font-size:13px;'>" + escapeJson(collegeName) + " (" + escapeJson(collegeCode) + ")</td></tr>"
+                + "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Type</td>"
+                + "<td style='padding:5px 0; font-size:13px;'><span style='background:" + (isFreeTrial ? "#fef3c7" : "#dcfce7") + "; color:" + (isFreeTrial ? "#92400e" : "#166534") + "; padding:2px 8px; border-radius:12px; font-weight:600; font-size:12px;'>"
+                + (isFreeTrial ? "Free Trial" : "Paid") + "</span></td></tr>"
+                + (contractAmount != null && !contractAmount.isBlank()
+                    ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Value</td>"
+                    + "<td style='padding:5px 0; font-weight:600; color:#1e293b; font-size:13px;'>" + escapeJson(contractAmount) + "</td></tr>" : "")
+                + (validFrom != null && !validFrom.isBlank()
+                    ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Valid From</td>"
+                    + "<td style='padding:5px 0; font-weight:600; color:#1e293b; font-size:13px;'>" + escapeJson(validFrom) + "</td></tr>" : "")
+                + (validTo != null && !validTo.isBlank()
+                    ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Valid Until</td>"
+                    + "<td style='padding:5px 0; font-weight:600; color:#1e293b; font-size:13px;'>" + escapeJson(validTo) + "</td></tr>" : "")
                 + "</table>"
                 + (contractDownloadUrl != null && !contractDownloadUrl.isEmpty()
                     ? "<div style='margin-top:14px;'><a href='" + contractDownloadUrl + "' "
-                    + "style='background:#1a73e8; color:white; padding:10px 20px; text-decoration:none; "
-                    + "border-radius:6px; display:inline-block; font-size:13px;'>⬇ Download Contract</a></div>"
-                    : "")
+                    + "style='background:#1a73e8; color:white; padding:9px 18px; text-decoration:none; "
+                    + "border-radius:6px; display:inline-block; font-size:13px; font-weight:600;'>⬇ Download Contract PDF</a></div>"
+                    : "<p style='margin:12px 0 0; color:#6b7280; font-size:13px; font-style:italic;'>"
+                    + "The signed contract will be shared once executed.</p>")
                 + "</div>"
 
-                // Credentials section
-                + "<div style='background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:20px 0;'>"
-                + "<p style='margin:0 0 12px; font-weight:bold; color:#1e40af; font-size:14px;'>🔑 Your TPO Portal Login</p>"
+                // Login credentials box
+                + "<div style='background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:0 0 20px;'>"
+                + "<p style='margin:0 0 12px; font-weight:700; color:#1e40af; font-size:14px;'>🔑 Your TPO Portal Login</p>"
                 + "<table style='width:100%; border-collapse:collapse;'>"
-                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>Email / Username</td>"
-                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(email) + "</td></tr>"
-                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>Temporary Password</td>"
-                + "<td style='padding:6px 0; font-family:monospace; font-size:16px; font-weight:bold; color:#1e293b; "
-                + "background:#f1f5f9; padding:4px 8px; border-radius:4px;'>" + escapeJson(password) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px; width:130px;'>Email</td>"
+                + "<td style='padding:6px 0; font-weight:600; color:#1e293b; font-size:13px;'>" + escapeJson(email) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>Password</td>"
+                + "<td style='padding:6px 0; font-size:13px;'><span style='font-family:monospace; font-size:15px; font-weight:700; color:#1e293b; "
+                + "background:#f1f5f9; padding:3px 10px; border-radius:4px; display:inline-block;'>" + escapeJson(password) + "</span></td></tr>"
                 + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>College Code</td>"
-                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(collegeCode) + "</td></tr>"
+                + "<td style='padding:6px 0; font-weight:600; color:#1e293b; font-size:13px;'>" + escapeJson(collegeCode) + "</td></tr>"
                 + "</table>"
                 + "</div>"
 
-                + "<div style='background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; padding:12px 16px; margin:16px 0;'>"
+                // Warning
+                + "<div style='background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; padding:12px 16px; margin:0 0 20px;'>"
                 + "<p style='margin:0; color:#92400e; font-size:13px;'>"
                 + "<strong>Important:</strong> Please change your password after your first login and keep your credentials confidential.</p>"
                 + "</div>"
 
-                + (portalUrl != null && !portalUrl.isEmpty()
-                    ? "<p><a href='" + portalUrl + "' style='background:#e89830; color:white; padding:12px 24px; "
-                    + "text-decoration:none; border-radius:6px; display:inline-block; font-weight:bold;'>Access Applyra Portal</a></p>"
+                // CTA button → login page
+                + (!loginUrl.isEmpty()
+                    ? "<p style='text-align:center; margin:0 0 8px;'><a href='" + loginUrl + "' "
+                    + "style='background:#1a73e8; color:white; padding:13px 32px; text-decoration:none; "
+                    + "border-radius:8px; display:inline-block; font-weight:700; font-size:15px; letter-spacing:0.3px;'>"
+                    + "Login to Applyra →</a></p>"
+                    + "<p style='text-align:center; margin:4px 0 0; font-size:11px; color:#9ca3af;'>" + loginUrl + "</p>"
                     : "")
-                + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:24px 0;'>"
-                + "<p style='color:#6b7280; font-size:12px;'>Sent from Applyra Placement Intelligence Platform</p>"
+
+                + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:24px 0 16px;'>"
+                + "<p style='color:#9ca3af; font-size:11px; text-align:center; margin:0;'>Applyra Placement Intelligence Platform · applyra.in</p>"
+                + "</div>"
                 + "</div>";
     }
 

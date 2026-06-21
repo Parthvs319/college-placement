@@ -21,14 +21,18 @@ public class CollegeContract extends BaseModel {
     @JoinColumn(name = "college_id", nullable = false)
     public College college;
 
-    /** The uploaded contract document (in college_documents table) */
+    /** The uploaded contract document (nullable for FREE_TRIAL contracts with no PDF yet) */
     @ManyToOne
-    @JoinColumn(name = "document_id", nullable = false)
+    @JoinColumn(name = "document_id")
     public CollegeDocument document;
 
     /** Annual contract value in INR */
     @Column(nullable = false, precision = 15, scale = 2)
     public BigDecimal contractAmount;
+
+    /** PAID | FREE_TRIAL */
+    @Column(nullable = false)
+    public String contractType = "PAID";
 
     /** ISO date string "YYYY-MM-DD" */
     public String validFrom;

@@ -15,7 +15,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
-import java.util.Base64;
 import java.util.regex.*;
 
 /**
@@ -82,19 +81,19 @@ public class ContractTextExtractor {
             // ── Gemini path ───────────────────────────────────────────
             String text = extractWithPdfBox(pdfBytes);
             if (text != null && text.trim().length() >= MIN_TEXT_LENGTH) {
-                // Good text from PDFBox — parse with Gemini text mode
+                // Good text from PDFBox — parse with Gemini text mode (cheap: ~1k tokens)
                 result.rawText = text;
                 result.extractionMethod = "pdfbox";
                 parseWithGeminiText(result);
             } else {
-                // PDFBox failed or returned too little text (image PDF, corrupted, scanned)
-                // Send raw PDF to Gemini vision — it reads the PDF as an image
+                // PDFBox returned too little text — corrupted or image-only PDF.
+                // We do NOT send raw bytes to Gemini (too expensive on free tier).
+                // Return what we have and let the user fill in manually.
                 System.out.println("[ContractOCR] PDFBox text insufficient ("
                         + (text != null ? text.trim().length() : 0)
-                        + " chars), falling back to Gemini PDF vision...");
+                        + " chars). PDF may be scanned or corrupted — manual entry required.");
                 result.rawText = text != null ? text : "";
-                result.extractionMethod = "gemini-vision";
-                parseWithGeminiPdf(result, pdfBytes);
+                result.extractionMethod = "none";
             }
         } else {
             // ── Fallback path (no Gemini): PDFBox → Textract → regex ──
@@ -207,25 +206,6 @@ public class ContractTextExtractor {
                 "\"generationConfig\":{\"maxOutputTokens\":512,\"temperature\":0.1}}";
 
         callGemini(r, requestBody, "pdfbox+gemini");
-    }
-
-    /**
-     * Gemini vision mode: send the raw PDF bytes directly to Gemini.
-     * Handles image-only PDFs, scanned documents, and corrupted text layers.
-     * Gemini reads the PDF as rendered pages — no text extraction needed.
-     */
-    private static void parseWithGeminiPdf(ContractExtractResult r, byte[] pdfBytes) {
-        String base64Pdf      = Base64.getEncoder().encodeToString(pdfBytes);
-        String escapedPrompt  = jsonEscape(EXTRACTION_PROMPT);
-
-        String requestBody =
-                "{\"contents\":[{\"parts\":[" +
-                "{\"inline_data\":{\"mime_type\":\"application/pdf\",\"data\":\"" + base64Pdf + "\"}}," +
-                "{\"text\":\"" + escapedPrompt + "\"}" +
-                "]}]," +
-                "\"generationConfig\":{\"maxOutputTokens\":512,\"temperature\":0.1}}";
-
-        callGemini(r, requestBody, "gemini-vision");
     }
 
     /**
