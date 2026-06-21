@@ -99,8 +99,8 @@ public enum GenerateInvoiceController implements BaseController {
         invoiceData.invoiceNumber     = invoiceNumber;
         invoiceData.collegeName       = college.getName();
         invoiceData.collegeCode       = college.getCode();
-        invoiceData.collegeCity       = college.getCity();
-        invoiceData.collegeState      = college.getState();
+        invoiceData.collegeCity       = null;  // College entity stores cityId only
+        invoiceData.collegeState      = null;  // College entity stores stateId only
         invoiceData.collegeEmail      = college.getContactEmail();
         invoiceData.amount            = contractAmount;
         invoiceData.contractAmount    = contractAmount;
