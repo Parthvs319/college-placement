@@ -2,6 +2,7 @@ package models.services;
 
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
+import com.lowagie.text.pdf.draw.LineSeparator;
 
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
