@@ -149,16 +149,34 @@ public class ContractTextExtractor {
     // ── Amount Extraction ─────────────────────────────────────────────
 
     private static final List<Pattern> AMOUNT_PATTERNS = List.of(
-        // "Contract Value: ₹1,50,000" or "Contract Amount: Rs. 1,50,000"
-        Pattern.compile("(?:contract\\s*(?:value|amount|fee|price)|annual\\s*(?:fee|value|amount)|total\\s*(?:value|consideration|fee))" +
-                        "[^\\d₹Rs\\.]*[₹Rs\\.]*[\\s]*([\\d,]+(?:\\.\\d{1,2})?)",
-                        Pattern.CASE_INSENSITIVE),
-        // "₹ 1,50,000" or "INR 150000" standalone
-        Pattern.compile("(?:₹|INR|Rs\\.?)\\s*([\\d,]+(?:\\.\\d{1,2})?)",
-                        Pattern.CASE_INSENSITIVE),
-        // "1,50,000/- per annum" or "1,50,000 per year"
-        Pattern.compile("([\\d,]{5,})(?:\\.\\d{1,2})?\\s*(?:/-|per\\s*(?:annum|year|p\\.a\\.))",
-                        Pattern.CASE_INSENSITIVE)
+        // Pattern 1: labeled fee with currency prefix
+        // Matches: "Contract Amount: ₹1,50,000" / "Service Fee: INR 1,50,000" / "Annual Subscription Fee: Rs. 1,50,000"
+        Pattern.compile(
+            "(?:contract\\s*(?:value|amount|fee|price)|" +
+            "annual\\s*(?:fee|value|amount|subscription|platform|service|license)|" +
+            "total\\s*(?:value|consideration|fee|payable)|" +
+            "(?:service|subscription|platform|license|placement|software|access)\\s*fee|" +
+            "consideration|payable\\s*amount|charges)" +
+            "[^\\d₹Rs\\.\\n]{0,30}[₹]?\\s*(?:INR|Rs\\.?)?\\s*([\\d,]+(?:\\.\\d{1,2})?)",
+            Pattern.CASE_INSENSITIVE),
+
+        // Pattern 2: currency symbol/code followed by number (any context)
+        // Matches: "₹1,50,000" / "INR 1,50,000" / "Rs. 1,50,000"
+        Pattern.compile(
+            "(?:₹|INR|Rs\\.?)\\s*([1-9][\\d,]+(?:\\.\\d{1,2})?)",
+            Pattern.CASE_INSENSITIVE),
+
+        // Pattern 3: number followed by /- (Indian accounting notation) or per annum
+        // Matches: "1,50,000/-" / "1,50,000 per annum" / "150000/- only"
+        Pattern.compile(
+            "([1-9][\\d,]{4,})(?:\\.\\d{1,2})?\\s*(?:/-|/\\-|per\\s*(?:annum|year|p\\.a\\.))",
+            Pattern.CASE_INSENSITIVE),
+
+        // Pattern 4: labeled fee with number on next line (multiline contracts)
+        // Matches: "Fee:\n₹1,50,000" or "Amount\nINR 1,50,000"
+        Pattern.compile(
+            "(?:fee|amount|charges|consideration)\\s*[:\\-]?\\s*\\n+\\s*(?:₹|INR|Rs\\.?)?\\s*([1-9][\\d,]+(?:\\.\\d{1,2})?)",
+            Pattern.CASE_INSENSITIVE)
     );
 
     private static String extractAmount(String text) {

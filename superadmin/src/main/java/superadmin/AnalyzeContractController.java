@@ -64,11 +64,11 @@ public enum AnalyzeContractController implements BaseController {
         // ── Extract text + parse fields ───────────────────────────────
         ContractTextExtractor.ContractExtractResult result = ContractTextExtractor.extract(bytes);
 
-        // Raw text preview (first 500 chars) for debugging
+        // Raw text preview (first 1000 chars) for debugging
         String preview = "";
         if (result.rawText != null && !result.rawText.isBlank()) {
-            preview = result.rawText.length() > 500
-                    ? result.rawText.substring(0, 500).trim() + "…"
+            preview = result.rawText.length() > 1000
+                    ? result.rawText.substring(0, 1000).trim() + "…"
                     : result.rawText.trim();
         }
 
