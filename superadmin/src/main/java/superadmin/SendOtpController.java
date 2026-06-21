@@ -9,7 +9,6 @@ import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.body.SuperAdminLoginRequest;
 import models.services.EmailService;
 import models.services.OtpService;
-import models.services.WhatsAppService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,14 +58,18 @@ public enum SendOtpController implements BaseController {
 
         String otp = OtpService.INSTANCE.generate(type, value);
 
+        // Both email and phone OTPs are delivered via email (Brevo).
+        // For phone type the OTP email is sent to the TPO's contact email stored in the
+        // request header "X-Contact-Email", or falls back to using the phone as a label.
         if (type.equals("email")) {
-            return EmailService.sendEmail(value, "Your Applyra Verification OTP", buildEmailHtml(otp))
+            return EmailService.sendEmail(value, "Your Applyra Verification OTP", buildEmailHtml(otp, "email"))
                     .map(sent -> buildResponse(sent, "email", maskEmail(value)));
         } else {
-            String phone = value.replaceAll("[^0-9]", "");
-            if (phone.length() == 10) phone = "91" + phone;
-            String message = "Your Applyra verification OTP is: " + otp + ". Valid for 10 minutes. Do not share this with anyone.";
-            return WhatsAppService.sendMessage(phone, message)
+            // Phone OTP: send to the contact email supplied in the request body
+            String contactEmail = rc.body().asJsonObject().getString("contactEmail", "").trim();
+            if (contactEmail.isEmpty() || !contactEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))
+                throw new RoutingError("contactEmail is required to deliver phone OTP");
+            return EmailService.sendEmail(contactEmail, "Your Applyra Phone Verification OTP", buildEmailHtml(otp, "phone"))
                     .map(sent -> buildResponse(sent, "phone", maskPhone(value)));
         }
     }
@@ -82,13 +85,16 @@ public enum SendOtpController implements BaseController {
 
     // ── Email HTML ────────────────────────────────────────────────────
 
-    private String buildEmailHtml(String otp) {
+    private String buildEmailHtml(String otp, String type) {
+        String subtitle = type.equals("phone")
+                ? "Use this OTP to verify your phone number on Applyra."
+                : "Use this OTP to verify your email address on Applyra.";
         return "<div style='font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;'>"
                 + "<div style='text-align: center; margin-bottom: 28px;'>"
                 + "<span style='font-size: 22px; font-weight: 800; letter-spacing: -0.5px;'>Applyra</span>"
                 + "</div>"
                 + "<div style='background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 28px; text-align: center;'>"
-                + "<p style='color: #374151; font-size: 15px; margin: 0 0 20px;'>Your verification OTP is:</p>"
+                + "<p style='color: #374151; font-size: 15px; margin: 0 0 20px;'>" + subtitle + "</p>"
                 + "<div style='font-size: 40px; font-weight: 800; letter-spacing: 10px; color: #111827; margin: 0 0 20px;'>"
                 + otp
                 + "</div>"
