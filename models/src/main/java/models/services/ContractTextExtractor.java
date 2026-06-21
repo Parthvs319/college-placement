@@ -15,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
+import java.util.Base64;
 import java.util.regex.*;
 
 /**
@@ -64,33 +65,55 @@ public class ContractTextExtractor {
 
     /**
      * Extract contract fields from raw PDF bytes.
+     *
+     * With GEMINI_API_KEY set (recommended):
+     *   1. PDFBox extracts text. If enough text found → Gemini parses fields from text.
+     *   2. If PDFBox fails / returns too little text (scanned/image/corrupted PDFs)
+     *      → raw PDF bytes sent directly to Gemini vision (handles any PDF format).
+     *
+     * Without GEMINI_API_KEY:
+     *   PDFBox → Textract fallback → regex parsing.
      */
     public static ContractExtractResult extract(byte[] pdfBytes) {
         ContractExtractResult result = new ContractExtractResult();
 
-        // ── Step 1: Extract raw text ──────────────────────────────────
-        String text = extractWithPdfBox(pdfBytes);
-        if (text != null && text.trim().length() >= MIN_TEXT_LENGTH) {
-            result.rawText = text;
-            result.extractionMethod = "pdfbox";
-        } else {
-            System.out.println("[ContractOCR] PDFBox text too short ("
-                    + (text != null ? text.trim().length() : 0) + " chars), trying Textract...");
-            String textractText = extractWithTextract(pdfBytes);
-            if (textractText != null && !textractText.isBlank()) {
-                result.rawText = textractText;
-                result.extractionMethod = "textract";
+        if (GEMINI_API_KEY != null && !GEMINI_API_KEY.isBlank()) {
+            // ── Gemini path ───────────────────────────────────────────
+            String text = extractWithPdfBox(pdfBytes);
+            if (text != null && text.trim().length() >= MIN_TEXT_LENGTH) {
+                // Good text from PDFBox — parse with Gemini text mode
+                result.rawText = text;
+                result.extractionMethod = "pdfbox";
+                parseWithGeminiText(result);
             } else {
+                // PDFBox failed or returned too little text (image PDF, corrupted, scanned)
+                // Send raw PDF to Gemini vision — it reads the PDF as an image
+                System.out.println("[ContractOCR] PDFBox text insufficient ("
+                        + (text != null ? text.trim().length() : 0)
+                        + " chars), falling back to Gemini PDF vision...");
                 result.rawText = text != null ? text : "";
-                result.extractionMethod = "none";
+                result.extractionMethod = "gemini-vision";
+                parseWithGeminiPdf(result, pdfBytes);
             }
-        }
-
-        // ── Step 2: Parse fields ──────────────────────────────────────
-        if (result.rawText != null && !result.rawText.isBlank()) {
-            if (GEMINI_API_KEY != null && !GEMINI_API_KEY.isBlank()) {
-                parseWithGemini(result);
+        } else {
+            // ── Fallback path (no Gemini): PDFBox → Textract → regex ──
+            String text = extractWithPdfBox(pdfBytes);
+            if (text != null && text.trim().length() >= MIN_TEXT_LENGTH) {
+                result.rawText = text;
+                result.extractionMethod = "pdfbox";
             } else {
+                System.out.println("[ContractOCR] PDFBox text too short ("
+                        + (text != null ? text.trim().length() : 0) + " chars), trying Textract...");
+                String textractText = extractWithTextract(pdfBytes);
+                if (textractText != null && !textractText.isBlank()) {
+                    result.rawText = textractText;
+                    result.extractionMethod = "textract";
+                } else {
+                    result.rawText = text != null ? text : "";
+                    result.extractionMethod = "none";
+                }
+            }
+            if (result.rawText != null && !result.rawText.isBlank()) {
                 parseWithRegex(result);
             }
         }
@@ -151,51 +174,71 @@ public class ContractTextExtractor {
     // GEMINI AI FIELD PARSING
     // ═══════════════════════════════════════════════════════════════════
 
-    private static void parseWithGemini(ContractExtractResult r) {
-        // Limit to ~4000 chars to keep token cost low
+    private static final String EXTRACTION_PROMPT =
+            "Extract the following fields from this contract document and return ONLY valid JSON:\n" +
+            "- contractAmount: annual service/subscription/platform fee in INR as integer string (digits only, no commas/symbols). " +
+            "Only set if an explicit numeric value is stated. If fee is per commercial schedule or TBD return null.\n" +
+            "- validFrom: contract start/commencement/effective date in YYYY-MM-DD format (null if not found)\n" +
+            "- validTo: contract end/expiry date in YYYY-MM-DD format (null if not found)\n" +
+            "- tpoEmail: email of the Training & Placement Officer or college-side contact (null if not found)\n" +
+            "- tpoName: full name of TPO or primary contact person from the college (null if not found)\n" +
+            "- collegeName: full official name of the educational institution/college (null if not found)\n" +
+            "\n" +
+            "Rules:\n" +
+            "1. Return ONLY the JSON object - no markdown fences, no explanation.\n" +
+            "2. For contractAmount: extract only if a clear numeric fee is stated.\n" +
+            "3. For dates: convert any format (21 June 2026, 21/06/2026) to YYYY-MM-DD.\n" +
+            "4. For collegeName: extract the institution name, not Applyra.";
+
+    /**
+     * Gemini text mode: PDFBox already extracted text, send it to Gemini for parsing.
+     */
+    private static void parseWithGeminiText(ContractExtractResult r) {
         String textSnippet = r.rawText.length() > 4000
                 ? r.rawText.substring(0, 4000) + "\n[...truncated...]"
                 : r.rawText;
 
-        String prompt =
-                "Extract the following fields from this contract document and return ONLY valid JSON:\n" +
-                "- contractAmount: annual service/subscription/platform fee in INR as integer string (digits only, no commas/symbols). " +
-                "Only set if an explicit numeric value is stated. If fee is \"per commercial schedule\" or TBD, return null.\n" +
-                "- validFrom: contract start/commencement/effective date in YYYY-MM-DD format (null if not found)\n" +
-                "- validTo: contract end/expiry date in YYYY-MM-DD format (null if not found)\n" +
-                "- tpoEmail: email of the Training & Placement Officer or college-side contact (null if not found)\n" +
-                "- tpoName: full name of TPO or primary contact person from the college (null if not found)\n" +
-                "- collegeName: full official name of the educational institution/college (null if not found)\n" +
-                "\n" +
-                "Rules:\n" +
-                "1. Return ONLY the JSON object — no markdown fences, no explanation.\n" +
-                "2. For contractAmount: extract only if a clear numeric fee is stated for this agreement.\n" +
-                "3. For dates: convert any format (\"21 June 2026\", \"21/06/2026\") to YYYY-MM-DD.\n" +
-                "4. For collegeName: extract the institution name, not Applyra.\n" +
-                "\n" +
-                "Contract text:\n" + textSnippet;
+        String fullPrompt = EXTRACTION_PROMPT + "\n\nContract text:\n" + textSnippet;
+        String escaped    = jsonEscape(fullPrompt);
 
+        String requestBody =
+                "{\"contents\":[{\"parts\":[{\"text\":\"" + escaped + "\"}]}]," +
+                "\"generationConfig\":{\"maxOutputTokens\":512,\"temperature\":0.1}}";
+
+        callGemini(r, requestBody, "pdfbox+gemini");
+    }
+
+    /**
+     * Gemini vision mode: send the raw PDF bytes directly to Gemini.
+     * Handles image-only PDFs, scanned documents, and corrupted text layers.
+     * Gemini reads the PDF as rendered pages — no text extraction needed.
+     */
+    private static void parseWithGeminiPdf(ContractExtractResult r, byte[] pdfBytes) {
+        String base64Pdf      = Base64.getEncoder().encodeToString(pdfBytes);
+        String escapedPrompt  = jsonEscape(EXTRACTION_PROMPT);
+
+        String requestBody =
+                "{\"contents\":[{\"parts\":[" +
+                "{\"inline_data\":{\"mime_type\":\"application/pdf\",\"data\":\"" + base64Pdf + "\"}}," +
+                "{\"text\":\"" + escapedPrompt + "\"}" +
+                "]}]," +
+                "\"generationConfig\":{\"maxOutputTokens\":512,\"temperature\":0.1}}";
+
+        callGemini(r, requestBody, "gemini-vision");
+    }
+
+    /**
+     * Shared Gemini HTTP call. On success applies extracted fields; on failure falls back to regex.
+     */
+    private static void callGemini(ContractExtractResult r, String requestBody, String methodOnSuccess) {
         try {
-            // JSON-escape the prompt for inline embedding
-            String escapedPrompt = prompt
-                    .replace("\\", "\\\\")
-                    .replace("\"", "\\\"")
-                    .replace("\n", "\\n")
-                    .replace("\r", "\\r")
-                    .replace("\t", "\\t");
-
-            // Gemini request format
-            String requestBody =
-                    "{\"contents\":[{\"parts\":[{\"text\":\"" + escapedPrompt + "\"}]}]," +
-                    "\"generationConfig\":{\"maxOutputTokens\":512,\"temperature\":0.1}}";
-
             HttpClient httpClient = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(15))
                     .build();
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(GEMINI_API_URL + GEMINI_API_KEY))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(45))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
@@ -206,8 +249,8 @@ public class ContractTextExtractor {
                 String geminiJson = extractTextFromGeminiResponse(response.body());
                 if (geminiJson != null) {
                     applyAIJson(r, geminiJson);
-                    r.extractionMethod = r.extractionMethod + "+gemini";
-                    System.out.println("[ContractOCR] Gemini extraction successful: " + geminiJson);
+                    r.extractionMethod = methodOnSuccess;
+                    System.out.println("[ContractOCR] Gemini extraction successful (" + methodOnSuccess + "): " + geminiJson);
                 } else {
                     System.err.println("[ContractOCR] Could not parse Gemini response: "
                             + response.body().substring(0, Math.min(300, response.body().length())));
@@ -218,11 +261,19 @@ public class ContractTextExtractor {
                         + ": " + response.body().substring(0, Math.min(300, response.body().length())));
                 parseWithRegex(r);
             }
-
         } catch (Exception e) {
             System.err.println("[ContractOCR] Gemini call failed: " + e.getMessage());
             parseWithRegex(r);
         }
+    }
+
+    /** Escape a string for embedding inside a JSON string value. */
+    private static String jsonEscape(String s) {
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     /**
