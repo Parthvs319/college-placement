@@ -166,7 +166,40 @@ public enum GetStudentDetailController implements BaseController {
                     // Resumes
                     if (student.getResumes() != null) {
                         detail.resumeCount = student.getResumes().size();
+                        detail.resumes = student.getResumes().stream()
+                                .filter(r -> !r.isDeleted())
+                                .map(r -> {
+                                    ResumeInfo ri = new ResumeInfo();
+                                    ri.id = r.getId();
+                                    ri.fileName = r.getFileName();
+                                    ri.url = r.getUrl();
+                                    ri.contentType = r.getContentType();
+                                    ri.fileSize = r.getFileSize();
+                                    ri.primary = r.isPrimary();
+                                    ri.label = r.getLabel();
+                                    ri.atsScore = r.getAtsScore();
+                                    ri.uploadedAt = r.getCreatedAt() != null ? r.getCreatedAt().toString() : null;
+                                    return ri;
+                                }).collect(Collectors.toList());
                     }
+
+                    // Student documents (Aadhaar, PAN, Student ID, Marksheets, etc.)
+                    List<StudentDocument> docs = StudentDocumentRepository.INSTANCE.byStudentId(studentId);
+                    detail.documents = docs.stream().map(d -> {
+                        DocumentInfo di = new DocumentInfo();
+                        di.id = d.getId();
+                        di.documentType = d.getDocumentType();
+                        di.label = d.getLabel();
+                        di.fileName = d.getFileName();
+                        di.fileUrl = d.getFileUrl();
+                        di.contentType = d.getContentType();
+                        di.fileSizeBytes = d.getFileSizeBytes();
+                        di.semester = d.getSemester();
+                        di.verified = d.isVerified();
+                        di.verificationNote = d.getVerificationNote();
+                        di.uploadedAt = d.getCreatedAt() != null ? d.getCreatedAt().toString() : null;
+                        return di;
+                    }).collect(Collectors.toList());
 
                     return detail;
                 })
@@ -232,6 +265,10 @@ public enum GetStudentDetailController implements BaseController {
 
         // Resume
         int resumeCount;
+        List<ResumeInfo> resumes;
+
+        // Documents
+        List<DocumentInfo> documents;
     }
 
     @Data
@@ -271,5 +308,33 @@ public enum GetStudentDetailController implements BaseController {
         String endDate;
         int totalCredits;
         int usedCredits;
+    }
+
+    @Data
+    public static class ResumeInfo {
+        Long id;
+        String fileName;
+        String url;
+        String contentType;
+        long fileSize;
+        boolean primary;
+        String label;
+        Integer atsScore;
+        String uploadedAt;
+    }
+
+    @Data
+    public static class DocumentInfo {
+        Long id;
+        String documentType;
+        String label;
+        String fileName;
+        String fileUrl;
+        String contentType;
+        Long fileSizeBytes;
+        Integer semester;
+        boolean verified;
+        String verificationNote;
+        String uploadedAt;
     }
 }

@@ -127,6 +127,24 @@ public enum GetCompanyDetailController implements BaseController {
                     detail.highestCtcOffered = highestCtc;
                     detail.recentDrives = driveInfos.stream().limit(10).collect(Collectors.toList());
 
+                    // Company documents (Applyra contract, GST, incorporation, NDA, etc.)
+                    List<CompanyDocument> companyDocs = CompanyDocumentRepository.INSTANCE.byCompanyId(companyId);
+                    detail.documents = companyDocs.stream().map(doc -> {
+                        DocumentInfo di = new DocumentInfo();
+                        di.id = doc.getId();
+                        di.documentType = doc.getDocumentType();
+                        di.label = doc.getLabel();
+                        di.fileName = doc.getFileName();
+                        di.fileUrl = doc.getFileUrl();
+                        di.contentType = doc.getContentType();
+                        di.fileSizeBytes = doc.getFileSizeBytes();
+                        di.expiryDate = doc.getExpiryDate();
+                        di.verified = doc.isVerified();
+                        di.verificationNote = doc.getVerificationNote();
+                        di.uploadedAt = doc.getCreatedAt() != null ? doc.getCreatedAt().toString() : null;
+                        return di;
+                    }).collect(Collectors.toList());
+
                     return detail;
                 })
                 .subscribe(
@@ -165,6 +183,9 @@ public enum GetCompanyDetailController implements BaseController {
 
         // Recent drives
         List<DriveInfo> recentDrives;
+
+        // Documents
+        List<DocumentInfo> documents;
     }
 
     @Data
@@ -195,5 +216,20 @@ public enum GetCompanyDetailController implements BaseController {
         String driveDate;
         int applicationCount;
         int offerCount;
+    }
+
+    @Data
+    public static class DocumentInfo {
+        Long id;
+        String documentType;
+        String label;
+        String fileName;
+        String fileUrl;
+        String contentType;
+        Long fileSizeBytes;
+        String expiryDate;
+        boolean verified;
+        String verificationNote;
+        String uploadedAt;
     }
 }

@@ -80,6 +80,9 @@ public class Student extends AttrsModel {
     public BigDecimal currentCtc;           // CTC of accepted offer (if any)
 
     @OneToMany(mappedBy = "student")
+    public List<StudentDocument> documents;
+
+    @OneToMany(mappedBy = "student")
     public List<DriveApplication> applications;
 
     @OneToMany(mappedBy = "student")

@@ -114,6 +114,25 @@ public enum GetCollegeDetailController implements BaseController {
                         return cm;
                     }).filter(cm -> cm.containsKey("companyId")).toList());
 
+                    // College documents (Applyra contract, AICTE, NAAC, etc.)
+                    List<CollegeDocument> collegeDocs = CollegeDocumentRepository.INSTANCE.byCollegeId(collegeId);
+                    result.put("documents", collegeDocs.stream().map(doc -> {
+                        Map<String, Object> docMap = new HashMap<>();
+                        docMap.put("id", doc.getId());
+                        docMap.put("documentType", doc.getDocumentType());
+                        docMap.put("label", doc.getLabel());
+                        docMap.put("fileName", doc.getFileName());
+                        docMap.put("fileUrl", doc.getFileUrl());
+                        docMap.put("contentType", doc.getContentType());
+                        docMap.put("fileSizeBytes", doc.getFileSizeBytes());
+                        docMap.put("academicYear", doc.getAcademicYear());
+                        docMap.put("expiryDate", doc.getExpiryDate());
+                        docMap.put("verified", doc.isVerified());
+                        docMap.put("verificationNote", doc.getVerificationNote());
+                        docMap.put("uploadedAt", doc.getCreatedAt() != null ? doc.getCreatedAt().toString() : null);
+                        return docMap;
+                    }).toList());
+
                     // Drive list for modal (id, title, companyName, status, ctcOffered, driveDate)
                     result.put("driveList", drives.stream().map(d -> {
                         Map<String, Object> dm = new HashMap<>();

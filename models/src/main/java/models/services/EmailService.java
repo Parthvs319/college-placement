@@ -292,4 +292,101 @@ public class EmailService {
                 + "<p style='color: #6b7280; font-size: 12px;'>Sent from the Placement Portal</p>"
                 + "</div>";
     }
+
+    /**
+     * Email sent to the college admin when a contract is uploaded and a TPO account is created.
+     * Includes contract download link + login credentials.
+     */
+    public static String buildContractWithCredentialsHtml(
+            String tpoName, String collegeName, String collegeCode,
+            String email, String password,
+            String contractDownloadUrl, String validFrom, String validTo,
+            String portalUrl) {
+
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #1a73e8;'>Welcome to Applyra — Contract &amp; Account Details</h2>"
+                + "<p>Hi " + escapeJson(tpoName) + ",</p>"
+                + "<p>Your institution <strong>" + escapeJson(collegeName) + "</strong> has been formally onboarded on the "
+                + "<strong>Applyra Placement Intelligence Platform</strong>. Please find your signed contract and login credentials below.</p>"
+
+                // Contract section
+                + "<div style='background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:20px 0;'>"
+                + "<p style='margin:0 0 10px; font-weight:bold; color:#1e40af; font-size:14px;'>📄 Your Contract</p>"
+                + "<table style='width:100%; border-collapse:collapse;'>"
+                + "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>College</td>"
+                + "<td style='padding:5px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(collegeName) + " (" + escapeJson(collegeCode) + ")</td></tr>"
+                + (validFrom != null ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Valid From</td>"
+                + "<td style='padding:5px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(validFrom) + "</td></tr>" : "")
+                + (validTo != null ? "<tr><td style='padding:5px 0; color:#6b7280; font-size:13px;'>Valid Until</td>"
+                + "<td style='padding:5px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(validTo) + "</td></tr>" : "")
+                + "</table>"
+                + (contractDownloadUrl != null && !contractDownloadUrl.isEmpty()
+                    ? "<div style='margin-top:14px;'><a href='" + contractDownloadUrl + "' "
+                    + "style='background:#1a73e8; color:white; padding:10px 20px; text-decoration:none; "
+                    + "border-radius:6px; display:inline-block; font-size:13px;'>⬇ Download Contract</a></div>"
+                    : "")
+                + "</div>"
+
+                // Credentials section
+                + "<div style='background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:20px 0;'>"
+                + "<p style='margin:0 0 12px; font-weight:bold; color:#1e40af; font-size:14px;'>🔑 Your TPO Portal Login</p>"
+                + "<table style='width:100%; border-collapse:collapse;'>"
+                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>Email / Username</td>"
+                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(email) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>Temporary Password</td>"
+                + "<td style='padding:6px 0; font-family:monospace; font-size:16px; font-weight:bold; color:#1e293b; "
+                + "background:#f1f5f9; padding:4px 8px; border-radius:4px;'>" + escapeJson(password) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280; font-size:13px;'>College Code</td>"
+                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b; font-size:13px;'>" + escapeJson(collegeCode) + "</td></tr>"
+                + "</table>"
+                + "</div>"
+
+                + "<div style='background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; padding:12px 16px; margin:16px 0;'>"
+                + "<p style='margin:0; color:#92400e; font-size:13px;'>"
+                + "<strong>Important:</strong> Please change your password after your first login and keep your credentials confidential.</p>"
+                + "</div>"
+
+                + (portalUrl != null && !portalUrl.isEmpty()
+                    ? "<p><a href='" + portalUrl + "' style='background:#e89830; color:white; padding:12px 24px; "
+                    + "text-decoration:none; border-radius:6px; display:inline-block; font-weight:bold;'>Access Applyra Portal</a></p>"
+                    : "")
+                + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:24px 0;'>"
+                + "<p style='color:#6b7280; font-size:12px;'>Sent from Applyra Placement Intelligence Platform</p>"
+                + "</div>";
+    }
+
+    /**
+     * Email sent to the college when an invoice is generated.
+     */
+    public static String buildInvoiceEmailHtml(
+            String collegeName, String invoiceNumber,
+            String billingPeriod, String amount,
+            String invoiceDownloadUrl, String dueDate) {
+
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #1a73e8;'>Invoice Generated — " + escapeJson(invoiceNumber) + "</h2>"
+                + "<p>Dear <strong>" + escapeJson(collegeName) + "</strong>,</p>"
+                + "<p>An invoice has been generated for your Applyra platform subscription.</p>"
+                + "<div style='background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:20px 0;'>"
+                + "<table style='width:100%; border-collapse:collapse;'>"
+                + "<tr><td style='padding:6px 0; color:#6b7280;'>Invoice No.</td>"
+                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b;'>" + escapeJson(invoiceNumber) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280;'>Billing Period</td>"
+                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b;'>" + escapeJson(billingPeriod) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280;'>Amount Due</td>"
+                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b; font-size:16px;'>" + escapeJson(amount) + "</td></tr>"
+                + "<tr><td style='padding:6px 0; color:#6b7280;'>Due Date</td>"
+                + "<td style='padding:6px 0; font-weight:bold; color:#1e293b;'>" + escapeJson(dueDate) + "</td></tr>"
+                + "</table>"
+                + (invoiceDownloadUrl != null && !invoiceDownloadUrl.isEmpty()
+                    ? "<div style='margin-top:16px;'><a href='" + invoiceDownloadUrl + "' "
+                    + "style='background:#1a73e8; color:white; padding:10px 20px; text-decoration:none; "
+                    + "border-radius:6px; display:inline-block;'>⬇ Download Invoice PDF</a></div>"
+                    : "")
+                + "</div>"
+                + "<p style='color:#6b7280; font-size:13px;'>Please process this payment by the due date to avoid service interruption.</p>"
+                + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:24px 0;'>"
+                + "<p style='color:#6b7280; font-size:12px;'>Sent from Applyra Placement Intelligence Platform</p>"
+                + "</div>";
+    }
 }

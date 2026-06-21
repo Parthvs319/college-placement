@@ -51,4 +51,7 @@ public class College extends AttrsModel {
 
     @OneToMany(mappedBy = "college")
     public List<CompanyCollege> companyColleges;
+
+    @OneToMany(mappedBy = "college")
+    public List<CollegeDocument> documents;
 }
