@@ -116,21 +116,45 @@ public enum GstinLookupController implements BaseController {
     }
 
     /**
-     * Calls the public GST portal search API.
-     * Returns: legalName, tradeName, city, pincode, address, status
+     * Calls the GST Portal taxpayer search API (same endpoint the portal UI uses).
+     * Tries two known endpoints in sequence; throws if both fail.
      */
     private Map<String, Object> fetchFromGstPortal(String gstin) throws Exception {
-        String apiUrl = "https://sheet.gst.gov.in/commonapi/v1.1/search?action=TP&gstin=" + gstin;
+        // Primary: official GST services API
+        String[] endpoints = {
+            "https://services.gst.gov.in/services/api/search/taxpayer?gstin=" + gstin,
+            "https://api.gst.gov.in/commonapi/v1.1/search?action=TP&gstin=" + gstin
+        };
+
+        Exception lastEx = null;
+        for (String apiUrl : endpoints) {
+            try {
+                String json = httpGet(apiUrl);
+                if (json != null && !json.isBlank() && json.contains("lgnm")) {
+                    return parseGstResponse(json);
+                }
+            } catch (Exception e) {
+                lastEx = e;
+                System.err.println("[GSTIN] Endpoint failed (" + apiUrl + "): " + e.getMessage());
+            }
+        }
+        throw new Exception("All GST endpoints failed: " + (lastEx != null ? lastEx.getMessage() : "no data"));
+    }
+
+    private String httpGet(String apiUrl) throws Exception {
         URL url = new URL(apiUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(5000);
+        conn.setInstanceFollowRedirects(true);
+        conn.setRequestProperty("Accept", "application/json, text/plain, */*");
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        conn.setRequestProperty("Referer", "https://www.gst.gov.in/");
+        conn.setRequestProperty("Origin", "https://www.gst.gov.in");
+        conn.setConnectTimeout(6000);
+        conn.setReadTimeout(6000);
 
         int status = conn.getResponseCode();
-        if (status != 200) throw new Exception("GST portal returned status " + status);
+        if (status != 200) throw new Exception("HTTP " + status);
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
@@ -138,55 +162,74 @@ public enum GstinLookupController implements BaseController {
         while ((line = br.readLine()) != null) sb.append(line);
         br.close();
         conn.disconnect();
-
-        String json = sb.toString();
-        return parseGstResponse(json);
+        return sb.toString();
     }
 
     private Map<String, Object> parseGstResponse(String json) {
         Map<String, Object> out = new HashMap<>();
 
-        String legalName  = jsonField(json, "lgnm");
-        String tradeName  = jsonField(json, "tradeNam");
-        String status     = jsonField(json, "sts");
+        // The services.gst.gov.in response wraps data under "taxpayerInfo"
+        String body = json;
+        int tiStart = json.indexOf("\"taxpayerInfo\"");
+        if (tiStart >= 0) body = json.substring(tiStart);
 
-        if (legalName  != null) out.put("legalName",  titleCase(legalName));
-        if (tradeName  != null) out.put("tradeName",  titleCase(tradeName));
-        if (status     != null) out.put("gstStatus",  status);
+        String legalName = jsonField(body, "lgnm");
+        String tradeName = jsonField(body, "tradeNam");
+        String status    = jsonField(body, "sts");
+        String bizType   = jsonField(body, "ctb");   // constitution of business
 
-        // Derive suggested college name: prefer tradeName, fallback to legalName
-        String suggestedName = tradeName != null ? tradeName : legalName;
+        if (legalName != null) out.put("legalName",  titleCase(legalName));
+        if (tradeName != null) out.put("tradeName",  titleCase(tradeName));
+        if (status    != null) out.put("gstStatus",  status);
+        if (bizType   != null) out.put("businessType", bizType);
+
+        // Suggested college name: trade name preferred, fallback to legal name
+        String suggestedName = (tradeName != null && !tradeName.isBlank()) ? tradeName : legalName;
         if (suggestedName != null) out.put("suggestedName", titleCase(suggestedName));
 
-        // Parse primary address
+        // Parse primary address block
         try {
-            int pradrStart = json.indexOf("\"pradr\"");
+            int pradrStart = body.indexOf("\"pradr\"");
             if (pradrStart >= 0) {
-                String addrBlock = json.substring(pradrStart);
+                String addrBlock = body.substring(pradrStart);
+
+                // Flat address string (services.gst.gov.in provides "adr")
+                String flatAdr = jsonField(addrBlock, "adr");
+                if (flatAdr != null && !flatAdr.isBlank()) out.put("address", titleCase(flatAdr));
+
+                // Inner addr object fields
                 String pincode = jsonField(addrBlock, "pncd");
-                String city    = jsonField(addrBlock, "dst");   // district
-                String loc     = jsonField(addrBlock, "loc");   // locality
+                String city    = firstNonBlank(jsonField(addrBlock, "city"), jsonField(addrBlock, "dst"));
+                String loc     = jsonField(addrBlock, "loc");
                 String bno     = jsonField(addrBlock, "bno");
                 String bnm     = jsonField(addrBlock, "bnm");
-                String st      = jsonField(addrBlock, "st");    // street
+                String st      = jsonField(addrBlock, "st");
 
                 if (pincode != null) out.put("pincode", pincode);
                 if (city    != null) out.put("city",    titleCase(city));
                 if (loc     != null) out.put("locality", titleCase(loc));
 
-                // Build a human-readable address string
-                StringBuilder addr = new StringBuilder();
-                if (bno  != null && !bno.isBlank())  addr.append(bno).append(", ");
-                if (bnm  != null && !bnm.isBlank())  addr.append(bnm).append(", ");
-                if (st   != null && !st.isBlank())   addr.append(st).append(", ");
-                if (loc  != null && !loc.isBlank())  addr.append(loc);
-                if (!addr.isEmpty()) out.put("address", addr.toString().replaceAll(",\\s*$", ""));
+                // Build address from parts if flat address not available
+                if (flatAdr == null) {
+                    StringBuilder addr = new StringBuilder();
+                    if (bno != null && !bno.isBlank()) addr.append(bno).append(", ");
+                    if (bnm != null && !bnm.isBlank()) addr.append(bnm).append(", ");
+                    if (st  != null && !st.isBlank())  addr.append(st).append(", ");
+                    if (loc != null && !loc.isBlank()) addr.append(loc);
+                    String built = addr.toString().replaceAll(",\\s*$", "").trim();
+                    if (!built.isBlank()) out.put("address", titleCase(built));
+                }
             }
         } catch (Exception e) {
             System.err.println("[GSTIN] Address parse error: " + e.getMessage());
         }
 
         return out;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String v : values) if (v != null && !v.isBlank()) return v;
+        return null;
     }
 
     /** Extracts a flat string field from JSON: "key":"value" */
