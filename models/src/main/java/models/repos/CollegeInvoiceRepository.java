@@ -36,4 +36,20 @@ public enum CollegeInvoiceRepository {
                 .eq("deleted", false)
                 .findCount();
     }
+
+    /**
+     * Returns true if a non-cancelled invoice already exists for the given contract
+     * whose billing period overlaps the given [start, end] range.
+     * Used by InvoiceDueController to hide contracts that already have an invoice raised.
+     */
+    public boolean existsForContractAndPeriod(Long contractId, String billingPeriodStart, String billingPeriodEnd) {
+        return finder.query().where()
+                .eq("contract.id", contractId)
+                .ne("status", "CANCELLED")
+                .eq("deleted", false)
+                // Invoice period overlaps [start, end]:  inv.start <= end AND inv.end >= start
+                .le("billingPeriodStart", billingPeriodEnd)
+                .ge("billingPeriodEnd",   billingPeriodStart)
+                .findCount() > 0;
+    }
 }

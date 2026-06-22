@@ -6,6 +6,7 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.repos.CollegeContractRepository;
+import models.repos.CollegeInvoiceRepository;
 import models.sql.CollegeContract;
 
 import java.math.BigDecimal;
@@ -84,6 +85,12 @@ public enum InvoiceDueController implements BaseController {
                 ? nextInvoice.minusYears(1)
                 : nextInvoice.minusMonths(1);
         LocalDate billingEnd = nextInvoice.minusDays(1);
+
+        // Skip if an invoice has already been raised for this billing period
+        if (CollegeInvoiceRepository.INSTANCE.existsForContractAndPeriod(
+                contract.getId(), billingStart.toString(), billingEnd.toString())) {
+            return null;
+        }
 
         SuperAdminDtos.InvoiceDueItem item = new SuperAdminDtos.InvoiceDueItem();
         item.setContractId(contract.getId());
