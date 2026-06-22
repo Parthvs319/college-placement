@@ -39,6 +39,7 @@ public enum SuperAdminRouter implements SubRouterProtocol {
 
         router.post("/analyze-contract").handler(AnalyzeContractController.INSTANCE::handle);
         router.post("/colleges/:collegeId/analyze-contract").handler(AnalyzeContractController.INSTANCE::handle);
+        router.post("/colleges/:collegeId/tpo").handler(AddTpoController.INSTANCE::handle);
         router.post("/colleges/:collegeId/contract").handler(UploadContractController.INSTANCE::handle);
         router.get("/colleges/:collegeId/contract").handler(GetContractController.INSTANCE::handle);
 
