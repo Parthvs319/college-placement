@@ -58,6 +58,13 @@ public enum ListInvoicesController implements BaseController {
             m.put("status",              inv.getStatus());
             m.put("createdAt",           inv.getCreatedAt() != null ? inv.getCreatedAt().toString() : null);
 
+            // Contract link
+            if (inv.getContract() != null) {
+                m.put("contractId",      inv.getContract().getId());
+                m.put("contractType",    inv.getContract().getContractType());
+                m.put("payType",         inv.getContract().getPayType());
+            }
+
             // Fresh download URL
             String url = inv.getFileUrl();
             if (url != null && !url.startsWith("http") && inv.getS3Key() != null) {
@@ -68,6 +75,14 @@ public enum ListInvoicesController implements BaseController {
             if (inv.getGeneratedBy() != null) {
                 m.put("generatedByName", inv.getGeneratedBy().getName());
             }
+
+            // Payment details
+            m.put("paymentMode",      inv.getPaymentMode());
+            m.put("paymentReference", inv.getPaymentReference());
+            m.put("paidAt",           inv.getPaidAt());
+            m.put("paidByName",       inv.getPaidByName());
+            m.put("paymentNotes",     inv.getPaymentNotes());
+
             return m;
         }).toList();
 

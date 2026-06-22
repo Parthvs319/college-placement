@@ -49,6 +49,26 @@ public class CollegeInvoice extends BaseModel {
     @Column(nullable = false)
     public String status = "DRAFT";
 
+    // ── Payment details (populated when status = PAID) ────────
+    /** UPI | NEFT | RTGS | IMPS | CASH | CHEQUE */
+    @Column(length = 20)
+    public String paymentMode;
+
+    /** UTR / transaction ID / cheque number / UPI ref */
+    @Column(length = 255)
+    public String paymentReference;
+
+    /** ISO datetime when payment was received e.g. "2025-06-22T14:30:00" */
+    @Column(length = 30)
+    public String paidAt;
+
+    /** Name of the payer / bank */
+    @Column(length = 100)
+    public String paidByName;
+
+    @Column(columnDefinition = "TEXT")
+    public String paymentNotes;
+
     /** S3 object key for the generated PDF */
     public String s3Key;
 
