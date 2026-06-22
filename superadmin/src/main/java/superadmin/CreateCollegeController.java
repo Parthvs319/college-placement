@@ -9,6 +9,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.body.SuperAdminLoginRequest;
 import models.json.CollegeDtos;
+import models.repos.AisheCollegeRepository;
 import models.repos.CollegeRepository;
 import models.services.EmailService;
 import models.sql.City;
@@ -29,7 +30,8 @@ import java.util.ArrayList;
         "contactPhone:string",
         "tpoName:string",
         "isEmailVerified:boolean",
-        "isPhoneVerified:boolean"
+        "isPhoneVerified:boolean",
+        "aisheCode:string"
 })
 public enum CreateCollegeController implements BaseController {
 
@@ -99,6 +101,16 @@ public enum CreateCollegeController implements BaseController {
         college.setTpoName(body.get("tpoName"));
         college.setEmailVerified((body.get("isEmailVerified")));
         college.setPhoneVerified((body.get("isPhoneVerified")));
+
+        // AISHE validation — store code if provided and valid
+        String aisheCode = body.get("aisheCode");
+        if (aisheCode != null && !aisheCode.isBlank()) {
+            if (AisheCollegeRepository.INSTANCE.findByAisheCode(aisheCode.trim()) != null) {
+                college.setAisheCode(aisheCode.trim());
+            }
+            // If code not found in DB we silently ignore it (don't block onboarding)
+        }
+
         college.setVerified(false);
         college.setActive(false);
         college.save();

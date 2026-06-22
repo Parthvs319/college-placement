@@ -202,4 +202,30 @@ public class SuperAdminDtos {
         String collegeName;
         String createdAt;
     }
+
+    /** Slim record for client-side Fuse.js index — only the 4 fields needed for search */
+    @Data
+    public static class AisheSlimRecord {
+        String aisheCode;
+        String name;
+        String state;
+        String district;
+    }
+
+    @Data
+    public static class AisheCollegeResult {
+        Long id;
+        String aisheCode;
+        String name;
+        String state;
+        String district;
+        String website;
+        Integer yearOfEstablishment;
+        String location;
+        String collegeType;
+        String management;
+        String universityAisheCode;
+        String universityName;
+        String universityType;
+    }
 }

@@ -35,6 +35,9 @@ public class College extends AttrsModel {
     /** GST Identification Number — used to auto-populate college details during onboarding */
     public String gstin;
 
+    /** AISHE Code — set when the college is matched against the national AISHE registry during onboarding */
+    public String aisheCode;
+
     public String logoUrl;
 
     @Column(nullable = false)
