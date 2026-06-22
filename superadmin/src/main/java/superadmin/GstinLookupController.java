@@ -1,6 +1,7 @@
 package superadmin;
 
 import helpers.annotations.SuperAdminRole;
+import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
@@ -9,8 +10,10 @@ import models.body.SuperAdminLoginRequest;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,16 +21,35 @@ import java.util.Map;
 /**
  * GET /admin/gstin/:gstin
  *
- * Validates and looks up a GSTIN via the public GST portal API.
- * Returns pre-filled college details: legal name, trade name, state, city, pincode, status.
- * Used in onboarding Step 1 to auto-populate college information.
+ * Validates GSTIN format and fetches business details.
+ * Equivalent of the Retrofit call:
+ *   @POST("/api/validate/gstin.v2")
+ *   Call<GstDetails> validateGstin(@Header("Authorization") String auth, @Body GstinRequest request)
+ *
+ * Required env vars:
+ *   GSTIN_API_BASE_URL  — base URL of your KYC provider  e.g. https://api.digitap.ai
+ *   GSTIN_API_KEY       — bearer token                    e.g. eyJhbGci...
+ *   GSTIN_API_PATH      — POST path (optional)            default: /api/validate/gstin.v2
+ *
+ * Cashfree sandbox (free, no credit card):
+ *   GSTIN_API_BASE_URL = https://sandbox.cashfree.com
+ *   GSTIN_API_PATH     = /verification/gstin
+ *   GSTIN_API_KEY      = <client_id>:<client_secret>   (joined with colon, code splits them)
+ *
+ * Falls back to state-from-GSTIN-prefix if no env vars are set.
  */
 @SuperAdminRole
 public enum GstinLookupController implements BaseController {
 
     INSTANCE;
 
-    // Maps GST state code (first 2 digits of GSTIN) → state name
+    private static final String GSTIN_API_BASE     = System.getenv().getOrDefault("GSTIN_API_BASE_URL", "https://kyc-api.surepass.app");
+    private static final String GSTIN_API_KEY      = System.getenv("GSTIN_API_KEY");
+    private static final String GSTIN_API_PATH     = System.getenv().getOrDefault("GSTIN_API_PATH",     "/api/v1/corporate/gstin");
+    // Surepass uses "id" as body key; other providers may use "gstin"
+    private static final String GSTIN_BODY_KEY     = System.getenv().getOrDefault("GSTIN_BODY_KEY",     "id");
+
+    // GST state code prefix → state name
     private static final Map<String, String> STATE_CODE_MAP = new HashMap<>();
     static {
         STATE_CODE_MAP.put("01", "Jammu and Kashmir");
@@ -84,156 +106,155 @@ public enum GstinLookupController implements BaseController {
 
     private Object lookup(SuperAdminLoginRequest req, RoutingContext rc) {
         String gstin = rc.pathParam("gstin");
-        if (gstin == null || gstin.isBlank())
-            throw new helpers.customErrors.RoutingError("GSTIN is required");
+        if (gstin == null || gstin.isBlank()) throw new RoutingError("GSTIN is required");
 
         gstin = gstin.toUpperCase().trim();
-
-        // Validate format: 2-digit state code + 10-char PAN + 1 entity + Z + 1 check
         if (!gstin.matches("^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"))
-            throw new helpers.customErrors.RoutingError("Invalid GSTIN format. Expected: 27AAPFU0939F1ZV");
+            throw new RoutingError("Invalid GSTIN format. Example: 27AAPFU0939F1ZV");
 
         String stateCode = gstin.substring(0, 2);
         String stateName = STATE_CODE_MAP.getOrDefault(stateCode, null);
 
-        // Try to fetch full details from the public GST portal
         Map<String, Object> result = new HashMap<>();
-        result.put("gstin", gstin);
+        result.put("gstin",     gstin);
         result.put("stateCode", stateCode);
         if (stateName != null) result.put("stateName", stateName);
 
+        // No API key configured — return prefix-only result
+        if (GSTIN_API_BASE == null || GSTIN_API_BASE.isBlank() ||
+            GSTIN_API_KEY  == null || GSTIN_API_KEY.isBlank()) {
+            result.put("source",  "prefix_only");
+            result.put("message", "Set GSTIN_API_BASE_URL and GSTIN_API_KEY to enable full lookup.");
+            return result;
+        }
+
         try {
-            Map<String, Object> gstData = fetchFromGstPortal(gstin);
-            result.putAll(gstData);
-            result.put("source", "gst_portal");
+            Map<String, Object> data = callGstinApi(gstin);
+            result.putAll(data);
+            result.put("source", "api");
         } catch (Exception e) {
-            System.err.println("[GSTIN] Portal lookup failed: " + e.getMessage() + " — returning state from prefix only");
-            result.put("source", "prefix_only");
-            result.put("message", "Could not fetch full details. State derived from GSTIN prefix.");
+            System.err.println("[GSTIN] API lookup failed: " + e.getMessage());
+            result.put("source",  "prefix_only");
+            result.put("message", "Lookup failed — state derived from GSTIN prefix.");
         }
 
         return result;
     }
 
     /**
-     * Calls the GST Portal taxpayer search API (same endpoint the portal UI uses).
-     * Tries two known endpoints in sequence; throws if both fail.
+     * Generic GSTIN POST call — matches the Retrofit pattern:
+     *   @POST(GSTIN_API_PATH)
+     *   Call<GstDetails> validateGstin(@Header("Authorization") String auth, @Body GstinRequest)
+     *
+     * Request body:  { "gstin": "27AAPFU0939F1ZV" }
+     * Authorization: Bearer <GSTIN_API_KEY>
+     *
+     * Special case — Cashfree uses two separate headers instead of Bearer:
+     *   If GSTIN_API_KEY contains ":" it is split into x-client-id : x-client-secret
      */
-    private Map<String, Object> fetchFromGstPortal(String gstin) throws Exception {
-        // Primary: official GST services API
-        String[] endpoints = {
-            "https://services.gst.gov.in/services/api/search/taxpayer?gstin=" + gstin,
-            "https://api.gst.gov.in/commonapi/v1.1/search?action=TP&gstin=" + gstin
-        };
-
-        Exception lastEx = null;
-        for (String apiUrl : endpoints) {
-            try {
-                String json = httpGet(apiUrl);
-                if (json != null && !json.isBlank() && json.contains("lgnm")) {
-                    return parseGstResponse(json);
-                }
-            } catch (Exception e) {
-                lastEx = e;
-                System.err.println("[GSTIN] Endpoint failed (" + apiUrl + "): " + e.getMessage());
-            }
-        }
-        throw new Exception("All GST endpoints failed: " + (lastEx != null ? lastEx.getMessage() : "no data"));
-    }
-
-    private String httpGet(String apiUrl) throws Exception {
-        URL url = new URL(apiUrl);
+    private Map<String, Object> callGstinApi(String gstin) throws Exception {
+        String endpoint = GSTIN_API_BASE.replaceAll("/+$", "") + GSTIN_API_PATH;
+        URL url = new URL(endpoint);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setInstanceFollowRedirects(true);
-        conn.setRequestProperty("Accept", "application/json, text/plain, */*");
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
-        conn.setRequestProperty("Referer", "https://www.gst.gov.in/");
-        conn.setRequestProperty("Origin", "https://www.gst.gov.in");
-        conn.setConnectTimeout(6000);
-        conn.setReadTimeout(6000);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Accept",       "application/json");
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(8000);
+        conn.setReadTimeout(8000);
+
+        // Auth header — Bearer by default; split for Cashfree (clientId:clientSecret)
+        if (GSTIN_API_KEY.contains(":")) {
+            String[] parts = GSTIN_API_KEY.split(":", 2);
+            conn.setRequestProperty("x-client-id",     parts[0]);
+            conn.setRequestProperty("x-client-secret", parts[1]);
+        } else {
+            conn.setRequestProperty("Authorization", "Bearer " + GSTIN_API_KEY);
+        }
+
+        // Request body key varies by provider: Surepass → "id", others → "gstin"
+        String body = "{\"" + GSTIN_BODY_KEY + "\":\"" + gstin + "\"}";
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(body.getBytes(StandardCharsets.UTF_8));
+        }
 
         int status = conn.getResponseCode();
-        if (status != 200) throw new Exception("HTTP " + status);
+        if (status != 200) {
+            String errBody = "";
+            try {
+                BufferedReader eb = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                StringBuilder s = new StringBuilder(); String l;
+                while ((l = eb.readLine()) != null) s.append(l);
+                errBody = s.toString();
+            } catch (Exception ignored) {}
+            throw new Exception("HTTP " + status + " — " + errBody);
+        }
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String line;
+        StringBuilder sb = new StringBuilder(); String line;
         while ((line = br.readLine()) != null) sb.append(line);
         br.close();
         conn.disconnect();
-        return sb.toString();
+
+        return parseResponse(sb.toString());
     }
 
-    private Map<String, Object> parseGstResponse(String json) {
+    /**
+     * Parses the API response — handles the most common field names used by
+     * Indian KYC providers (Digitap, Cashfree, Surepass, etc.).
+     */
+    private Map<String, Object> parseResponse(String json) {
         Map<String, Object> out = new HashMap<>();
 
-        // The services.gst.gov.in response wraps data under "taxpayerInfo"
+        // Unwrap common envelope keys: data / result / response
         String body = json;
-        int tiStart = json.indexOf("\"taxpayerInfo\"");
-        if (tiStart >= 0) body = json.substring(tiStart);
-
-        String legalName = jsonField(body, "lgnm");
-        String tradeName = jsonField(body, "tradeNam");
-        String status    = jsonField(body, "sts");
-        String bizType   = jsonField(body, "ctb");   // constitution of business
-
-        if (legalName != null) out.put("legalName",  titleCase(legalName));
-        if (tradeName != null) out.put("tradeName",  titleCase(tradeName));
-        if (status    != null) out.put("gstStatus",  status);
-        if (bizType   != null) out.put("businessType", bizType);
-
-        // Suggested college name: trade name preferred, fallback to legal name
-        String suggestedName = (tradeName != null && !tradeName.isBlank()) ? tradeName : legalName;
-        if (suggestedName != null) out.put("suggestedName", titleCase(suggestedName));
-
-        // Parse primary address block
-        try {
-            int pradrStart = body.indexOf("\"pradr\"");
-            if (pradrStart >= 0) {
-                String addrBlock = body.substring(pradrStart);
-
-                // Flat address string (services.gst.gov.in provides "adr")
-                String flatAdr = jsonField(addrBlock, "adr");
-                if (flatAdr != null && !flatAdr.isBlank()) out.put("address", titleCase(flatAdr));
-
-                // Inner addr object fields
-                String pincode = jsonField(addrBlock, "pncd");
-                String city    = firstNonBlank(jsonField(addrBlock, "city"), jsonField(addrBlock, "dst"));
-                String loc     = jsonField(addrBlock, "loc");
-                String bno     = jsonField(addrBlock, "bno");
-                String bnm     = jsonField(addrBlock, "bnm");
-                String st      = jsonField(addrBlock, "st");
-
-                if (pincode != null) out.put("pincode", pincode);
-                if (city    != null) out.put("city",    titleCase(city));
-                if (loc     != null) out.put("locality", titleCase(loc));
-
-                // Build address from parts if flat address not available
-                if (flatAdr == null) {
-                    StringBuilder addr = new StringBuilder();
-                    if (bno != null && !bno.isBlank()) addr.append(bno).append(", ");
-                    if (bnm != null && !bnm.isBlank()) addr.append(bnm).append(", ");
-                    if (st  != null && !st.isBlank())  addr.append(st).append(", ");
-                    if (loc != null && !loc.isBlank()) addr.append(loc);
-                    String built = addr.toString().replaceAll(",\\s*$", "").trim();
-                    if (!built.isBlank()) out.put("address", titleCase(built));
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("[GSTIN] Address parse error: " + e.getMessage());
+        for (String key : new String[]{"\"data\"", "\"result\"", "\"response\""}) {
+            int idx = json.indexOf(key);
+            if (idx >= 0) { body = json.substring(idx); break; }
         }
+
+        // Business / trade name
+        String name = firstOf(body,
+            "business_name", "trade_name", "tradeNam", "tradeName",
+            "company_name",  "name");
+
+        // Legal name
+        String legalName = firstOf(body, "legal_name", "lgnm", "legalName");
+
+        // Status, state, city, address, pincode
+        String gstStatus = firstOf(body, "gstin_status", "sts", "status", "gstStatus");
+        String state     = firstOf(body, "state", "stateName", "stcd");
+        String city      = firstOf(body, "city",  "dst", "district");
+        String address   = firstOf(body, "address", "adr", "pradr");
+        String pincode   = firstOf(body, "pincode", "pncd", "pin_code");
+        String bizType   = firstOf(body, "constitution_of_business", "ctb", "business_type");
+
+        if (name      != null) { out.put("tradeName",    titleCase(name));      out.put("suggestedName", titleCase(name)); }
+        if (legalName != null)   out.put("legalName",    titleCase(legalName));
+        if (gstStatus != null)   out.put("gstStatus",    gstStatus);
+        if (state     != null)   out.put("stateName",    titleCase(state));
+        if (city      != null)   out.put("city",         titleCase(city));
+        if (address   != null)   out.put("address",      titleCase(address));
+        if (pincode   != null)   out.put("pincode",      pincode);
+        if (bizType   != null)   out.put("businessType", bizType);
+
+        // If no trade name found, fall back to legal name as suggestion
+        if (name == null && legalName != null) out.put("suggestedName", titleCase(legalName));
 
         return out;
     }
 
-    private String firstNonBlank(String... values) {
-        for (String v : values) if (v != null && !v.isBlank()) return v;
+    /** Tries each field name in order, returns first non-blank string value found */
+    private String firstOf(String json, String... keys) {
+        for (String key : keys) {
+            String val = jsonStringField(json, key);
+            if (val != null) return val;
+        }
         return null;
     }
 
-    /** Extracts a flat string field from JSON: "key":"value" */
-    private String jsonField(String json, String key) {
+    /** Extracts "key":"value" from flat JSON */
+    private String jsonStringField(String json, String key) {
         String search = "\"" + key + "\":\"";
         int start = json.indexOf(search);
         if (start < 0) return null;
@@ -241,18 +262,14 @@ public enum GstinLookupController implements BaseController {
         int end = json.indexOf("\"", start);
         if (end < 0) return null;
         String val = json.substring(start, end).trim();
-        return val.isEmpty() ? null : val;
+        return (val.isEmpty() || val.equalsIgnoreCase("null")) ? null : val;
     }
 
     private String titleCase(String s) {
         if (s == null || s.isBlank()) return s;
-        String[] words = s.toLowerCase().split("\\s+");
         StringBuilder sb = new StringBuilder();
-        for (String w : words) {
-            if (!w.isEmpty()) {
-                sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1)).append(" ");
-            }
-        }
+        for (String w : s.toLowerCase().split("\\s+"))
+            if (!w.isEmpty()) sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1)).append(" ");
         return sb.toString().trim();
     }
 }
