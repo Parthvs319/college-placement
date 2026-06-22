@@ -1,9 +1,12 @@
 package models.repos;
 
 import helpers.sql.SqlFinder;
+import io.ebean.ExpressionList;
 import models.sql.AisheCollege;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public enum AisheCollegeRepository {
     INSTANCE;
@@ -11,18 +14,41 @@ public enum AisheCollegeRepository {
     private final SqlFinder<Long, AisheCollege> finder = new SqlFinder<>(AisheCollege.class);
 
     /**
-     * Full-text search on college name, optionally filtered by state.
-     * Returns at most {@code limit} results ordered by name.
+     * Multi-token search: splits the query by whitespace and ORs each token as LIKE %token%.
+     * E.g. "Institue Egin" → name LIKE '%Institue%' OR name LIKE '%Egin%'
+     * Results where the full query is a substring are ranked first.
+     * Optionally filtered by state. Returns at most {@code limit} results.
      */
     public List<AisheCollege> search(String query, String state, int limit) {
-        var q = finder.query().where()
-                .like("name", "%" + query + "%");
-        if (state != null && !state.isBlank()) {
-            q = q.eq("state", state);
+        String[] tokens = query.trim().split("\\s+");
+
+        // Build OR expression across all tokens (skip 1-char tokens to avoid noise)
+        ExpressionList<AisheCollege> expr = finder.query().where();
+        if (tokens.length == 1) {
+            expr = expr.like("name", "%" + tokens[0] + "%");
+        } else {
+            io.ebean.Junction<AisheCollege> or = expr.or();
+            for (String token : tokens) {
+                if (token.length() >= 2) or = or.like("name", "%" + token + "%");
+            }
+            expr = or.endOr();
         }
-        return q.orderBy("name asc")
-                .setMaxRows(limit)
-                .findList();
+
+        if (state != null && !state.isBlank()) {
+            expr = expr.eq("state", state);
+        }
+
+        // Fetch a larger pool, then re-rank: exact substring match of full query comes first
+        List<AisheCollege> pool = expr.setMaxRows(limit * 3).findList();
+        String lq = query.toLowerCase();
+        pool.sort((a, b) -> {
+            boolean aFull = a.getName() != null && a.getName().toLowerCase().contains(lq);
+            boolean bFull = b.getName() != null && b.getName().toLowerCase().contains(lq);
+            if (aFull && !bFull) return -1;
+            if (!aFull && bFull) return 1;
+            return a.getName() == null ? 0 : a.getName().compareToIgnoreCase(b.getName() == null ? "" : b.getName());
+        });
+        return pool.stream().limit(limit).collect(Collectors.toList());
     }
 
     /**
