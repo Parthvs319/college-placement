@@ -69,6 +69,68 @@ public class EmailService {
     }
 
     /**
+     * Send an HTML email to a single recipient with optional CC recipients.
+     * Each element in ccList is a String[2] {email, name} pair.
+     */
+    public static Single<Boolean> sendEmailWithCc(
+            String toEmail, String toName,
+            String subject, String htmlBody,
+            java.util.List<String[]> ccList) {
+
+        if (BREVO_API_KEY == null || BREVO_API_KEY.isEmpty()) {
+            System.out.println("[Email-DEV] To: " + toEmail + " CC: " + (ccList != null ? ccList.size() : 0) + " | Subject: " + subject);
+            return Single.just(true);
+        }
+
+        return Single.fromCallable(() -> {
+            try {
+                StringBuilder toField = new StringBuilder("[{\"email\":\"" + escapeJson(toEmail) + "\"");
+                if (toName != null && !toName.isBlank()) toField.append(",\"name\":\"").append(escapeJson(toName)).append("\"");
+                toField.append("}]");
+
+                StringBuilder ccField = new StringBuilder("[");
+                if (ccList != null && !ccList.isEmpty()) {
+                    boolean first = true;
+                    for (String[] cc : ccList) {
+                        if (cc == null || cc.length < 1 || cc[0] == null || cc[0].isBlank()) continue;
+                        if (!first) ccField.append(",");
+                        ccField.append("{\"email\":\"").append(escapeJson(cc[0])).append("\"");
+                        if (cc.length > 1 && cc[1] != null && !cc[1].isBlank())
+                            ccField.append(",\"name\":\"").append(escapeJson(cc[1])).append("\"");
+                        ccField.append("}");
+                        first = false;
+                    }
+                }
+                ccField.append("]");
+
+                String json = "{"
+                        + "\"sender\":{\"name\":\"" + escapeJson(BREVO_FROM_NAME) + "\",\"email\":\"" + escapeJson(BREVO_FROM_EMAIL) + "\"},"
+                        + "\"to\":" + toField + ","
+                        + (ccList != null && !ccList.isEmpty() ? "\"cc\":" + ccField + "," : "")
+                        + "\"subject\":\"" + escapeJson(subject) + "\","
+                        + "\"htmlContent\":\"" + escapeJson(htmlBody) + "\""
+                        + "}";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                        .header("api-key", BREVO_API_KEY)
+                        .header("Content-Type", "application/json")
+                        .header("Accept", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
+
+                HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 201) return true;
+                System.err.println("[Email] Brevo CC email error (" + response.statusCode() + "): " + response.body());
+                return false;
+            } catch (Exception e) {
+                System.err.println("[Email] sendEmailWithCc failed to " + toEmail + ": " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
      * Send an HTML email with a single file attachment via Brevo API.
      *
      * @param attachmentBytes  raw bytes of the file to attach (e.g. PDF)
