@@ -14,7 +14,6 @@ public enum AisheCollegeRepository {
     INSTANCE;
 
     private final SqlFinder<Long, AisheCollege> finder = new SqlFinder<>(AisheCollege.class);
-
     /**
      * Multi-token search: splits the query by whitespace and ORs each token as LIKE %token%.
      * E.g. "Institue Egin" → name LIKE '%Institue%' OR name LIKE '%Egin%'
