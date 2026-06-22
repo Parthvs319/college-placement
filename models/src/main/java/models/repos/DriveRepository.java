@@ -77,6 +77,13 @@ public enum DriveRepository {
                 .findList();
     }
 
+    public int countByCollege(Long collegeId) {
+        return finder.query().where()
+                .eq("companyCollege.college.id", collegeId)
+                .eq("deleted", false)
+                .findCount();
+    }
+
     public ExpressionList<Drive> where() {
         return finder.query().where().eq("deleted", false);
     }

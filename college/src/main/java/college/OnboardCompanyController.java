@@ -90,6 +90,9 @@ public enum OnboardCompanyController implements BaseController {
             company.headquarters = body.get("headquarters") != null ? ((String) body.get("headquarters")).trim() : null;
             company.active = true;
             company.save();
+            int companySeq = CompanyRepository.INSTANCE.countAll();
+            company.code = "CMP-" + request.getCollege().getCode() + "-" + String.format("%03d", companySeq);
+            company.update();
             companyCreated = true;
         }
 

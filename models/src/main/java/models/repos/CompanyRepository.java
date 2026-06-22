@@ -23,6 +23,12 @@ public enum CompanyRepository {
         return finder.query().where().eq("deleted", false).findList();
     }
 
+    public int countAll() {
+        return finder.query().where()
+                .eq("deleted", false)
+                .findCount();
+    }
+
     public ExpressionList<Company> where() {
         return finder.query().where().eq("deleted", false);
     }

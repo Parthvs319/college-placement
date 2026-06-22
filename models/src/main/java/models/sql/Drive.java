@@ -22,6 +22,8 @@ import java.util.List;
 @Table(name = "drives")
 public class Drive extends AttrsModel {
 
+    public String driveCode;
+
     @ManyToOne
     @JoinColumn(name = "company_college_id", nullable = false)
     public CompanyCollege companyCollege;

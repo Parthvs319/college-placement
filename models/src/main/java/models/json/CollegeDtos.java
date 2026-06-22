@@ -17,6 +17,7 @@ public final class CollegeDtos {
     @Data
     public static class DriveResponse {
         Long id;
+        String driveCode;
         String title;
         String jobDescription;
         String employmentType;
@@ -42,6 +43,7 @@ public final class CollegeDtos {
     public static DriveResponse toDriveDto(Drive d) {
         DriveResponse dto = new DriveResponse();
         dto.id = d.getId();
+        dto.driveCode = d.driveCode;
         dto.title = d.title;
         dto.jobDescription = d.jobDescription;
         dto.employmentType = d.employmentType != null ? d.employmentType.name() : null;
@@ -220,6 +222,7 @@ public final class CollegeDtos {
         Long id;
         Long companyId;
         String companyName;
+        String companyCode;
         String industry;
         String logoUrl;
         boolean companyCanManage;
@@ -234,6 +237,7 @@ public final class CollegeDtos {
         if (cc.company != null) {
             dto.companyId = cc.company.getId();
             dto.companyName = cc.company.name;
+            dto.companyCode = cc.company != null ? cc.company.code : null;
             dto.industry = cc.company.industry;
             dto.logoUrl = cc.company.logoUrl;
         }

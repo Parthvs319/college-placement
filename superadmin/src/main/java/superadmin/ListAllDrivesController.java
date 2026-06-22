@@ -45,6 +45,7 @@ public enum ListAllDrivesController implements BaseController {
                         SuperAdminDtos.DriveOverview o = new SuperAdminDtos.DriveOverview();
                         o.setId(d.getId());
                         o.setTitle(d.getTitle());
+                        o.setDriveCode(d.getDriveCode());
                         o.setStatus(d.getStatus() != null ? d.getStatus().name() : null);
                         o.setEmploymentType(d.getEmploymentType() != null ? d.getEmploymentType().name() : null);
                         o.setCtcOffered(d.getCtcOffered());

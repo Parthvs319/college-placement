@@ -11,6 +11,7 @@ import models.body.CollegeLoginRequest;
 import models.enums.DriveStatus;
 import models.enums.EmploymentType;
 import models.repos.CompanyCollegeRepository;
+import models.repos.DriveRepository;
 import models.sql.CompanyCollege;
 import models.sql.Drive;
 
@@ -70,6 +71,12 @@ public enum CreateDriveController implements BaseController {
         if (body.isPresent("maxPassingYear")) drive.maxPassingYear = Integer.parseInt(body.get("maxPassingYear"));
 
         drive.save();
+
+        // Auto-generate drive code after getting the ID
+        int driveSeq = DriveRepository.INSTANCE.countByCollege(request.getCollege().getId());
+        drive.driveCode = "DRV-" + request.getCollege().getCode() + "-" + String.format("%03d", driveSeq);
+        drive.update();
+
         return drive;
     }
 }

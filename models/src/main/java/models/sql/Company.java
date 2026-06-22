@@ -13,6 +13,8 @@ import java.util.List;
 @Table(name = "companies")
 public class Company extends AttrsModel {
 
+    public String code;
+
     @Column(nullable = false)
     public String name;
 

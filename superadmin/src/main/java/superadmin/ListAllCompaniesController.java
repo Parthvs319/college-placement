@@ -30,6 +30,7 @@ public enum ListAllCompaniesController implements BaseController {
                         SuperAdminDtos.CompanySummary s = new SuperAdminDtos.CompanySummary();
                         s.setId(c.getId());
                         s.setName(c.getName());
+                        s.setCode(c.getCode());
                         s.setIndustry(c.getIndustry());
                         s.setWebsite(c.getWebsite());
                         s.setStartup(c.isStartup());

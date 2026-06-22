@@ -116,6 +116,7 @@ public class SuperAdminDtos {
     public static class DriveOverview {
         Long id;
         String title;
+        String driveCode;
         String companyName;
         String collegeName;
         String status;
@@ -143,6 +144,7 @@ public class SuperAdminDtos {
     public static class CompanySummary {
         Long id;
         String name;
+        String code;
         String industry;
         String website;
         boolean startup;
