@@ -228,4 +228,25 @@ public class SuperAdminDtos {
         String universityName;
         String universityType;
     }
+
+    /**
+     * A contract whose next invoice cycle is approaching.
+     * Returned by GET /admin/invoice-due
+     */
+    @Data
+    public static class InvoiceDueItem {
+        Long contractId;
+        Long collegeId;
+        String collegeName;
+        String collegeCode;
+        String contactEmail;
+        String payType;            // MONTHLY | YEARLY
+        String validFrom;
+        String validTo;
+        String nextInvoiceDate;    // ISO date of the upcoming invoice cycle
+        int daysUntilDue;          // days from today until nextInvoiceDate
+        String billingPeriodStart; // suggested billing period start
+        String billingPeriodEnd;   // suggested billing period end (day before nextInvoiceDate)
+        String contractAmountDisplay; // e.g. "₹50,000"
+    }
 }

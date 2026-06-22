@@ -44,6 +44,19 @@ public enum CollegeContractRepository {
                 .findList();
     }
 
+    /**
+     * Returns all ACTIVE PAID contracts that have a validFrom set —
+     * caller is responsible for filtering by invoice cycle window.
+     */
+    public List<CollegeContract> findActiveForInvoiceDue() {
+        return finder.query().where()
+                .eq("status", "ACTIVE")
+                .eq("contractType", "PAID")
+                .eq("deleted", false)
+                .isNotNull("validFrom")
+                .findList();
+    }
+
     /** Returns the most recent contract regardless of status */
     public CollegeContract latest(Long collegeId) {
         return finder.query().where()

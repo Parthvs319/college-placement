@@ -73,6 +73,7 @@ public enum UploadContractController implements BaseController {
         String validTo           = rc.request().formAttributes().get("validTo");
         String contractLabel     = rc.request().formAttributes().get("contractLabel");
         String contractTypeRaw   = rc.request().formAttributes().get("contractType");
+        String payTypeRaw        = rc.request().formAttributes().get("payType");
 
         // TPO details come from the college's own verified contact details
         String tpoEmail = college.getContactEmail();
@@ -154,6 +155,8 @@ public enum UploadContractController implements BaseController {
         contract.setValidFrom(validFrom != null && !validFrom.isBlank() ? validFrom : null);
         contract.setValidTo(validTo != null && !validTo.isBlank() ? validTo : null);
         contract.setStatus("ACTIVE");
+        String payType = (payTypeRaw != null && payTypeRaw.equalsIgnoreCase("YEARLY")) ? "YEARLY" : "MONTHLY";
+        contract.setPayType(payType);
         contract.save();
 
         // ── Optionally create TPO account + send email ────────────
@@ -251,6 +254,7 @@ public enum UploadContractController implements BaseController {
         result.put("validFrom",   contract.getValidFrom());
         result.put("validTo",     contract.getValidTo());
         result.put("status",      contract.getStatus());
+        result.put("payType",     contract.getPayType());
         result.put("tpoCreated",  generatedPassword != null);
         if (tpoUser != null) {
             result.put("tpoEmail", tpoUser.getEmail());

@@ -49,5 +49,9 @@ public class CollegeContract extends BaseModel {
     @Column(nullable = false)
     public String status = "ACTIVE";
 
+    /** MONTHLY | YEARLY — billing cycle for invoice generation */
+    @Column(nullable = false)
+    public String payType = "MONTHLY";
+
     public String notes;
 }

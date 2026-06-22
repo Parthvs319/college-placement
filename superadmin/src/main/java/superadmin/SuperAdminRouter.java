@@ -17,6 +17,7 @@ public enum SuperAdminRouter implements SubRouterProtocol {
         router.get("/activity").handler(PlatformActivityController.INSTANCE::handle);
 
         router.get("/contract-renewals").handler(ContractRenewalsController.INSTANCE::handle);
+        router.get("/invoice-due").handler(InvoiceDueController.INSTANCE::handle);
         router.get("/colleges").handler(ListAllCollegesController.INSTANCE::handle);
         router.post("/colleges").handler(ctx -> {
             System.out.println("[DEBUG] POST /colleges hit!");
