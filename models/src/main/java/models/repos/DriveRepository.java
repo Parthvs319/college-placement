@@ -3,6 +3,7 @@ package models.repos;
 import helpers.sql.SqlFinder;
 import io.ebean.ExpressionList;
 import models.enums.DriveStatus;
+import models.enums.EmploymentType;
 import models.sql.Drive;
 
 import java.util.List;
@@ -80,6 +81,14 @@ public enum DriveRepository {
     public int countByCollege(Long collegeId) {
         return finder.query().where()
                 .eq("companyCollege.college.id", collegeId)
+                .eq("deleted", false)
+                .findCount();
+    }
+
+    public int countByCollegeAndType(Long collegeId, EmploymentType type) {
+        return finder.query().where()
+                .eq("companyCollege.college.id", collegeId)
+                .eq("employmentType", type)
                 .eq("deleted", false)
                 .findCount();
     }

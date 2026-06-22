@@ -54,6 +54,9 @@ public class SuperAdminDtos {
         // Active contract summary
         String contractEndDate;   // validTo from latest active contract
         String contractType;      // "PAID" | "FREE_TRIAL"
+        // Drive type breakdown
+        int internshipCount;
+        int fullTimeCount;
     }
 
     @Data

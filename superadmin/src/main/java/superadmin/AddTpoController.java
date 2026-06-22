@@ -89,7 +89,7 @@ public enum AddTpoController implements BaseController {
             final String fName     = tpoUser.getName();
             final String fPassword = generatedPassword;
             final String fCollege  = college.getName();
-            final String portalUrl = System.getenv().getOrDefault("PORTAL_URL", "https://applyra.in");
+            final String portalUrl = System.getenv().getOrDefault("PORTAL_URL", "https://applyra.netlify.app");
 
             new Thread(() -> {
                 try {

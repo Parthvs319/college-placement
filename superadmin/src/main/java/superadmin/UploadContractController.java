@@ -208,7 +208,7 @@ public enum UploadContractController implements BaseController {
             final byte[] fFileBytes     = fileBytes;
             final String fAmountDisplay = isFreeTrial ? "Free Trial"
                     : "₹" + contractAmount.toPlainString();
-            final String portalUrl      = System.getenv().getOrDefault("PORTAL_URL", "https://applyra.in");
+            final String portalUrl      = System.getenv().getOrDefault("PORTAL_URL", "https://applyra.netlify.app");
 
             new Thread(() -> {
                 try {

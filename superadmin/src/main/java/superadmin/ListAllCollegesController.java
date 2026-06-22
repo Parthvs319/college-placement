@@ -6,6 +6,7 @@ import helpers.utils.ResponseUtils;
 import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
+import models.enums.EmploymentType;
 import models.repos.CompanyCollegeRepository;
 import models.repos.CollegeContractRepository;
 import models.repos.CollegeRepository;
@@ -72,6 +73,10 @@ public enum ListAllCollegesController implements BaseController {
                             s.setContractEndDate(contract.getValidTo());
                             s.setContractType(contract.getContractType());
                         }
+
+                        // Drive type breakdown
+                        s.setInternshipCount(DriveRepository.INSTANCE.countByCollegeAndType(c.getId(), EmploymentType.INTERNSHIP));
+                        s.setFullTimeCount(DriveRepository.INSTANCE.countByCollegeAndType(c.getId(), EmploymentType.FULL_TIME));
                         return s;
                     }).collect(Collectors.toList());
                 })
