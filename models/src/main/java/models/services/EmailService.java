@@ -547,4 +547,27 @@ public class EmailService {
                 + "<p style='color:#6b7280; font-size:12px;'>Sent from Applyra Placement Intelligence Platform</p>"
                 + "</div>";
     }
+
+    /**
+     * Password reset OTP email.
+     */
+    public static String buildPasswordResetHtml(String name, String otp) {
+        String displayName = (name != null && !name.isBlank()) ? escapeJson(name) : "there";
+        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
+                + "<h2 style='color: #1a73e8;'>Reset your password</h2>"
+                + "<p>Hi " + displayName + ",</p>"
+                + "<p>We received a request to reset your Applyra account password.</p>"
+                + "<p>Use the OTP below. It expires in <strong>10 minutes</strong>.</p>"
+                + "<div style='background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; "
+                + "padding:24px; text-align:center; margin:24px 0;'>"
+                + "<div style='font-size:36px; font-weight:bold; letter-spacing:8px; color:#1a73e8;'>"
+                + escapeJson(otp)
+                + "</div>"
+                + "</div>"
+                + "<p style='color:#6b7280; font-size:13px;'>If you did not request this, you can safely ignore this email. "
+                + "Your password will not change.</p>"
+                + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:24px 0;'>"
+                + "<p style='color:#6b7280; font-size:12px;'>Applyra Placement Intelligence Platform</p>"
+                + "</div>";
+    }
 }
