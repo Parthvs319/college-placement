@@ -11,9 +11,11 @@ import models.body.SuperAdminLoginRequest;
 import models.repos.CollegeContractRepository;
 import models.repos.CollegeInvoiceRepository;
 import models.repos.CollegeRepository;
+import models.repos.UserRepository;
 import models.services.EmailService;
 import models.services.InvoiceService;
 import models.services.S3Service;
+import models.enums.UserType;
 import models.sql.*;
 
 import java.math.BigDecimal;
@@ -22,8 +24,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * POST /admin/colleges/:collegeId/invoice
@@ -134,26 +138,60 @@ public enum GenerateInvoiceController implements BaseController {
         invoice.setGeneratedBy(request.getUser());
         invoice.save();
 
-        // ── Fire-and-forget: email the invoice ────────────────────
-        if (college.getContactEmail() != null && !college.getContactEmail().isBlank()) {
-            final String contactEmail = college.getContactEmail();
-            final String collegeName  = college.getName();
+        // ── Fire-and-forget: email invoice to college TPOs + super admins ─
+        {
+            final String fCollegeName = college.getName();
             final String fInvoiceNum  = invoiceNumber;
             final String fFileUrl     = fileUrl;
             final String fDueDate     = fmt(dueDate);
             final String fPeriod      = fmtPeriod(billingStart, billingEnd);
             final String fAmount      = formatInr(contractAmount);
 
+            // Collect recipients: college contact email + TPO users + all super admins
+            List<String> collegeEmails = new ArrayList<>();
+            if (college.getContactEmail() != null && !college.getContactEmail().isBlank()) {
+                collegeEmails.add(college.getContactEmail().trim().toLowerCase());
+            }
+            UserRepository.INSTANCE.byCollegeAndType(college.getId(), UserType.TPO)
+                    .stream()
+                    .filter(u -> u.getEmail() != null && !u.getEmail().isBlank())
+                    .map(u -> u.getEmail().trim().toLowerCase())
+                    .filter(e -> !collegeEmails.contains(e))
+                    .forEach(collegeEmails::add);
+
+            List<String> adminEmails = UserRepository.INSTANCE.findByUserType(UserType.SUPER_ADMIN)
+                    .stream()
+                    .filter(u -> u.getEmail() != null && !u.getEmail().isBlank())
+                    .map(u -> u.getEmail().trim().toLowerCase())
+                    .collect(Collectors.toList());
+
             new Thread(() -> {
                 try {
-                    String html = EmailService.buildInvoiceEmailHtml(
-                            collegeName, fInvoiceNum, fPeriod, fAmount, fFileUrl, fDueDate
+                    // Email college contact + TPOs (invoice email)
+                    String collegeHtml = EmailService.buildInvoiceEmailHtml(
+                            fCollegeName, fInvoiceNum, fPeriod, fAmount, fFileUrl, fDueDate
                     );
-                    EmailService.sendEmail(contactEmail, "Invoice " + fInvoiceNum + " — Applyra Platform", html)
-                            .subscribe(
-                                    sent -> System.out.println("[Invoice] Email " + (sent ? "sent" : "failed") + " to " + contactEmail),
-                                    err  -> System.err.println("[Invoice] Email error: " + err.getMessage())
-                            );
+                    String subject = "Invoice " + fInvoiceNum + " — Applyra Platform";
+                    for (String email : collegeEmails) {
+                        EmailService.sendEmail(email, subject, collegeHtml)
+                                .subscribe(
+                                        sent -> System.out.println("[Invoice] College email " + (sent ? "sent" : "failed") + " to " + email),
+                                        err  -> System.err.println("[Invoice] College email error to " + email + ": " + err.getMessage())
+                                );
+                    }
+
+                    // Email super admins (internal notification)
+                    String adminHtml = EmailService.buildInvoiceEmailHtml(
+                            fCollegeName, fInvoiceNum, fPeriod, fAmount, fFileUrl, fDueDate
+                    );
+                    String adminSubject = "[Admin] Invoice " + fInvoiceNum + " raised for " + fCollegeName;
+                    for (String email : adminEmails) {
+                        EmailService.sendEmail(email, adminSubject, adminHtml)
+                                .subscribe(
+                                        sent -> System.out.println("[Invoice] Admin email " + (sent ? "sent" : "failed") + " to " + email),
+                                        err  -> System.err.println("[Invoice] Admin email error to " + email + ": " + err.getMessage())
+                                );
+                    }
                 } catch (Exception e) {
                     System.err.println("[Invoice] Email thread error: " + e.getMessage());
                 }

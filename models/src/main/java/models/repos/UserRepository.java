@@ -44,6 +44,14 @@ public enum UserRepository {
                 .findList();
     }
 
+    public List<User> findByUserType(UserType userType) {
+        return finder.query().where()
+                .eq("userType", userType)
+                .eq("deleted", false)
+                .eq("active", true)
+                .findList();
+    }
+
     public List<User> findAll() {
         return finder.query()
                 .fetch("college")
