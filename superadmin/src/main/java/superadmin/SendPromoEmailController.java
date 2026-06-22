@@ -64,8 +64,6 @@ public enum SendPromoEmailController implements BaseController {
             unplaced = StudentRepository.INSTANCE.where()
                     .eq("placed", false)
                     .eq("optedOut", false)
-                    .fetch("user")
-                    .fetch("college")
                     .findList();
         }
 
