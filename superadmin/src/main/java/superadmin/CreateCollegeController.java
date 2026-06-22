@@ -24,8 +24,12 @@ import java.util.ArrayList;
         "stateId:long",
         "university:string",
         "website:string",
+        "gstin:string",
         "contactEmail:string",
-        "contactPhone:string"
+        "contactPhone:string",
+        "tpoName:string",
+        "isEmailVerified:boolean",
+        "isPhoneVerified:boolean"
 })
 public enum CreateCollegeController implements BaseController {
 
@@ -88,8 +92,13 @@ public enum CreateCollegeController implements BaseController {
         college.setStateId(stateId);
         college.setUniversity(body.get("university"));
         college.setWebsite(body.get("website"));
+        String gstin = body.get("gstin");
+        if (gstin != null && !gstin.isBlank()) college.setGstin(gstin.toUpperCase().trim());
         college.setContactEmail(contactEmail);
         college.setContactPhone(body.get("contactPhone"));
+        college.setTpoName(body.get("tpoName"));
+        college.setIsEmailVerified("true".equalsIgnoreCase(body.get("isEmailVerified")));
+        college.setIsPhoneVerified("true".equalsIgnoreCase(body.get("isPhoneVerified")));
         college.setVerified(false);
         college.setActive(false);
         college.save();

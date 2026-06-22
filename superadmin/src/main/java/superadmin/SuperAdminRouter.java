@@ -26,6 +26,8 @@ public enum SuperAdminRouter implements SubRouterProtocol {
         router.post("/colleges/:collegeId/verify").handler(VerifyCollegeController.INSTANCE::handle);
         router.post("/colleges/:collegeId/toggle-active").handler(ToggleCollegeActiveController.INSTANCE::handle);
 
+        router.get("/gstin/:gstin").handler(GstinLookupController.INSTANCE::handle);
+
         router.post("/send-otp").handler(SendOtpController.INSTANCE::handle);
         router.post("/verify-otp").handler(VerifyOtpController.INSTANCE::handle);
 

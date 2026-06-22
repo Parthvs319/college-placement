@@ -71,10 +71,13 @@ public enum UploadContractController implements BaseController {
         String contractAmountStr = rc.request().formAttributes().get("contractAmount");
         String validFrom         = rc.request().formAttributes().get("validFrom");
         String validTo           = rc.request().formAttributes().get("validTo");
-        String tpoEmail          = rc.request().formAttributes().get("tpoEmail");
-        String tpoName           = rc.request().formAttributes().get("tpoName");
         String contractLabel     = rc.request().formAttributes().get("contractLabel");
         String contractTypeRaw   = rc.request().formAttributes().get("contractType");
+
+        // TPO details come from the college's own verified contact details
+        String tpoEmail = college.getContactEmail();
+        String tpoName  = college.getTpoName() != null && !college.getTpoName().isBlank()
+                ? college.getTpoName() : college.getName() + " Placement Officer";
 
         String contractType = (contractTypeRaw != null && contractTypeRaw.equalsIgnoreCase("FREE_TRIAL"))
                 ? "FREE_TRIAL" : "PAID";
