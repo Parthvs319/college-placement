@@ -97,8 +97,8 @@ public enum CreateCollegeController implements BaseController {
         college.setContactEmail(contactEmail);
         college.setContactPhone(body.get("contactPhone"));
         college.setTpoName(body.get("tpoName"));
-        college.setEmailVerified("true".equalsIgnoreCase(body.get("isEmailVerified")));
-        college.setPhoneVerified("true".equalsIgnoreCase(body.get("isPhoneVerified")));
+        college.setEmailVerified((body.get("isEmailVerified")));
+        college.setPhoneVerified((body.get("isPhoneVerified")));
         college.setVerified(false);
         college.setActive(false);
         college.save();
