@@ -73,6 +73,28 @@ public enum OtpService {
         return VerifyResult.SUCCESS;
     }
 
+    /**
+     * Check OTP validity WITHOUT consuming it.
+     * Use for two-step flows: peek on step 1, then verify (consume) on step 2.
+     */
+    public VerifyResult peek(String type, String value, String submitted) {
+        String   key   = key(type, value);
+        OtpEntry entry = store.get(key);
+
+        if (entry == null)       return VerifyResult.NOT_FOUND;
+        if (entry.isExpired())   { store.remove(key); return VerifyResult.EXPIRED; }
+        if (entry.isExhausted()) { store.remove(key); return VerifyResult.EXHAUSTED; }
+
+        entry.attempts++;
+
+        if (!entry.otp.equals(submitted == null ? "" : submitted.trim())) {
+            return VerifyResult.WRONG_OTP;
+        }
+
+        // Valid — do NOT remove; caller will consume it on the final step
+        return VerifyResult.SUCCESS;
+    }
+
     public enum VerifyResult {
         SUCCESS, WRONG_OTP, EXPIRED, NOT_FOUND, EXHAUSTED;
 

@@ -551,23 +551,32 @@ public class EmailService {
     /**
      * Password reset OTP email.
      */
+    private static final String LOGIN_URL = "https://applyra.netlify.app/login";
+
     public static String buildPasswordResetHtml(String name, String otp) {
         String displayName = (name != null && !name.isBlank()) ? escapeJson(name) : "there";
         return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
-                + "<h2 style='color: #1a73e8;'>Reset your password</h2>"
+                + "<h2 style='color: #1a73e8;'>Reset your Applyra password</h2>"
                 + "<p>Hi " + displayName + ",</p>"
-                + "<p>We received a request to reset your Applyra account password.</p>"
-                + "<p>Use the OTP below. It expires in <strong>10 minutes</strong>.</p>"
+                + "<p>We received a request to reset your password. Use the OTP below — it expires in <strong>10 minutes</strong>.</p>"
                 + "<div style='background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; "
                 + "padding:24px; text-align:center; margin:24px 0;'>"
-                + "<div style='font-size:36px; font-weight:bold; letter-spacing:8px; color:#1a73e8;'>"
+                + "<p style='margin:0 0 8px; color:#6b7280; font-size:13px;'>Your one-time password</p>"
+                + "<div style='font-size:38px; font-weight:bold; letter-spacing:10px; color:#1a73e8;'>"
                 + escapeJson(otp)
                 + "</div>"
+                + "</div>"
+                + "<p>Once you have your OTP, head back to the login page to reset your password:</p>"
+                + "<div style='text-align:center; margin:20px 0;'>"
+                + "<a href='" + LOGIN_URL + "' style='background:#1a73e8; color:#ffffff; padding:12px 28px; "
+                + "text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>"
+                + "Go to Applyra Login</a>"
                 + "</div>"
                 + "<p style='color:#6b7280; font-size:13px;'>If you did not request this, you can safely ignore this email. "
                 + "Your password will not change.</p>"
                 + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:24px 0;'>"
-                + "<p style='color:#6b7280; font-size:12px;'>Applyra Placement Intelligence Platform</p>"
+                + "<p style='color:#6b7280; font-size:12px;'>Applyra Placement Intelligence Platform &mdash; "
+                + "<a href='" + LOGIN_URL + "' style='color:#1a73e8;'>applyra.netlify.app</a></p>"
                 + "</div>";
     }
 }
