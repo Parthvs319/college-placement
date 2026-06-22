@@ -57,6 +57,20 @@ public class SuperAdminDtos {
     }
 
     @Data
+    public static class ContractRenewalItem {
+        Long collegeId;
+        String collegeName;
+        String collegeCode;
+        String contactEmail;
+        String tpoName;
+        String contractType;   // "PAID" | "FREE_TRIAL"
+        String validFrom;
+        String validTo;
+        int daysRemaining;
+        Long contractId;
+    }
+
+    @Data
     public static class UserSummary {
         Long id;
         String name;

@@ -33,6 +33,17 @@ public enum CollegeContractRepository {
                 .findOne();
     }
 
+    /** Returns all active contracts expiring between two ISO date strings (inclusive), ordered by validTo asc */
+    public List<CollegeContract> expiringBetween(String fromDate, String toDate) {
+        return finder.query().where()
+                .eq("status", "ACTIVE")
+                .eq("deleted", false)
+                .ge("validTo", fromDate)
+                .le("validTo", toDate)
+                .orderBy("validTo asc")
+                .findList();
+    }
+
     /** Returns the most recent contract regardless of status */
     public CollegeContract latest(Long collegeId) {
         return finder.query().where()
