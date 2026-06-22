@@ -54,6 +54,10 @@ public enum GetCollegeDetailController implements BaseController {
                     result.put("logoUrl", college.getLogoUrl());
                     result.put("contactEmail", college.getContactEmail());
                     result.put("contactPhone", college.getContactPhone());
+                    result.put("tpoName", college.getTpoName());
+                    result.put("gstin", college.getGstin());
+                    result.put("isEmailVerified", college.isEmailVerified());
+                    result.put("isPhoneVerified", college.isPhoneVerified());
                     result.put("departments", college.getDepartments());
                     result.put("verified", college.isVerified());
                     result.put("active", college.isActive());

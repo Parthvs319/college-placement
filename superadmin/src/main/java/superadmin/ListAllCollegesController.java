@@ -7,11 +7,13 @@ import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.repos.CompanyCollegeRepository;
+import models.repos.CollegeContractRepository;
 import models.repos.CollegeRepository;
 import models.repos.DriveRepository;
 import models.repos.StudentRepository;
 import models.sql.City;
 import models.sql.College;
+import models.sql.CollegeContract;
 import models.sql.CompanyCollege;
 import models.sql.States;
 
@@ -57,6 +59,19 @@ public enum ListAllCollegesController implements BaseController {
                                 .filter(cc -> cc.getCompany() != null && cc.getCompany().isStartup())
                                 .count());
                         s.setPlacementRate(totalStudents > 0 ? (double) placedStudents / totalStudents * 100 : 0);
+
+                        // Verification + GSTIN
+                        s.setGstin(c.gstin);
+                        s.setTpoName(c.tpoName);
+                        s.setEmailVerified(c.isEmailVerified);
+                        s.setPhoneVerified(c.isPhoneVerified);
+
+                        // Active contract summary
+                        CollegeContract contract = CollegeContractRepository.INSTANCE.latestActive(c.getId());
+                        if (contract != null) {
+                            s.setContractEndDate(contract.getValidTo());
+                            s.setContractType(contract.getContractType());
+                        }
                         return s;
                     }).collect(Collectors.toList());
                 })

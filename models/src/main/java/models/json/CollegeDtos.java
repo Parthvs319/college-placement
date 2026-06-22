@@ -257,6 +257,10 @@ public final class CollegeDtos {
         String logoUrl;
         String contactEmail;
         String contactPhone;
+        String tpoName;
+        String gstin;
+        boolean isEmailVerified;
+        boolean isPhoneVerified;
         List<String> departments;
         boolean verified;
         boolean active;
@@ -283,6 +287,10 @@ public final class CollegeDtos {
         dto.logoUrl = c.logoUrl;
         dto.contactEmail = c.contactEmail;
         dto.contactPhone = c.contactPhone;
+        dto.tpoName = c.tpoName;
+        dto.gstin = c.gstin;
+        dto.isEmailVerified = c.isEmailVerified;
+        dto.isPhoneVerified = c.isPhoneVerified;
         dto.departments = c.departments;
         dto.verified = c.verified;
         dto.active = c.active;

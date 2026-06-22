@@ -46,6 +46,14 @@ public class SuperAdminDtos {
         int companyCount;
         int startupCount;
         double placementRate;
+        // Verification + GSTIN
+        String gstin;
+        String tpoName;
+        boolean isEmailVerified;
+        boolean isPhoneVerified;
+        // Active contract summary
+        String contractEndDate;   // validTo from latest active contract
+        String contractType;      // "PAID" | "FREE_TRIAL"
     }
 
     @Data
