@@ -1,10 +1,12 @@
 package models.repos;
 
 import helpers.sql.SqlFinder;
+import io.ebean.Expr;
+import io.ebean.Expression;
 import io.ebean.ExpressionList;
 import models.sql.AisheCollege;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,17 +24,25 @@ public enum AisheCollegeRepository {
     public List<AisheCollege> search(String query, String state, int limit) {
         String[] tokens = query.trim().split("\\s+");
 
-        // Build OR expression across all tokens (skip 1-char tokens to avoid noise)
-        ExpressionList<AisheCollege> expr = finder.query().where();
-        if (tokens.length == 1) {
-            expr = expr.like("name", "%" + tokens[0] + "%");
-        } else {
-            io.ebean.Junction<AisheCollege> or = expr.or();
-            for (String token : tokens) {
-                if (token.length() >= 2) or = or.like("name", "%" + token + "%");
+        // Collect per-token LIKE expressions (skip single-char tokens)
+        List<Expression> likes = new ArrayList<>();
+        for (String token : tokens) {
+            if (token.length() >= 2) {
+                likes.add(Expr.like("name", "%" + token + "%"));
             }
-            expr = or.endOr();
         }
+        // Fallback: if all tokens were too short, use the full query
+        if (likes.isEmpty()) {
+            likes.add(Expr.like("name", "%" + query.trim() + "%"));
+        }
+
+        // Combine with OR using Expr.or() (avoids Junction API version differences)
+        Expression combined = likes.get(0);
+        for (int i = 1; i < likes.size(); i++) {
+            combined = Expr.or(combined, likes.get(i));
+        }
+
+        ExpressionList<AisheCollege> expr = finder.query().where().add(combined);
 
         if (state != null && !state.isBlank()) {
             expr = expr.eq("state", state);
