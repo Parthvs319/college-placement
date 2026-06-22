@@ -1,16 +1,17 @@
 package models.sql;
 
-import helpers.blueprint.models.BaseModel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Table(name = "aishe_colleges")
-public class AisheCollege extends BaseModel {
+public class AisheCollege {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
 
     @Column(nullable = false, unique = true, length = 20)
     public String aisheCode;
