@@ -53,12 +53,12 @@ public enum BulkUploadStudentsController implements BaseController {
     }
 
     private Object map(CollegeLoginRequest request) {
-        Object studentsObj = request.getRequest().get("students");
-        if (studentsObj == null || !(studentsObj instanceof List)) {
+        io.vertx.core.json.JsonObject body = request.getRoutingContext().getBodyAsJson();
+        if (body == null || !body.containsKey("students") || body.getJsonArray("students") == null) {
             throw new RoutingError("students array is required");
         }
 
-        List<?> studentsList = (List<?>) studentsObj;
+        List<?> studentsList = body.getJsonArray("students").getList();
         if (studentsList.isEmpty()) {
             throw new RoutingError("students array cannot be empty");
         }
