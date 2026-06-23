@@ -81,11 +81,22 @@ public enum BulkUploadStudentsController implements BaseController {
             }
             Map<?, ?> row = (Map<?, ?>) obj;
 
-            String name = getStr(row, "name");
-            String email = getStr(row, "email");
+            String name             = getStr(row, "name");
+            String email            = getStr(row, "email");
             String enrollmentNumber = getStr(row, "enrollmentNumber");
-            String department = getStr(row, "department");
-            int passingYear = getInt(row, "passingYear", 0);
+            String department       = getStr(row, "department");
+            int    passingYear      = getInt(row, "passingYear", 0);
+            String mobile           = getStr(row, "mobile");
+            String dateOfBirth      = getStr(row, "dateOfBirth");
+            String tenthPct         = getStr(row, "tenthPercentage");
+            String twelfthPct       = getStr(row, "twelfthPercentage");
+            String diplomaPct       = getStr(row, "diplomaPercentage");
+            int    activeBacklogs   = getInt(row, "activeBacklogs", 0);
+            int    totalBacklogs    = getInt(row, "totalBacklogs", 0);
+            String category         = getStr(row, "category");
+            String aadharNumber     = getStr(row, "aadharNumber");
+            String panNumber        = getStr(row, "panNumber");
+            String studentCollegeId = getStr(row, "studentCollegeId");
 
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("email", email);
@@ -136,7 +147,7 @@ public enum BulkUploadStudentsController implements BaseController {
                 continue;
             }
 
-            // Create User
+            // Create User — NOT verified yet; student must complete profile first
             String rawPassword = generatePassword(10);
             User user = new User();
             user.email = email;
@@ -144,8 +155,9 @@ public enum BulkUploadStudentsController implements BaseController {
             user.password = PasswordUtils.INSTANCE.hash(rawPassword);
             user.userType = UserType.STUDENT;
             user.college = request.getCollege();
-            user.verified = true;  // TPO-uploaded = pre-verified
+            user.verified = false;  // student must complete profile to get verified
             user.active = true;
+            if (mobile != null && !mobile.isBlank()) user.mobile = mobile.trim();
             user.save();
 
             // Create Student
@@ -156,16 +168,25 @@ public enum BulkUploadStudentsController implements BaseController {
             student.department = department != null ? department.trim() : null;
             student.passingYear = passingYear;
 
-            // Optional fields
+            // Optional academic fields
             String cgpaStr = getStr(row, "cgpa");
             if (cgpaStr != null && !cgpaStr.isBlank()) {
-                try {
-                    student.cgpa = new BigDecimal(cgpaStr.trim());
-                } catch (NumberFormatException ignored) {}
+                try { student.cgpa = new BigDecimal(cgpaStr.trim()); } catch (NumberFormatException ignored) {}
             }
-            student.gender = getStr(row, "gender");
-            student.tenthPercentage = getStr(row, "tenthPercentage");
-            student.twelfthPercentage = getStr(row, "twelfthPercentage");
+            student.gender          = getStr(row, "gender");
+            student.dateOfBirth     = dateOfBirth != null && !dateOfBirth.isBlank() ? dateOfBirth.trim() : null;
+            student.tenthPercentage = tenthPct != null && !tenthPct.isBlank() ? tenthPct.trim() : null;
+            student.twelfthPercentage = twelfthPct != null && !twelfthPct.isBlank() ? twelfthPct.trim() : null;
+            student.diplomaPercentage = diplomaPct != null && !diplomaPct.isBlank() ? diplomaPct.trim() : null;
+            student.activeBacklogs  = activeBacklogs;
+            student.totalBacklogs   = totalBacklogs;
+
+            // Identity fields
+            student.aadharNumber     = aadharNumber != null && !aadharNumber.isBlank() ? aadharNumber.trim() : null;
+            student.panNumber        = panNumber != null && !panNumber.isBlank() ? panNumber.trim().toUpperCase() : null;
+            student.studentCollegeId = studentCollegeId != null && !studentCollegeId.isBlank() ? studentCollegeId.trim() : null;
+            student.category         = category != null && !category.isBlank() ? category.trim().toUpperCase() : null;
+
             student.save();
 
             // Send rich credentials email on separate thread

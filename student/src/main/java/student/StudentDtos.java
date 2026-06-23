@@ -19,67 +19,94 @@ public final class StudentDtos {
     @Data
     public static class ProfileResponse {
         Long id;
+        // User-level
         String name;
         String email;
+        String mobile;
+        String avatarUrl;
+        boolean verified;
+        // Student core
         String enrollmentNumber;
+        String studentCollegeId;
         String department;
         int passingYear;
+        String category;
+        // Academic
         BigDecimal cgpa;
         int activeBacklogs;
         int totalBacklogs;
         String tenthPercentage;
         String twelfthPercentage;
         String diplomaPercentage;
+        // Personal
         String gender;
         String dateOfBirth;
+        // Identity docs
+        String aadharNumber;
+        String panNumber;
+        // Online presence
         List<String> skills;
         List<String> certifications;
         String linkedinUrl;
         String githubUrl;
         String portfolioUrl;
         String resumeUrl;
+        // Status
         boolean placed;
         boolean optedOut;
-        boolean verified;
         BigDecimal currentCtc;
+        boolean profileComplete;
+        Timestamp profileSubmittedAt;
+        // College
         String collegeName;
     }
 
     public static ProfileResponse toProfileDto(Student s) {
         ProfileResponse dto = new ProfileResponse();
         dto.id = s.getId();
-        dto.enrollmentNumber = s.enrollmentNumber;
-        dto.department = s.department;
-        dto.passingYear = s.passingYear;
-        dto.cgpa = s.cgpa;
-        dto.activeBacklogs = s.activeBacklogs;
-        dto.totalBacklogs = s.totalBacklogs;
-        dto.tenthPercentage = s.tenthPercentage;
-        dto.twelfthPercentage = s.twelfthPercentage;
-        dto.diplomaPercentage = s.diplomaPercentage;
-        dto.gender = s.gender;
-        dto.dateOfBirth = s.dateOfBirth;
-        dto.skills = s.skills;
-        dto.certifications = s.certifications;
-        dto.linkedinUrl = s.linkedinUrl;
-        dto.githubUrl = s.githubUrl;
-        dto.portfolioUrl = s.portfolioUrl;
-        dto.resumeUrl = s.resumeUrl;
-        dto.placed = s.placed;
-        dto.optedOut = s.optedOut;
-        dto.currentCtc = s.currentCtc;
-        if (s.user != null) {
-            dto.name = s.user.name;
-            dto.email = s.user.email;
-            dto.verified = s.user.verified;
+        dto.enrollmentNumber = s.getEnrollmentNumber();
+        dto.studentCollegeId = s.getStudentCollegeId();
+        dto.department       = s.getDepartment();
+        dto.passingYear      = s.getPassingYear();
+        dto.category         = s.getCategory();
+        dto.cgpa             = s.getCgpa();
+        dto.activeBacklogs   = s.getActiveBacklogs();
+        dto.totalBacklogs    = s.getTotalBacklogs();
+        dto.tenthPercentage  = s.getTenthPercentage();
+        dto.twelfthPercentage  = s.getTwelfthPercentage();
+        dto.diplomaPercentage  = s.getDiplomaPercentage();
+        dto.gender           = s.getGender();
+        dto.dateOfBirth      = s.getDateOfBirth();
+        dto.aadharNumber     = s.getAadharNumber();
+        dto.panNumber        = s.getPanNumber();
+        dto.skills           = s.getSkills();
+        dto.certifications   = s.getCertifications();
+        dto.linkedinUrl      = s.getLinkedinUrl();
+        dto.githubUrl        = s.getGithubUrl();
+        dto.portfolioUrl     = s.getPortfolioUrl();
+        dto.resumeUrl        = s.getResumeUrl();
+        dto.placed           = s.isPlaced();
+        dto.optedOut         = s.isOptedOut();
+        dto.currentCtc       = s.getCurrentCtc();
+        dto.profileComplete  = s.isProfileComplete();
+        dto.profileSubmittedAt = s.getProfileSubmittedAt();
+
+        User user = s.getUser();
+        if (user != null) {
+            dto.name      = user.getName();
+            dto.email     = user.getEmail();
+            dto.mobile    = user.getMobile();
+            dto.avatarUrl = user.getAvatarUrl();
+            dto.verified  = user.isVerified();
         }
-        if (s.college != null) {
-            dto.collegeName = s.college.name;
+        College college = s.getCollege();
+        if (college != null) {
+            dto.collegeName = college.getName();
         }
         return dto;
     }
 
-    // ── Drive (student view — less detail than TPO view) ──
+    // ── Drive (student view) ──
 
     @Data
     public static class DriveListItem {
@@ -106,29 +133,30 @@ public final class StudentDtos {
     public static DriveListItem toDriveListDto(Drive d) {
         DriveListItem dto = new DriveListItem();
         dto.id = d.getId();
-        dto.title = d.title;
-        dto.employmentType = d.employmentType != null ? d.employmentType.name() : null;
-        dto.status = d.status != null ? d.status.name() : null;
-        dto.ctcOffered = d.ctcOffered;
-        dto.stipend = d.stipend;
-        dto.location = d.location;
-        dto.isRemote = d.isRemote;
-        dto.minCgpa = d.minCgpa;
-        dto.maxActiveBacklogs = d.maxActiveBacklogs;
-        dto.eligibleDepartments = d.eligibleDepartments;
-        dto.minPassingYear = d.minPassingYear;
-        dto.maxPassingYear = d.maxPassingYear;
-        dto.registrationDeadline = d.registrationDeadline;
-        dto.driveDate = d.driveDate;
-        dto.venue = d.venue;
-        if (d.companyCollege != null && d.companyCollege.company != null) {
-            dto.companyName = d.companyCollege.company.name;
-            dto.companyLogoUrl = d.companyCollege.company.logoUrl;
+        dto.title           = d.getTitle();
+        dto.employmentType  = d.getEmploymentType() != null ? d.getEmploymentType().name() : null;
+        dto.status          = d.getStatus() != null ? d.getStatus().name() : null;
+        dto.ctcOffered      = d.getCtcOffered();
+        dto.stipend         = d.getStipend();
+        dto.location        = d.getLocation();
+        dto.isRemote        = d.isRemote();
+        dto.minCgpa         = d.getMinCgpa();
+        dto.maxActiveBacklogs = d.getMaxActiveBacklogs();
+        dto.eligibleDepartments = d.getEligibleDepartments();
+        dto.minPassingYear  = d.getMinPassingYear();
+        dto.maxPassingYear  = d.getMaxPassingYear();
+        dto.registrationDeadline = d.getRegistrationDeadline();
+        dto.driveDate       = d.getDriveDate();
+        dto.venue           = d.getVenue();
+        CompanyCollege cc = d.getCompanyCollege();
+        if (cc != null && cc.getCompany() != null) {
+            dto.companyName    = cc.getCompany().getName();
+            dto.companyLogoUrl = cc.getCompany().getLogoUrl();
         }
         return dto;
     }
 
-    // ── Drive Detail (full info for a single drive) ──
+    // ── Drive Detail ──
 
     @Data
     public static class DriveDetailResponse {
@@ -158,34 +186,35 @@ public final class StudentDtos {
 
     public static DriveDetailResponse toDriveDetailDto(Drive d) {
         DriveDetailResponse dto = new DriveDetailResponse();
-        dto.id = d.getId();
-        dto.title = d.title;
-        dto.jobDescription = d.jobDescription;
-        dto.employmentType = d.employmentType != null ? d.employmentType.name() : null;
-        dto.status = d.status != null ? d.status.name() : null;
-        dto.ctcOffered = d.ctcOffered;
-        dto.stipend = d.stipend;
-        dto.location = d.location;
-        dto.isRemote = d.isRemote;
-        dto.minCgpa = d.minCgpa;
-        dto.maxActiveBacklogs = d.maxActiveBacklogs;
-        dto.eligibleDepartments = d.eligibleDepartments;
-        dto.minPassingYear = d.minPassingYear;
-        dto.maxPassingYear = d.maxPassingYear;
-        dto.requiredSkills = d.requiredSkills;
-        dto.niceToHaveSkills = d.niceToHaveSkills;
-        dto.registrationDeadline = d.registrationDeadline;
-        dto.driveDate = d.driveDate;
-        dto.venue = d.venue;
-        if (d.companyCollege != null && d.companyCollege.company != null) {
-            dto.companyName = d.companyCollege.company.name;
-            dto.companyLogoUrl = d.companyCollege.company.logoUrl;
-            dto.companyWebsite = d.companyCollege.company.website;
+        dto.id             = d.getId();
+        dto.title          = d.getTitle();
+        dto.jobDescription = d.getJobDescription();
+        dto.employmentType = d.getEmploymentType() != null ? d.getEmploymentType().name() : null;
+        dto.status         = d.getStatus() != null ? d.getStatus().name() : null;
+        dto.ctcOffered     = d.getCtcOffered();
+        dto.stipend        = d.getStipend();
+        dto.location       = d.getLocation();
+        dto.isRemote       = d.isRemote();
+        dto.minCgpa        = d.getMinCgpa();
+        dto.maxActiveBacklogs = d.getMaxActiveBacklogs();
+        dto.eligibleDepartments = d.getEligibleDepartments();
+        dto.minPassingYear = d.getMinPassingYear();
+        dto.maxPassingYear = d.getMaxPassingYear();
+        dto.requiredSkills   = d.getRequiredSkills();
+        dto.niceToHaveSkills = d.getNiceToHaveSkills();
+        dto.registrationDeadline = d.getRegistrationDeadline();
+        dto.driveDate      = d.getDriveDate();
+        dto.venue          = d.getVenue();
+        CompanyCollege cc = d.getCompanyCollege();
+        if (cc != null && cc.getCompany() != null) {
+            dto.companyName    = cc.getCompany().getName();
+            dto.companyLogoUrl = cc.getCompany().getLogoUrl();
+            dto.companyWebsite = cc.getCompany().getWebsite();
         }
         return dto;
     }
 
-    // ── Application (student's own view) ──
+    // ── Application ──
 
     @Data
     public static class MyApplicationResponse {
@@ -202,23 +231,25 @@ public final class StudentDtos {
 
     public static MyApplicationResponse toApplicationDto(DriveApplication a) {
         MyApplicationResponse dto = new MyApplicationResponse();
-        dto.id = a.getId();
-        dto.status = a.status != null ? a.status.name() : null;
-        dto.resumeSnapshot = a.resumeSnapshot;
-        dto.notes = a.notes;
-        dto.appliedAt = a.getCreatedAt();
-        if (a.drive != null) {
-            dto.driveId = a.drive.getId();
-            dto.driveTitle = a.drive.title;
-            dto.driveDate = a.drive.driveDate;
-            if (a.drive.companyCollege != null && a.drive.companyCollege.company != null) {
-                dto.companyName = a.drive.companyCollege.company.name;
+        dto.id             = a.getId();
+        dto.status         = a.getStatus() != null ? a.getStatus().name() : null;
+        dto.resumeSnapshot = a.getResumeSnapshot();
+        dto.notes          = a.getNotes();
+        dto.appliedAt      = a.getCreatedAt();
+        Drive drive = a.getDrive();
+        if (drive != null) {
+            dto.driveId   = drive.getId();
+            dto.driveTitle = drive.getTitle();
+            dto.driveDate  = drive.getDriveDate();
+            CompanyCollege cc = drive.getCompanyCollege();
+            if (cc != null && cc.getCompany() != null) {
+                dto.companyName = cc.getCompany().getName();
             }
         }
         return dto;
     }
 
-    // ── Offer (student's own view) ──
+    // ── Offer ──
 
     @Data
     public static class MyOfferResponse {
@@ -239,21 +270,23 @@ public final class StudentDtos {
 
     public static MyOfferResponse toOfferDto(Offer o) {
         MyOfferResponse dto = new MyOfferResponse();
-        dto.id = o.getId();
-        dto.ctcOffered = o.ctcOffered;
-        dto.designation = o.designation;
-        dto.location = o.location;
-        dto.status = o.status != null ? o.status.name() : null;
-        dto.responseDeadline = o.responseDeadline;
-        dto.respondedAt = o.respondedAt;
-        dto.offerLetterUrl = o.offerLetterUrl;
-        dto.notes = o.notes;
-        dto.createdAt = o.getCreatedAt();
-        if (o.drive != null) {
-            dto.driveId = o.drive.getId();
-            dto.driveTitle = o.drive.title;
-            if (o.drive.companyCollege != null && o.drive.companyCollege.company != null) {
-                dto.companyName = o.drive.companyCollege.company.name;
+        dto.id               = o.getId();
+        dto.ctcOffered       = o.getCtcOffered();
+        dto.designation      = o.getDesignation();
+        dto.location         = o.getLocation();
+        dto.status           = o.getStatus() != null ? o.getStatus().name() : null;
+        dto.responseDeadline = o.getResponseDeadline();
+        dto.respondedAt      = o.getRespondedAt();
+        dto.offerLetterUrl   = o.getOfferLetterUrl();
+        dto.notes            = o.getNotes();
+        dto.createdAt        = o.getCreatedAt();
+        Drive drive = o.getDrive();
+        if (drive != null) {
+            dto.driveId    = drive.getId();
+            dto.driveTitle = drive.getTitle();
+            CompanyCollege cc = drive.getCompanyCollege();
+            if (cc != null && cc.getCompany() != null) {
+                dto.companyName = cc.getCompany().getName();
             }
         }
         return dto;
@@ -278,20 +311,21 @@ public final class StudentDtos {
 
     public static PYQResponse toPyqDto(PYQ p) {
         PYQResponse dto = new PYQResponse();
-        dto.id = p.getId();
-        dto.role = p.role;
-        dto.roundType = p.roundType != null ? p.roundType.name() : null;
-        dto.year = p.year;
-        dto.content = p.content;
-        dto.difficulty = p.difficulty;
-        dto.tags = p.tags;
-        dto.upvotes = p.upvotes;
-        dto.anonymous = p.anonymous;
-        if (p.company != null) {
-            dto.companyName = p.company.name;
+        dto.id         = p.getId();
+        dto.role       = p.getRole();
+        dto.roundType  = p.getRoundType() != null ? p.getRoundType().name() : null;
+        dto.year       = p.getYear();
+        dto.content    = p.getContent();
+        dto.difficulty = p.getDifficulty();
+        dto.tags       = p.getTags();
+        dto.upvotes    = p.getUpvotes();
+        dto.anonymous  = p.isAnonymous();
+        Company company = p.getCompany();
+        if (company != null) {
+            dto.companyName = company.getName();
         }
-        if (!p.anonymous && p.contributedByStudent != null && p.contributedByStudent.user != null) {
-            dto.contributedBy = p.contributedByStudent.user.name;
+        if (!p.isAnonymous() && p.getContributedByStudent() != null && p.getContributedByStudent().getUser() != null) {
+            dto.contributedBy = p.getContributedByStudent().getUser().getName();
         }
         return dto;
     }

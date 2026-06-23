@@ -45,6 +45,20 @@ public class Student extends AttrsModel {
 
     public String gender;
 
+    public String aadharNumber;          // 12-digit Aadhaar (stored masked in display)
+
+    public String panNumber;             // 10-char PAN
+
+    public String studentCollegeId;      // internal college student ID (different from enrollmentNumber)
+
+    /** Reservation category: GENERAL, OBC, SC, ST, EWS */
+    public String category;
+
+    /** True once student submits their profile for the first time */
+    public boolean profileComplete = false;
+
+    public java.sql.Timestamp profileSubmittedAt;
+
     public String dateOfBirth;
 
     @DbJsonB
