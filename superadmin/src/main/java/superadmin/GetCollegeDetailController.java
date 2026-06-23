@@ -7,6 +7,7 @@ import helpers.utils.ResponseUtils;
 import io.ebean.DB;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
+import models.enums.EmploymentType;
 import models.repos.*;
 import models.sql.*;
 
@@ -75,6 +76,17 @@ public enum GetCollegeDetailController implements BaseController {
                     // Drives
                     List<Drive> drives = DriveRepository.INSTANCE.byCollege(collegeId);
                     result.put("driveCount", drives.size());
+
+                    // Drive type breakdown
+                    long internshipCount = drives.stream()
+                            .filter(d -> d.getEmploymentType() == EmploymentType.INTERNSHIP
+                                      || d.getEmploymentType() == EmploymentType.INTERN_PLUS_FTE)
+                            .count();
+                    long fullTimeCount = drives.stream()
+                            .filter(d -> d.getEmploymentType() == EmploymentType.FULL_TIME)
+                            .count();
+                    result.put("internshipCount", (int) internshipCount);
+                    result.put("fullTimeCount", (int) fullTimeCount);
 
                     // Companies
                     List<CompanyCollege> companyColleges = CompanyCollegeRepository.INSTANCE.byCollege(collegeId);
