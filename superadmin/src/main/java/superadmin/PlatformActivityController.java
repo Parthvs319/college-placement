@@ -58,6 +58,8 @@ public enum PlatformActivityController implements BaseController {
                         }
                         regEvent.setDescription(desc);
                         regEvent.setTimestamp(tsToString(c.getCreatedAt()));
+                        regEvent.setEntityId(c.getId());
+                        regEvent.setEntityType("college");
                         activities.add(regEvent);
 
                         // If updatedAt differs from createdAt, college was toggled - show activate/deactivate
@@ -75,6 +77,8 @@ public enum PlatformActivityController implements BaseController {
                             }
                             toggleEvent.setDescription(desc);
                             toggleEvent.setTimestamp(tsToString(c.getUpdatedAt()));
+                            toggleEvent.setEntityId(c.getId());
+                            toggleEvent.setEntityType("college");
                             activities.add(toggleEvent);
                         }
                     }
@@ -100,6 +104,8 @@ public enum PlatformActivityController implements BaseController {
                         }
                         e.setDescription(d.getTitle() + " by " + companyName + " at " + collegeName);
                         e.setTimestamp(tsToString(d.getCreatedAt()));
+                        e.setEntityId(d.getId());
+                        e.setEntityType("drive");
                         activities.add(e);
                     }
 
@@ -119,6 +125,8 @@ public enum PlatformActivityController implements BaseController {
                         String ctcStr = o.getCtcOffered() != null ? " - " + o.getCtcOffered().toPlainString() + " LPA" : "";
                         e.setDescription(studentName + " from " + companyName + ctcStr);
                         e.setTimestamp(tsToString(o.getCreatedAt()));
+                        if (o.getDrive() != null) { e.setEntityId(o.getDrive().getId()); e.setEntityType("drive"); }
+                        else if (o.getStudent() != null && o.getStudent().getUser() != null) { e.setEntityId(o.getStudent().getUser().getId()); e.setEntityType("student"); }
                         activities.add(e);
                     }
 
@@ -135,6 +143,7 @@ public enum PlatformActivityController implements BaseController {
                         if (app.getDrive() != null) driveTitle = app.getDrive().getTitle();
                         e.setDescription(studentName + " applied to " + driveTitle);
                         e.setTimestamp(tsToString(app.getCreatedAt()));
+                        if (app.getDrive() != null) { e.setEntityId(app.getDrive().getId()); e.setEntityType("drive"); }
                         activities.add(e);
                     }
 
@@ -143,6 +152,7 @@ public enum PlatformActivityController implements BaseController {
                     for (User u : recentUsers) {
                         String role = u.getUserType() != null ? u.getUserType().name() : "USER";
                         String desc = u.getName() + " (" + role.replace("_", " ") + ")";
+                        String entityType = resolveUserEntityType(role);
 
                         // Registration event
                         SuperAdminDtos.ActivityEvent regEvent = new SuperAdminDtos.ActivityEvent();
@@ -151,6 +161,8 @@ public enum PlatformActivityController implements BaseController {
                         regEvent.setColor("purple");
                         regEvent.setDescription(desc);
                         regEvent.setTimestamp(tsToString(u.getCreatedAt()));
+                        regEvent.setEntityId(u.getId());
+                        regEvent.setEntityType(entityType);
                         activities.add(regEvent);
 
                         // If updatedAt differs from createdAt, user was toggled
@@ -168,6 +180,8 @@ public enum PlatformActivityController implements BaseController {
                             }
                             toggleEvent.setDescription(desc);
                             toggleEvent.setTimestamp(tsToString(u.getUpdatedAt()));
+                            toggleEvent.setEntityId(u.getId());
+                            toggleEvent.setEntityType(entityType);
                             activities.add(toggleEvent);
                         }
                     }
@@ -200,6 +214,8 @@ public enum PlatformActivityController implements BaseController {
                             e.setDescription(tierStr + " subscription");
                         }
                         e.setTimestamp(tsToString(s.getCreatedAt()));
+                        if (s.getStudent() != null && s.getStudent().getUser() != null) { e.setEntityId(s.getStudent().getUser().getId()); e.setEntityType("student"); }
+                        else if (s.getCollege() != null) { e.setEntityId(s.getCollege().getId()); e.setEntityType("college"); }
                         activities.add(e);
                     }
 
@@ -221,5 +237,15 @@ public enum PlatformActivityController implements BaseController {
     private String tsToString(Timestamp ts) {
         if (ts == null) return null;
         return ts.toInstant().toString();
+    }
+
+    private String resolveUserEntityType(String role) {
+        if (role == null) return "student";
+        switch (role) {
+            case "TPO":
+            case "COLLEGE_ADMIN": return "tpo";
+            case "COMPANY_HR":    return "company_hr";
+            default:              return "student";
+        }
     }
 }

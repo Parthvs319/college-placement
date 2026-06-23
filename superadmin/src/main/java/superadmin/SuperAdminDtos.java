@@ -193,6 +193,8 @@ public class SuperAdminDtos {
         String description; // detail e.g. "Google SDE Intern at SGSITS"
         String timestamp;   // ISO string
         String color;       // "green", "blue", "amber", "purple"
+        Long entityId;      // ID of the related entity for deep-linking
+        String entityType;  // "college" | "drive" | "student" | "tpo" | "company_hr"
     }
 
     @Data
