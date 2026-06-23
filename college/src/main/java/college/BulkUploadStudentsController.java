@@ -17,6 +17,9 @@ import models.sql.User;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -65,8 +68,13 @@ public enum BulkUploadStudentsController implements BaseController {
 
         Long collegeId = request.getCollege().getId();
         String collegeName = request.getCollege().getName();
+        String collegeCode = request.getCollege().getCode() != null ? request.getCollege().getCode() : "";
+        String tpoName  = request.getUser() != null && request.getUser().getName()  != null ? request.getUser().getName()  : "TPO";
+        String tpoEmail = request.getUser() != null && request.getUser().getEmail() != null ? request.getUser().getEmail() : "";
 
         List<Map<String, Object>> results = new ArrayList<>();
+        // Track created students for summary email
+        List<String[]> createdStudents = new ArrayList<>(); // [name, email, enrollment, department, passingYear]
         int created = 0;
         int skipped = 0;
         int failed = 0;
@@ -165,12 +173,16 @@ public enum BulkUploadStudentsController implements BaseController {
             student.twelfthPercentage = getStr(row, "twelfthPercentage");
             student.save();
 
-            // Send credentials email on separate thread
+            // Send rich credentials email on separate thread
             final String finalEmail = email;
+            final String finalName = name.trim();
+            final String finalDept = department;
+            final int finalYear = passingYear;
             new Thread(() -> {
                 try {
                     String html = EmailService.buildStudentCredentialsHtml(
-                            collegeName, finalEmail, rawPassword, enrollmentNumber
+                            collegeName, finalName, finalEmail, rawPassword,
+                            enrollmentNumber, finalDept, finalYear, tpoName
                     );
                     EmailService.sendEmail(finalEmail, "Your Applyra Student Login — " + collegeName, html)
                             .subscribe(
@@ -186,8 +198,47 @@ public enum BulkUploadStudentsController implements BaseController {
             item.put("name", name);
             item.put("studentId", student.getId());
             results.add(item);
+            createdStudents.add(new String[]{
+                name.trim(), email, enrollmentNumber.trim(),
+                department != null ? department.trim() : null,
+                passingYear > 0 ? String.valueOf(passingYear) : null
+            });
             created++;
         }
+
+        // ── Send summary email to all super admins (async) ────────────────────
+        final int fCreated = created;
+        final int fSkipped = skipped;
+        final int fFailed  = failed;
+        final int fTotal   = studentsList.size();
+        final List<String[]> fStudentRows = new ArrayList<>(createdStudents);
+        final String timestamp = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
+                .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a z"));
+
+        new Thread(() -> {
+            try {
+                List<User> superAdmins = UserRepository.INSTANCE.findByUserType(UserType.SUPER_ADMIN);
+                if (superAdmins.isEmpty()) return;
+
+                String summaryHtml = EmailService.buildOnboardingSummaryHtml(
+                        collegeName, collegeCode,
+                        tpoName, tpoEmail,
+                        fTotal, fCreated, fSkipped, fFailed,
+                        fStudentRows, timestamp
+                );
+                String subject = "[Applyra] " + fCreated + " students onboarded by " + collegeName + " (" + collegeCode + ")";
+
+                for (User admin : superAdmins) {
+                    EmailService.sendEmail(admin.getEmail(), subject, summaryHtml)
+                            .subscribe(
+                                    sent -> System.out.println("[BulkUpload] Summary " + (sent ? "sent" : "failed") + " to " + admin.getEmail()),
+                                    err  -> System.err.println("[BulkUpload] Summary email error: " + err.getMessage())
+                            );
+                }
+            } catch (Exception e) {
+                System.err.println("[BulkUpload] Super admin summary thread error: " + e.getMessage());
+            }
+        }, "bulk-upload-summary").start();
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Bulk upload processed");

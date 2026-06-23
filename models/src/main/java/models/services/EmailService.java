@@ -344,29 +344,212 @@ public class EmailService {
                 + "</div>";
     }
 
-    public static String buildStudentCredentialsHtml(String collegeName, String email,
-                                                      String password, String enrollmentNumber) {
-        return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
-                + "<h2 style='color: #2563eb;'>Your Applyra Student Account is Ready!</h2>"
-                + "<p>Your college <strong>" + collegeName + "</strong> has registered you on the Applyra Placement Platform.</p>"
-                + "<div style='background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 16px 0;'>"
-                + "<p style='margin: 0 0 12px; font-weight: bold; color: #1e40af;'>Your Login Credentials</p>"
-                + "<table style='width: 100%; border-collapse: collapse;'>"
-                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Email</td>"
-                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + email + "</td></tr>"
-                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Password</td>"
-                + "<td style='padding: 6px 0; font-family: monospace; font-size: 16px; font-weight: bold; color: #1e293b; "
-                + "background: #f1f5f9; padding: 4px 8px; border-radius: 4px;'>" + password + "</td></tr>"
-                + "<tr><td style='padding: 6px 0; color: #6b7280;'>Enrollment No.</td>"
-                + "<td style='padding: 6px 0; font-weight: bold; color: #1e293b;'>" + enrollmentNumber + "</td></tr>"
+    /**
+     * Rich student credentials email sent during bulk onboarding.
+     *
+     * @param collegeName      full college name
+     * @param studentName      student's full name
+     * @param email            login email
+     * @param password         raw auto-generated password
+     * @param enrollmentNumber enrollment / roll number
+     * @param department       department / branch (may be null)
+     * @param passingYear      batch year (0 = unknown)
+     * @param tpoName          TPO who performed the upload
+     */
+    public static String buildStudentCredentialsHtml(
+            String collegeName, String studentName, String email,
+            String password, String enrollmentNumber,
+            String department, int passingYear, String tpoName) {
+
+        String deptLine = (department != null && !department.isBlank())
+                ? "<tr><td style='padding:6px 0;color:#6b7280;width:140px'>Department</td>"
+                  + "<td style='padding:6px 0;font-weight:600;color:#1e293b'>" + department + "</td></tr>"
+                : "";
+        String yearLine = passingYear > 0
+                ? "<tr><td style='padding:6px 0;color:#6b7280'>Batch Year</td>"
+                  + "<td style='padding:6px 0;font-weight:600;color:#1e293b'>" + passingYear + "</td></tr>"
+                : "";
+
+        return "<!DOCTYPE html><html><body style='margin:0;padding:0;background:#f8fafc'>"
+                + "<div style='font-family:Arial,sans-serif;max-width:620px;margin:32px auto;background:#ffffff;"
+                + "border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)'>"
+
+                // Header band
+                + "<div style='background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 100%);padding:32px 36px'>"
+                + "<h1 style='margin:0;color:#ffffff;font-size:22px;font-weight:700'>Welcome to Applyra! 🎓</h1>"
+                + "<p style='margin:8px 0 0;color:#bfdbfe;font-size:14px'>"
+                + "Your placement account at <strong>" + collegeName + "</strong> is ready</p>"
+                + "</div>"
+
+                // Greeting
+                + "<div style='padding:28px 36px 0'>"
+                + "<p style='margin:0 0 6px;font-size:15px;color:#1e293b'>Hi <strong>" + studentName + "</strong>,</p>"
+                + "<p style='margin:0;font-size:14px;color:#475569;line-height:1.6'>"
+                + "Your TPO <strong>" + (tpoName != null ? tpoName : "your college") + "</strong> has registered you on the "
+                + "<strong>Applyra Placement Platform</strong>. Use the credentials below to log in and complete your profile "
+                + "before placement drives begin.</p>"
+                + "</div>"
+
+                // Credentials card
+                + "<div style='margin:24px 36px;background:#eff6ff;border:1px solid #bfdbfe;"
+                + "border-radius:10px;padding:20px 24px'>"
+                + "<p style='margin:0 0 14px;font-weight:700;color:#1e40af;font-size:13px;text-transform:uppercase;"
+                + "letter-spacing:0.5px'>🔐 Login Credentials</p>"
+                + "<table style='width:100%;border-collapse:collapse;font-size:14px'>"
+                + "<tr><td style='padding:6px 0;color:#6b7280;width:140px'>Email</td>"
+                + "<td style='padding:6px 0;font-weight:600;color:#1e293b'>" + email + "</td></tr>"
+                + "<tr><td style='padding:6px 0;color:#6b7280'>Password</td>"
+                + "<td style='padding:6px 0'>"
+                + "<span style='font-family:monospace;font-size:17px;font-weight:700;color:#1e293b;"
+                + "background:#f1f5f9;padding:3px 10px;border-radius:6px;border:1px solid #e2e8f0'>"
+                + password + "</span></td></tr>"
+                + "<tr><td style='padding:6px 0;color:#6b7280'>Enrollment No.</td>"
+                + "<td style='padding:6px 0;font-weight:600;color:#1e293b'>" + enrollmentNumber + "</td></tr>"
+                + deptLine + yearLine
                 + "</table>"
                 + "</div>"
-                + "<div style='background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin: 16px 0;'>"
-                + "<p style='margin: 0; color: #92400e; font-size: 13px;'>"
-                + "<strong>Important:</strong> Please change your password after your first login.</p>"
+
+                // Steps
+                + "<div style='margin:0 36px 24px;background:#f8fafc;border-radius:10px;padding:18px 22px'>"
+                + "<p style='margin:0 0 12px;font-weight:700;color:#1e293b;font-size:13px'>📋 Next Steps</p>"
+                + "<ol style='margin:0;padding-left:20px;color:#475569;font-size:13px;line-height:2'>"
+                + "<li>Log in at <a href='https://applyra.in/login' style='color:#2563eb'>applyra.in/login</a></li>"
+                + "<li>Change your password immediately</li>"
+                + "<li>Complete your profile (CGPA, skills, resume)</li>"
+                + "<li>Apply to placement drives as they open</li>"
+                + "</ol>"
                 + "</div>"
-                + "<hr style='border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;'>"
-                + "<p style='color: #6b7280; font-size: 12px;'>Sent from Applyra Placement Platform</p>"
+
+                // Warning
+                + "<div style='margin:0 36px 28px;background:#fef3c7;border:1px solid #fcd34d;"
+                + "border-radius:8px;padding:12px 16px'>"
+                + "<p style='margin:0;color:#92400e;font-size:13px'>"
+                + "⚠️ <strong>Security:</strong> This password was auto-generated. Please change it after your first login. "
+                + "Do not share your credentials with anyone.</p>"
+                + "</div>"
+
+                // Footer
+                + "<div style='background:#f1f5f9;padding:18px 36px;border-top:1px solid #e2e8f0'>"
+                + "<p style='margin:0;color:#94a3b8;font-size:12px'>"
+                + "This email was sent by <strong>Applyra Placement Platform</strong> on behalf of "
+                + "<strong>" + collegeName + "</strong>. If you believe this was sent in error, "
+                + "please contact your college TPO.</p>"
+                + "</div>"
+                + "</div></body></html>";
+    }
+
+    /** Backward-compatible overload used by older callers. */
+    public static String buildStudentCredentialsHtml(String collegeName, String email,
+                                                      String password, String enrollmentNumber) {
+        return buildStudentCredentialsHtml(collegeName, email, email, password, enrollmentNumber, null, 0, null);
+    }
+
+    /**
+     * Summary email sent to every SUPER_ADMIN after a bulk student onboarding.
+     *
+     * @param collegeName   college that did the upload
+     * @param collegeCode   college code
+     * @param tpoName       TPO who triggered the upload
+     * @param tpoEmail      TPO email
+     * @param totalAttempted total rows submitted
+     * @param created       rows successfully created
+     * @param skipped       rows skipped (already exists)
+     * @param failed        rows that failed validation
+     * @param studentRows   list of created students: each entry has [name, email, enrollmentNumber, department, passingYear]
+     * @param timestamp     upload timestamp string
+     */
+    public static String buildOnboardingSummaryHtml(
+            String collegeName, String collegeCode,
+            String tpoName, String tpoEmail,
+            int totalAttempted, int created, int skipped, int failed,
+            java.util.List<String[]> studentRows, String timestamp) {
+
+        // Student rows table
+        StringBuilder rowsHtml = new StringBuilder();
+        int maxPreview = Math.min(studentRows.size(), 50);
+        for (int i = 0; i < maxPreview; i++) {
+            String[] s = studentRows.get(i);
+            String bg = i % 2 == 0 ? "#f8fafc" : "#ffffff";
+            rowsHtml.append("<tr style='background:").append(bg).append("'>")
+                    .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#1e293b'>")
+                    .append(i + 1).append("</td>")
+                    .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:600;color:#1e293b'>")
+                    .append(s[0]).append("</td>")
+                    .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#475569'>")
+                    .append(s[1]).append("</td>")
+                    .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b'>")
+                    .append(s[2]).append("</td>")
+                    .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b'>")
+                    .append(s.length > 3 && s[3] != null ? s[3] : "—").append("</td>")
+                    .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b'>")
+                    .append(s.length > 4 && s[4] != null && !s[4].equals("0") ? s[4] : "—").append("</td>")
+                    .append("</tr>");
+        }
+        if (studentRows.size() > 50) {
+            rowsHtml.append("<tr><td colspan='6' style='padding:10px 12px;font-size:12px;color:#94a3b8;text-align:center'>")
+                    .append("... and ").append(studentRows.size() - 50).append(" more students</td></tr>");
+        }
+
+        return "<!DOCTYPE html><html><body style='margin:0;padding:0;background:#f8fafc'>"
+                + "<div style='font-family:Arial,sans-serif;max-width:700px;margin:32px auto;background:#ffffff;"
+                + "border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)'>"
+
+                // Header
+                + "<div style='background:linear-gradient(135deg,#065f46 0%,#059669 100%);padding:28px 36px'>"
+                + "<h1 style='margin:0;color:#ffffff;font-size:20px;font-weight:700'>📥 Student Onboarding Report</h1>"
+                + "<p style='margin:8px 0 0;color:#a7f3d0;font-size:13px'>" + timestamp + "</p>"
+                + "</div>"
+
+                // College + TPO info
+                + "<div style='padding:24px 36px 0'>"
+                + "<table style='width:100%;border-collapse:collapse;font-size:14px'>"
+                + "<tr><td style='padding:6px 0;color:#6b7280;width:130px'>College</td>"
+                + "<td style='padding:6px 0;font-weight:700;color:#1e293b'>" + collegeName
+                + " <span style='font-weight:400;color:#94a3b8;font-size:12px'>(" + collegeCode + ")</span></td></tr>"
+                + "<tr><td style='padding:6px 0;color:#6b7280'>TPO</td>"
+                + "<td style='padding:6px 0;font-weight:600;color:#1e293b'>" + tpoName
+                + " <span style='color:#94a3b8;font-size:12px'>&lt;" + tpoEmail + "&gt;</span></td></tr>"
+                + "</table>"
+                + "</div>"
+
+                // Stats
+                + "<div style='display:flex;gap:12px;margin:20px 36px;flex-wrap:wrap'>"
+                + statChip("#dcfce7", "#166534", "✅ Created", String.valueOf(created))
+                + statChip("#fef3c7", "#92400e", "⏭ Skipped", String.valueOf(skipped))
+                + statChip(failed > 0 ? "#fee2e2" : "#f1f5f9", failed > 0 ? "#991b1b" : "#64748b", "❌ Failed", String.valueOf(failed))
+                + statChip("#eff6ff", "#1e40af", "📊 Total", String.valueOf(totalAttempted))
+                + "</div>"
+
+                // Student table
+                + (created > 0 ? ""
+                + "<div style='margin:0 36px 28px'>"
+                + "<p style='margin:0 0 10px;font-weight:700;color:#1e293b;font-size:13px'>Created Students</p>"
+                + "<div style='border:1px solid #e2e8f0;border-radius:8px;overflow:hidden'>"
+                + "<table style='width:100%;border-collapse:collapse'>"
+                + "<thead><tr style='background:#f1f5f9'>"
+                + "<th style='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px'>#</th>"
+                + "<th style='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px'>Name</th>"
+                + "<th style='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px'>Email</th>"
+                + "<th style='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px'>Enrollment</th>"
+                + "<th style='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px'>Dept</th>"
+                + "<th style='padding:10px 12px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px'>Batch</th>"
+                + "</tr></thead><tbody>" + rowsHtml + "</tbody></table>"
+                + "</div></div>"
+                : "")
+
+                // Footer
+                + "<div style='background:#f1f5f9;padding:16px 36px;border-top:1px solid #e2e8f0'>"
+                + "<p style='margin:0;color:#94a3b8;font-size:12px'>"
+                + "This is an automated report from <strong>Applyra Placement Platform</strong>. "
+                + "No action required unless you see unexpected activity.</p>"
+                + "</div>"
+                + "</div></body></html>";
+    }
+
+    private static String statChip(String bg, String color, String label, String value) {
+        return "<div style='background:" + bg + ";border-radius:8px;padding:14px 18px;min-width:90px'>"
+                + "<p style='margin:0 0 4px;font-size:11px;color:" + color + ";font-weight:600'>" + label + "</p>"
+                + "<p style='margin:0;font-size:22px;font-weight:800;color:" + color + "'>" + value + "</p>"
                 + "</div>";
     }
 
