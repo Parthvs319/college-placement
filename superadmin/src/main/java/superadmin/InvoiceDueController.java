@@ -86,9 +86,12 @@ public enum InvoiceDueController implements BaseController {
                 : nextInvoice.minusMonths(1);
         LocalDate billingEnd = nextInvoice.minusDays(1);
 
-        // Skip if an invoice has already been raised for this billing period
-        if (CollegeInvoiceRepository.INSTANCE.existsForContractAndPeriod(
-                contract.getId(), billingStart.toString(), billingEnd.toString())) {
+        // Skip if an invoice has already been raised for this college + billing period.
+        // We check by college (not contract) because GenerateInvoiceController always uses
+        // the latest active contract — which may differ from the contract in this loop.
+        if (contract.getCollege() == null) return null;
+        if (CollegeInvoiceRepository.INSTANCE.existsForCollegeAndPeriod(
+                contract.getCollege().getId(), billingStart.toString(), billingEnd.toString())) {
             return null;
         }
 

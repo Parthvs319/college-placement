@@ -24,7 +24,7 @@ public enum InviteStudentsController implements BaseController {
     INSTANCE;
 
     private static final long INVITE_EXPIRY_MS = 7L * 24 * 60 * 60 * 1000; // 7 days
-    private static final String FRONTEND_URL = System.getenv().getOrDefault("FRONTEND_URL", "http://localhost:5173");
+    private static final String FRONTEND_URL = System.getenv().getOrDefault("FRONTEND_URL", "https://applyra.netlify.app");
 
     @Override
     public void handle(RoutingContext event) {

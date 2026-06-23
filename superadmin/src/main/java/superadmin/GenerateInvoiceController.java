@@ -88,6 +88,13 @@ public enum GenerateInvoiceController implements BaseController {
 
         BigDecimal contractAmount = contract.getContractAmount();
 
+        // ── Overlap check — reject if a non-cancelled invoice already covers this period ──
+        if (CollegeInvoiceRepository.INSTANCE.existsForContractAndPeriod(contract.getId(), billingStart, billingEnd)) {
+            throw new RoutingError(409,
+                    "An invoice for this billing period (" + billingStart + " to " + billingEnd +
+                    ") already exists for this contract. Cancel the existing invoice before raising a new one.");
+        }
+
         // ── Generate invoice number ───────────────────────────────
         int existingCount = CollegeInvoiceRepository.INSTANCE.countByCollege(collegeId);
         String seq = String.format("%03d", existingCount + 1);
