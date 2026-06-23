@@ -92,7 +92,7 @@ public enum SubmitRoundResultsController implements BaseController {
 
     private void updateApplicationStatus(DriveRound round, Long studentId, Status roundStatus) {
         DriveApplication app = DriveApplicationRepository.INSTANCE
-                .byStudentAndDrive(studentId, round.drive.getId());
+                .byStudentAndDrive(studentId, round.getDrive().getId());
         if (app != null) {
             if (roundStatus == Status.REJECTED) {
                 app.status = ApplicationStatus.REJECTED;

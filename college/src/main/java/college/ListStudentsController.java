@@ -9,6 +9,7 @@ import models.access.middlewear.college.CollegeAccessMiddleware;
 import models.body.CollegeLoginRequest;
 import models.repos.StudentRepository;
 import models.sql.Student;
+import models.sql.User;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -39,17 +40,18 @@ public enum ListStudentsController implements BaseController {
     static StudentListItem toDto(Student s) {
         StudentListItem dto = new StudentListItem();
         dto.id = s.getId();
-        dto.name = s.user != null ? s.user.name : null;
-        dto.email = s.user != null ? s.user.email : null;
-        dto.enrollmentNumber = s.enrollmentNumber;
-        dto.department = s.department;
-        dto.passingYear = s.passingYear;
-        dto.cgpa = s.cgpa;
-        dto.activeBacklogs = s.activeBacklogs;
-        dto.placed = s.placed;
-        dto.verified = s.user != null && s.user.verified;
-        dto.optedOut = s.optedOut;
-        dto.currentCtc = s.currentCtc;
+        User user = s.getUser();
+        dto.name = user != null ? user.getName() : null;
+        dto.email = user != null ? user.getEmail() : null;
+        dto.enrollmentNumber = s.getEnrollmentNumber();
+        dto.department = s.getDepartment();
+        dto.passingYear = s.getPassingYear();
+        dto.cgpa = s.getCgpa();
+        dto.activeBacklogs = s.getActiveBacklogs();
+        dto.placed = s.isPlaced();
+        dto.verified = user != null && user.isVerified();
+        dto.optedOut = s.isOptedOut();
+        dto.currentCtc = s.getCurrentCtc();
         return dto;
     }
 

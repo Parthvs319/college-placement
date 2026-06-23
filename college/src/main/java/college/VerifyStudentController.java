@@ -45,12 +45,12 @@ public enum VerifyStudentController implements BaseController {
             throw new RoutingError("Student not found");
         }
 
-        if (!student.college.getId().equals(myCollegeId)) {
+        if (!student.getCollege().getId().equals(myCollegeId)) {
             throw new RoutingError("You can only verify students from your own college");
         }
 
-        User studentUser = student.user;
-        if (studentUser.verified) {
+        User studentUser = student.getUser();
+        if (studentUser.isVerified()) {
             throw new RoutingError("Student is already verified");
         }
 
@@ -59,8 +59,8 @@ public enum VerifyStudentController implements BaseController {
 
         VerifyResponse response = new VerifyResponse();
         response.studentId = student.getId();
-        response.enrollmentNumber = student.enrollmentNumber;
-        response.name = studentUser.name;
+        response.enrollmentNumber = student.getEnrollmentNumber();
+        response.name = studentUser.getName();
         response.verified = true;
         response.message = "Student verified successfully";
         return response;

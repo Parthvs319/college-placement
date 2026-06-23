@@ -56,12 +56,14 @@ public enum OfferReportController implements BaseController {
                 "Offer Letter URL", "Notes", "Created At");
 
         for (Offer o : offers) {
-            String studentName = o.student != null && o.student.user != null ? o.student.user.name : "";
-            String enrollment = o.student != null ? str(o.student.enrollmentNumber) : "";
-            String department = o.student != null ? str(o.student.department) : "";
-            String companyName = o.drive != null && o.drive.companyCollege != null && o.drive.companyCollege.company != null
-                    ? o.drive.companyCollege.company.name : "";
-            String driveTitle = o.drive != null ? str(o.drive.title) : "";
+            models.sql.Student st = o.getStudent();
+            models.sql.Drive dr   = o.getDrive();
+            String studentName = st != null && st.getUser() != null ? st.getUser().getName() : "";
+            String enrollment  = st != null ? str(st.getEnrollmentNumber()) : "";
+            String department  = st != null ? str(st.getDepartment()) : "";
+            String companyName = dr != null && dr.getCompanyCollege() != null && dr.getCompanyCollege().getCompany() != null
+                    ? dr.getCompanyCollege().getCompany().getName() : "";
+            String driveTitle  = dr != null ? str(dr.getTitle()) : "";
 
             csv.row(
                     str(o.getId()),
@@ -70,14 +72,14 @@ public enum OfferReportController implements BaseController {
                     department,
                     companyName,
                     driveTitle,
-                    str(o.designation),
-                    o.ctcOffered != null ? o.ctcOffered.toPlainString() : "",
-                    str(o.location),
-                    o.status != null ? o.status.name() : "",
-                    o.responseDeadline != null ? DATE_FMT.format(o.responseDeadline) : "",
-                    o.respondedAt != null ? DATE_FMT.format(o.respondedAt) : "",
-                    str(o.offerLetterUrl),
-                    str(o.notes),
+                    str(o.getDesignation()),
+                    o.getCtcOffered() != null ? o.getCtcOffered().toPlainString() : "",
+                    str(o.getLocation()),
+                    o.getStatus() != null ? o.getStatus().name() : "",
+                    o.getResponseDeadline() != null ? DATE_FMT.format(o.getResponseDeadline()) : "",
+                    o.getRespondedAt() != null ? DATE_FMT.format(o.getRespondedAt()) : "",
+                    str(o.getOfferLetterUrl()),
+                    str(o.getNotes()),
                     o.getCreatedAt() != null ? DATE_FMT.format(o.getCreatedAt()) : ""
             );
         }

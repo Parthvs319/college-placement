@@ -57,8 +57,8 @@ public enum DriveReportController implements BaseController {
                 "Total Applications", "Selected", "Offers Made");
 
         for (Drive d : drives) {
-            String companyName = d.companyCollege != null && d.companyCollege.company != null
-                    ? d.companyCollege.company.name : "";
+            models.sql.CompanyCollege cc = d.getCompanyCollege();
+            String companyName = cc != null && cc.getCompany() != null ? cc.getCompany().getName() : "";
             int totalApps = DriveApplicationRepository.INSTANCE.countByDrive(d.getId());
             int selected = DriveApplicationRepository.INSTANCE.countByDriveAndStatus(d.getId(),
                     models.enums.ApplicationStatus.SELECTED);
@@ -66,21 +66,21 @@ public enum DriveReportController implements BaseController {
 
             csv.row(
                     str(d.getId()),
-                    str(d.title),
+                    str(d.getTitle()),
                     companyName,
-                    d.employmentType != null ? d.employmentType.name() : "",
-                    d.status != null ? d.status.name() : "",
-                    str(d.academicYear),
-                    d.ctcOffered != null ? d.ctcOffered.toPlainString() : "",
-                    d.stipend != null ? d.stipend.toPlainString() : "",
-                    str(d.location),
-                    str(d.isRemote),
-                    d.minCgpa != null ? d.minCgpa.toPlainString() : "",
-                    str(d.maxActiveBacklogs),
-                    d.eligibleDepartments != null ? String.join("; ", d.eligibleDepartments) : "",
-                    d.registrationDeadline != null ? DATE_FMT.format(d.registrationDeadline) : "",
-                    d.driveDate != null ? DATE_FMT.format(d.driveDate) : "",
-                    str(d.venue),
+                    d.getEmploymentType() != null ? d.getEmploymentType().name() : "",
+                    d.getStatus() != null ? d.getStatus().name() : "",
+                    str(d.getAcademicYear()),
+                    d.getCtcOffered() != null ? d.getCtcOffered().toPlainString() : "",
+                    d.getStipend() != null ? d.getStipend().toPlainString() : "",
+                    str(d.getLocation()),
+                    str(d.isRemote()),
+                    d.getMinCgpa() != null ? d.getMinCgpa().toPlainString() : "",
+                    str(d.getMaxActiveBacklogs()),
+                    d.getEligibleDepartments() != null ? String.join("; ", d.getEligibleDepartments()) : "",
+                    d.getRegistrationDeadline() != null ? DATE_FMT.format(d.getRegistrationDeadline()) : "",
+                    d.getDriveDate() != null ? DATE_FMT.format(d.getDriveDate()) : "",
+                    str(d.getVenue()),
                     str(totalApps),
                     str(selected),
                     str(offers)

@@ -9,6 +9,7 @@ import models.body.CollegeLoginRequest;
 import models.repos.StudentRepository;
 import models.services.CsvBuilder;
 import models.sql.Student;
+import models.sql.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,29 +66,30 @@ public enum StudentReportController implements BaseController {
                 "LinkedIn", "GitHub", "Resume URL");
 
         for (Student s : students) {
+            User u = s.getUser();
             csv.row(
                     str(s.getId()),
-                    s.user != null ? str(s.user.name) : "",
-                    s.user != null ? str(s.user.email) : "",
-                    s.user != null ? str(s.user.mobile) : "",
-                    str(s.enrollmentNumber),
-                    str(s.department),
-                    str(s.passingYear),
-                    s.cgpa != null ? s.cgpa.toPlainString() : "",
-                    str(s.activeBacklogs),
-                    str(s.totalBacklogs),
-                    str(s.tenthPercentage),
-                    str(s.twelfthPercentage),
-                    str(s.diplomaPercentage),
-                    str(s.gender),
-                    str(s.dateOfBirth),
-                    str(s.placed),
-                    s.currentCtc != null ? s.currentCtc.toPlainString() : "",
-                    str(s.optedOut),
-                    s.user != null ? str(s.user.verified) : "false",
-                    str(s.linkedinUrl),
-                    str(s.githubUrl),
-                    str(s.resumeUrl)
+                    u != null ? str(u.getName()) : "",
+                    u != null ? str(u.getEmail()) : "",
+                    u != null ? str(u.getMobile()) : "",
+                    str(s.getEnrollmentNumber()),
+                    str(s.getDepartment()),
+                    str(s.getPassingYear()),
+                    s.getCgpa() != null ? s.getCgpa().toPlainString() : "",
+                    str(s.getActiveBacklogs()),
+                    str(s.getTotalBacklogs()),
+                    str(s.getTenthPercentage()),
+                    str(s.getTwelfthPercentage()),
+                    str(s.getDiplomaPercentage()),
+                    str(s.getGender()),
+                    str(s.getDateOfBirth()),
+                    str(s.isPlaced()),
+                    s.getCurrentCtc() != null ? s.getCurrentCtc().toPlainString() : "",
+                    str(s.isOptedOut()),
+                    u != null ? str(u.isVerified()) : "false",
+                    str(s.getLinkedinUrl()),
+                    str(s.getGithubUrl()),
+                    str(s.getResumeUrl())
             );
         }
 

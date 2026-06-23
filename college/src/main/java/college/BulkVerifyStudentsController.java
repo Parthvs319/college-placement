@@ -67,19 +67,19 @@ public enum BulkVerifyStudentsController implements BaseController {
                 continue;
             }
 
-            if (!student.college.getId().equals(myCollegeId)) {
+            if (!student.getCollege().getId().equals(myCollegeId)) {
                 item.success = false;
                 item.message = "Student belongs to a different college";
                 results.add(item);
                 continue;
             }
 
-            User studentUser = student.user;
-            if (studentUser.verified) {
+            User studentUser = student.getUser();
+            if (studentUser.isVerified()) {
                 item.success = true;
                 item.message = "Already verified";
-                item.name = studentUser.name;
-                item.enrollmentNumber = student.enrollmentNumber;
+                item.name = studentUser.getName();
+                item.enrollmentNumber = student.getEnrollmentNumber();
                 results.add(item);
                 continue;
             }
@@ -89,8 +89,8 @@ public enum BulkVerifyStudentsController implements BaseController {
 
             item.success = true;
             item.message = "Verified successfully";
-            item.name = studentUser.name;
-            item.enrollmentNumber = student.enrollmentNumber;
+            item.name = studentUser.getName();
+            item.enrollmentNumber = student.getEnrollmentNumber();
             results.add(item);
         }
 

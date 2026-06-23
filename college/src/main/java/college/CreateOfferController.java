@@ -67,7 +67,7 @@ public enum CreateOfferController implements BaseController {
         if (body.isPresent("responseDeadline")) {
             offer.responseDeadline = Timestamp.valueOf(String.valueOf(body.get("responseDeadline")));
         } else {
-            PlacementPolicy policy = PlacementPolicyRepository.INSTANCE.latestByCollege(student.college.getId());
+            PlacementPolicy policy = PlacementPolicyRepository.INSTANCE.latestByCollege(student.getCollege().getId());
             if (policy != null) {
                 long expiryMillis = (long) policy.offerExpiryDays * 24 * 60 * 60 * 1000;
                 offer.responseDeadline = new Timestamp(System.currentTimeMillis() + expiryMillis);

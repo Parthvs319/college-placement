@@ -147,7 +147,7 @@ public enum OnboardCompanyController implements BaseController {
                 ? "Company created and linked to your college. Credentials sent to " + hrEmail
                 : "Existing company linked to your college");
         response.put("companyId", company.getId());
-        response.put("companyName", company.name);
+        response.put("companyName", company.getName());
         response.put("companyCollegeId", cc.getId());
         response.put("hrEmail", hrEmail);
         response.put("userCreated", userCreated);

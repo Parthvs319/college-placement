@@ -63,6 +63,7 @@ public enum CollegeRouter implements SubRouterProtocol {
 
         router.post("/students/invite").handler(InviteStudentsController.INSTANCE::handle);
         router.post("/students/bulk-upload").handler(BulkUploadStudentsController.INSTANCE::handle);
+        router.post("/students/onboarding-complete").handler(OnboardingCompleteController.INSTANCE::handle);
 
         // ── Bulk Operations ──
         router.post("/students/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);

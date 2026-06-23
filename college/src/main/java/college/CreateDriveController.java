@@ -49,7 +49,7 @@ public enum CreateDriveController implements BaseController {
         }
 
         // Verify TPO is creating drive for their own college
-        if (!cc.college.getId().equals(request.getCollege().getId())) {
+        if (!cc.getCollege().getId().equals(request.getCollege().getId())) {
             throw new RoutingError("You can only create drives for your own college");
         }
 

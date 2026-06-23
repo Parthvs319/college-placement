@@ -43,28 +43,29 @@ public final class CollegeDtos {
     public static DriveResponse toDriveDto(Drive d) {
         DriveResponse dto = new DriveResponse();
         dto.id = d.getId();
-        dto.driveCode = d.driveCode;
-        dto.title = d.title;
-        dto.jobDescription = d.jobDescription;
-        dto.employmentType = d.employmentType != null ? d.employmentType.name() : null;
-        dto.status = d.status != null ? d.status.name() : null;
-        dto.academicYear = d.academicYear;
-        dto.minCgpa = d.minCgpa;
-        dto.maxActiveBacklogs = d.maxActiveBacklogs;
-        dto.eligibleDepartments = d.eligibleDepartments;
-        dto.minPassingYear = d.minPassingYear;
-        dto.maxPassingYear = d.maxPassingYear;
-        dto.ctcOffered = d.ctcOffered;
-        dto.stipend = d.stipend;
-        dto.location = d.location;
-        dto.isRemote = d.isRemote;
-        dto.registrationDeadline = d.registrationDeadline;
-        dto.driveDate = d.driveDate;
-        dto.venue = d.venue;
+        dto.driveCode = d.getDriveCode();
+        dto.title = d.getTitle();
+        dto.jobDescription = d.getJobDescription();
+        dto.employmentType = d.getEmploymentType() != null ? d.getEmploymentType().name() : null;
+        dto.status = d.getStatus() != null ? d.getStatus().name() : null;
+        dto.academicYear = d.getAcademicYear();
+        dto.minCgpa = d.getMinCgpa();
+        dto.maxActiveBacklogs = d.getMaxActiveBacklogs();
+        dto.eligibleDepartments = d.getEligibleDepartments();
+        dto.minPassingYear = d.getMinPassingYear();
+        dto.maxPassingYear = d.getMaxPassingYear();
+        dto.ctcOffered = d.getCtcOffered();
+        dto.stipend = d.getStipend();
+        dto.location = d.getLocation();
+        dto.isRemote = d.isRemote();
+        dto.registrationDeadline = d.getRegistrationDeadline();
+        dto.driveDate = d.getDriveDate();
+        dto.venue = d.getVenue();
         dto.createdAt = d.getCreatedAt();
-        if (d.companyCollege != null && d.companyCollege.company != null) {
-            dto.companyName = d.companyCollege.company.name;
-            dto.companyId = d.companyCollege.company.getId();
+        CompanyCollege cc = d.getCompanyCollege();
+        if (cc != null && cc.getCompany() != null) {
+            dto.companyName = cc.getCompany().getName();
+            dto.companyId = cc.getCompany().getId();
         }
         return dto;
     }
@@ -87,16 +88,18 @@ public final class CollegeDtos {
     public static ApplicationResponse toApplicationDto(DriveApplication a) {
         ApplicationResponse dto = new ApplicationResponse();
         dto.id = a.getId();
-        dto.status = a.status != null ? a.status.name() : null;
-        dto.resumeSnapshot = a.resumeSnapshot;
-        dto.notes = a.notes;
+        dto.status = a.getStatus() != null ? a.getStatus().name() : null;
+        dto.resumeSnapshot = a.getResumeSnapshot();
+        dto.notes = a.getNotes();
         dto.appliedAt = a.getCreatedAt();
-        if (a.student != null) {
-            dto.studentId = a.student.getId();
-            dto.enrollmentNumber = a.student.enrollmentNumber;
-            dto.department = a.student.department;
-            if (a.student.user != null) {
-                dto.studentName = a.student.user.name;
+        Student student = a.getStudent();
+        if (student != null) {
+            dto.studentId = student.getId();
+            dto.enrollmentNumber = student.getEnrollmentNumber();
+            dto.department = student.getDepartment();
+            User user = student.getUser();
+            if (user != null) {
+                dto.studentName = user.getName();
             }
         }
         return dto;
@@ -120,14 +123,14 @@ public final class CollegeDtos {
     public static RoundResponse toRoundDto(DriveRound r) {
         RoundResponse dto = new RoundResponse();
         dto.id = r.getId();
-        dto.roundNumber = r.roundNumber;
-        dto.roundType = r.roundType != null ? r.roundType.name() : null;
-        dto.name = r.name;
-        dto.description = r.description;
-        dto.scheduledAt = r.scheduledAt;
-        dto.durationMinutes = r.durationMinutes;
-        dto.venue = r.venue;
-        dto.completed = r.completed;
+        dto.roundNumber = r.getRoundNumber();
+        dto.roundType = r.getRoundType() != null ? r.getRoundType().name() : null;
+        dto.name = r.getName();
+        dto.description = r.getDescription();
+        dto.scheduledAt = r.getScheduledAt();
+        dto.durationMinutes = r.getDurationMinutes();
+        dto.venue = r.getVenue();
+        dto.completed = r.isCompleted();
         return dto;
     }
 
@@ -149,16 +152,18 @@ public final class CollegeDtos {
     public static RoundResultResponse toRoundResultDto(RoundResult r) {
         RoundResultResponse dto = new RoundResultResponse();
         dto.id = r.getId();
-        dto.roundId = r.round != null ? r.round.getId() : null;
-        dto.status = r.status != null ? r.status.name() : null;
-        dto.score = r.score;
-        dto.feedback = r.feedback;
-        dto.interviewerName = r.interviewerName;
-        if (r.student != null) {
-            dto.studentId = r.student.getId();
-            dto.enrollmentNumber = r.student.enrollmentNumber;
-            if (r.student.user != null) {
-                dto.studentName = r.student.user.name;
+        dto.roundId = r.getRound() != null ? r.getRound().getId() : null;
+        dto.status = r.getStatus() != null ? r.getStatus().name() : null;
+        dto.score = r.getScore();
+        dto.feedback = r.getFeedback();
+        dto.interviewerName = r.getInterviewerName();
+        Student student = r.getStudent();
+        if (student != null) {
+            dto.studentId = student.getId();
+            dto.enrollmentNumber = student.getEnrollmentNumber();
+            User user = student.getUser();
+            if (user != null) {
+                dto.studentName = user.getName();
             }
         }
         return dto;
@@ -189,27 +194,31 @@ public final class CollegeDtos {
     public static OfferResponse toOfferDto(Offer o) {
         OfferResponse dto = new OfferResponse();
         dto.id = o.getId();
-        dto.ctcOffered = o.ctcOffered;
-        dto.designation = o.designation;
-        dto.location = o.location;
-        dto.status = o.status != null ? o.status.name() : null;
-        dto.responseDeadline = o.responseDeadline;
-        dto.respondedAt = o.respondedAt;
-        dto.offerLetterUrl = o.offerLetterUrl;
-        dto.notes = o.notes;
+        dto.ctcOffered = o.getCtcOffered();
+        dto.designation = o.getDesignation();
+        dto.location = o.getLocation();
+        dto.status = o.getStatus() != null ? o.getStatus().name() : null;
+        dto.responseDeadline = o.getResponseDeadline();
+        dto.respondedAt = o.getRespondedAt();
+        dto.offerLetterUrl = o.getOfferLetterUrl();
+        dto.notes = o.getNotes();
         dto.createdAt = o.getCreatedAt();
-        if (o.student != null) {
-            dto.studentId = o.student.getId();
-            dto.enrollmentNumber = o.student.enrollmentNumber;
-            if (o.student.user != null) {
-                dto.studentName = o.student.user.name;
+        Student student = o.getStudent();
+        if (student != null) {
+            dto.studentId = student.getId();
+            dto.enrollmentNumber = student.getEnrollmentNumber();
+            User user = student.getUser();
+            if (user != null) {
+                dto.studentName = user.getName();
             }
         }
-        if (o.drive != null) {
-            dto.driveId = o.drive.getId();
-            dto.driveTitle = o.drive.title;
-            if (o.drive.companyCollege != null && o.drive.companyCollege.company != null) {
-                dto.companyName = o.drive.companyCollege.company.name;
+        Drive drive = o.getDrive();
+        if (drive != null) {
+            dto.driveId = drive.getId();
+            dto.driveTitle = drive.getTitle();
+            CompanyCollege cc = drive.getCompanyCollege();
+            if (cc != null && cc.getCompany() != null) {
+                dto.companyName = cc.getCompany().getName();
             }
         }
         return dto;
@@ -232,14 +241,15 @@ public final class CollegeDtos {
     public static CompanyCollegeResponse toCompanyCollegeDto(CompanyCollege cc) {
         CompanyCollegeResponse dto = new CompanyCollegeResponse();
         dto.id = cc.getId();
-        dto.companyCanManage = cc.companyCanManage;
-        dto.active = cc.active;
-        if (cc.company != null) {
-            dto.companyId = cc.company.getId();
-            dto.companyName = cc.company.name;
-            dto.companyCode = cc.company != null ? cc.company.code : null;
-            dto.industry = cc.company.industry;
-            dto.logoUrl = cc.company.logoUrl;
+        dto.companyCanManage = cc.isCompanyCanManage();
+        dto.active = cc.isActive();
+        Company company = cc.getCompany();
+        if (company != null) {
+            dto.companyId = company.getId();
+            dto.companyName = company.getName();
+            dto.companyCode = company.getCode();
+            dto.industry = company.getIndustry();
+            dto.logoUrl = company.getLogoUrl();
         }
         return dto;
     }
@@ -273,31 +283,31 @@ public final class CollegeDtos {
     public static CollegeResponse toCollegeDto(College c) {
         CollegeResponse dto = new CollegeResponse();
         dto.id = c.getId();
-        dto.name = c.name;
-        dto.code = c.code;
-        dto.university = c.university;
-        dto.address = c.address;
-        dto.cityId = c.cityId;
-        dto.stateId = c.stateId;
-        if (c.cityId != null) {
-            City ct = DB.find(City.class, c.cityId);
-            if (ct != null) dto.city = ct.name;
+        dto.name = c.getName();
+        dto.code = c.getCode();
+        dto.university = c.getUniversity();
+        dto.address = c.getAddress();
+        dto.cityId = c.getCityId();
+        dto.stateId = c.getStateId();
+        if (c.getCityId() != null) {
+            City ct = DB.find(City.class, c.getCityId());
+            if (ct != null) dto.city = ct.getName();
         }
-        if (c.stateId != null) {
-            States st = DB.find(States.class, c.stateId);
-            if (st != null) dto.state = st.name;
+        if (c.getStateId() != null) {
+            States st = DB.find(States.class, c.getStateId());
+            if (st != null) dto.state = st.getName();
         }
-        dto.website = c.website;
-        dto.logoUrl = c.logoUrl;
-        dto.contactEmail = c.contactEmail;
-        dto.contactPhone = c.contactPhone;
-        dto.tpoName = c.tpoName;
-        dto.gstin = c.gstin;
-        dto.isEmailVerified = c.isEmailVerified;
-        dto.isPhoneVerified = c.isPhoneVerified;
-        dto.departments = c.departments;
-        dto.verified = c.verified;
-        dto.active = c.active;
+        dto.website = c.getWebsite();
+        dto.logoUrl = c.getLogoUrl();
+        dto.contactEmail = c.getContactEmail();
+        dto.contactPhone = c.getContactPhone();
+        dto.tpoName = c.getTpoName();
+        dto.gstin = c.getGstin();
+        dto.isEmailVerified = c.isEmailVerified();
+        dto.isPhoneVerified = c.isPhoneVerified();
+        dto.departments = c.getDepartments();
+        dto.verified = c.isVerified();
+        dto.active = c.isActive();
         return dto;
     }
 
@@ -318,13 +328,13 @@ public final class CollegeDtos {
     public static PolicyResponse toPolicyDto(PlacementPolicy p) {
         PolicyResponse dto = new PolicyResponse();
         dto.id = p.getId();
-        dto.academicYear = p.academicYear;
-        dto.dreamCtcThreshold = p.dreamCtcThreshold;
-        dto.maxSimultaneousOffers = p.maxSimultaneousOffers;
-        dto.blockAfterFirstAccept = p.blockAfterFirstAccept;
-        dto.autoFilterEnabled = p.autoFilterEnabled;
-        dto.offerExpiryDays = p.offerExpiryDays;
-        dto.description = p.description;
+        dto.academicYear = p.getAcademicYear();
+        dto.dreamCtcThreshold = p.getDreamCtcThreshold();
+        dto.maxSimultaneousOffers = p.getMaxSimultaneousOffers();
+        dto.blockAfterFirstAccept = p.isBlockAfterFirstAccept();
+        dto.autoFilterEnabled = p.isAutoFilterEnabled();
+        dto.offerExpiryDays = p.getOfferExpiryDays();
+        dto.description = p.getDescription();
         return dto;
     }
 
@@ -346,15 +356,16 @@ public final class CollegeDtos {
     public static DocumentResponse toDocumentDto(Document d) {
         DocumentResponse dto = new DocumentResponse();
         dto.id = d.getId();
-        dto.name = d.name;
-        dto.type = d.type;
-        dto.fileUrl = d.fileUrl;
-        dto.fileType = d.fileType;
-        dto.fileSizeBytes = d.fileSizeBytes;
-        dto.academicYear = d.academicYear;
+        dto.name = d.getName();
+        dto.type = d.getType();
+        dto.fileUrl = d.getFileUrl();
+        dto.fileType = d.getFileType();
+        dto.fileSizeBytes = d.getFileSizeBytes();
+        dto.academicYear = d.getAcademicYear();
         dto.createdAt = d.getCreatedAt();
-        if (d.uploadedByUser != null) {
-            dto.uploadedBy = d.uploadedByUser.name;
+        User uploader = d.getUploadedByUser();
+        if (uploader != null) {
+            dto.uploadedBy = uploader.getName();
         }
         return dto;
     }
@@ -381,19 +392,20 @@ public final class CollegeDtos {
     public static NotificationResponse toNotificationDto(Notification n) {
         NotificationResponse dto = new NotificationResponse();
         dto.id = n.getId();
-        dto.channel = n.channel;
-        dto.type = n.type;
-        dto.subject = n.subject;
-        dto.body = n.body;
-        dto.recipientCount = n.recipientCount;
-        dto.deliveredCount = n.deliveredCount;
-        dto.failedCount = n.failedCount;
-        dto.sentAt = n.sentAt;
-        dto.metadata = n.metadata;
+        dto.channel = n.getChannel();
+        dto.type = n.getType();
+        dto.subject = n.getSubject();
+        dto.body = n.getBody();
+        dto.recipientCount = n.getRecipientCount();
+        dto.deliveredCount = n.getDeliveredCount();
+        dto.failedCount = n.getFailedCount();
+        dto.sentAt = n.getSentAt();
+        dto.metadata = n.getMetadata();
         dto.createdAt = n.getCreatedAt();
-        if (n.drive != null) {
-            dto.driveId = n.drive.getId();
-            dto.driveTitle = n.drive.title;
+        Drive drive = n.getDrive();
+        if (drive != null) {
+            dto.driveId = drive.getId();
+            dto.driveTitle = drive.getTitle();
         }
         return dto;
     }

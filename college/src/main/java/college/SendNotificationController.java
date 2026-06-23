@@ -74,7 +74,7 @@ public enum SendNotificationController implements BaseController {
                         .map(o -> Long.parseLong(o.toString())).collect(Collectors.toList());
                 recipients = studentIds.stream()
                         .map(StudentRepository.INSTANCE::byId)
-                        .filter(s -> s != null && s.college.getId().equals(college.getId()))
+                        .filter(s -> s != null && s.getCollege().getId().equals(college.getId()))
                         .collect(Collectors.toList());
             } else {
                 recipients = StudentRepository.INSTANCE.byCollege(college.getId());
