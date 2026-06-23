@@ -95,11 +95,10 @@ public enum GenerateInvoiceController implements BaseController {
                     ") already exists for this contract. Cancel the existing invoice before raising a new one.");
         }
 
-        // ── Generate invoice number ───────────────────────────────
+        // ── Generate invoice number: Invoice-{CODE}-{NNN} ────────
         int existingCount = CollegeInvoiceRepository.INSTANCE.countByCollege(collegeId);
         String seq = String.format("%03d", existingCount + 1);
-        int year = LocalDate.now().getYear();
-        String invoiceNumber = "INV-" + college.getCode() + "-" + year + "-" + seq;
+        String invoiceNumber = "Invoice-" + college.getCode() + "-" + seq;
 
         // ── Compute due date (30 days from today) ─────────────────
         String today    = LocalDate.now().format(ISO);

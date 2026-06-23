@@ -65,6 +65,7 @@ public enum GetContractController implements BaseController {
 
         Map<String, Object> result = new HashMap<>();
         result.put("contractId",     contract.getId());
+        result.put("contractNumber", contract.getContractNumber());
         result.put("contractAmount", contract.getContractAmount());
         result.put("contractType",   contract.getContractType());
         result.put("validFrom",      contract.getValidFrom());

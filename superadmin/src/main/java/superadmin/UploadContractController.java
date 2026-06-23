@@ -146,18 +146,29 @@ public enum UploadContractController implements BaseController {
             doc.save();
         }
 
+        // ── Generate contract number: Contract-{CODE}-{NNN} ──────
+        int existingContractCount = CollegeContractRepository.INSTANCE.countByCollege(collegeId);
+        String contractNum = "Contract-" + college.getCode() + "-" + String.format("%03d", existingContractCount + 1);
+
         // ── Save CollegeContract ──────────────────────────────────
         CollegeContract contract = new CollegeContract();
         contract.setCollege(college);
         if (doc != null) contract.setDocument(doc);
         contract.setContractAmount(contractAmount);
         contract.setContractType(contractType);
+        contract.setContractNumber(contractNum);
         contract.setValidFrom(validFrom != null && !validFrom.isBlank() ? validFrom : null);
         contract.setValidTo(validTo != null && !validTo.isBlank() ? validTo : null);
         contract.setStatus("ACTIVE");
         String payType = (payTypeRaw != null && payTypeRaw.equalsIgnoreCase("YEARLY")) ? "YEARLY" : "MONTHLY";
         contract.setPayType(payType);
         contract.save();
+
+        // ── Link document back to the contract via documentKey ────
+        if (doc != null) {
+            doc.setDocumentKey(contract.getId());
+            doc.save();
+        }
 
         // ── Optionally create TPO account + send email ────────────
         String generatedPassword = null;
@@ -244,8 +255,9 @@ public enum UploadContractController implements BaseController {
 
         // ── Build response ────────────────────────────────────────
         Map<String, Object> result = new HashMap<>();
-        result.put("contractId",    contract.getId());
-        result.put("contractType",  contractType);
+        result.put("contractId",     contract.getId());
+        result.put("contractNumber", contract.getContractNumber());
+        result.put("contractType",   contractType);
         if (doc != null)    result.put("documentId", doc.getId());
         if (s3Key != null)  result.put("s3Key",      s3Key);
         if (fileUrl != null) result.put("fileUrl",   fileUrl);

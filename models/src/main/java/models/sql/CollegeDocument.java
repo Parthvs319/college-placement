@@ -53,6 +53,15 @@ public class CollegeDocument extends BaseModel {
     /** Expiry date for time-bound documents (ISO string) */
     public String expiryDate;
 
+    /**
+     * ID of the related entity this document belongs to.
+     * APPLYRA_CONTRACT → college_contracts.id
+     * APPLYRA_INVOICE  → college_invoices.id
+     * Other types      → null
+     */
+    @Column(name = "document_key")
+    public Long documentKey;
+
     /** Whether this document has been verified by super admin */
     public boolean verified = false;
 

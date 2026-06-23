@@ -57,6 +57,14 @@ public enum CollegeContractRepository {
                 .findList();
     }
 
+    /** Count all non-deleted contracts for a college — used to generate sequential contract numbers */
+    public int countByCollege(Long collegeId) {
+        return finder.query().where()
+                .eq("college.id", collegeId)
+                .eq("deleted", false)
+                .findCount();
+    }
+
     /** Returns the most recent contract regardless of status */
     public CollegeContract latest(Long collegeId) {
         return finder.query().where()

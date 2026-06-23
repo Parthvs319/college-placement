@@ -61,6 +61,7 @@ public enum ListInvoicesController implements BaseController {
             // Contract link
             if (inv.getContract() != null) {
                 m.put("contractId",      inv.getContract().getId());
+                m.put("contractNumber",  inv.getContract().getContractNumber());
                 m.put("contractType",    inv.getContract().getContractType());
                 m.put("payType",         inv.getContract().getPayType());
             }

@@ -21,6 +21,13 @@ public class CollegeContract extends BaseModel {
     @JoinColumn(name = "college_id", nullable = false)
     public College college;
 
+    /**
+     * Human-readable contract number, auto-generated as: Contract-{CollegeCode}-{NNN}
+     * e.g. Contract-SDCES-001
+     */
+    @Column(unique = true)
+    public String contractNumber;
+
     /** The uploaded contract document (nullable for FREE_TRIAL contracts with no PDF yet) */
     @ManyToOne
     @JoinColumn(name = "document_id")

@@ -124,6 +124,8 @@ public enum GetCollegeDetailController implements BaseController {
                         Map<String, Object> docMap = new HashMap<>();
                         docMap.put("id", doc.getId());
                         docMap.put("documentType", doc.getDocumentType());
+                        // documentKey: DB id of the related entity (contractId for APPLYRA_CONTRACT, invoiceId for APPLYRA_INVOICE, etc.)
+                        docMap.put("documentKey", doc.getDocumentKey());
                         docMap.put("label", doc.getLabel());
                         docMap.put("fileName", doc.getFileName());
                         docMap.put("fileUrl", doc.getFileUrl());
