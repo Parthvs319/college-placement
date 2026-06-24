@@ -54,6 +54,16 @@ public enum CollegeAccessMiddleware implements BaseMiddleware {
                         throw new RoutingError(404, "No college linked to this account");
                     }
 
+                    if (!college.verified) {
+                        throw new RoutingError(403, "COLLEGE_NOT_VERIFIED");
+                    }
+                    if (!college.active) {
+                        throw new RoutingError(403, "COLLEGE_DEACTIVATED");
+                    }
+                    if (!user.active) {
+                        throw new RoutingError(403, "USER_DEACTIVATED");
+                    }
+
                     List<RequestItem> cloned = new ArrayList<>(items);
                     if (finalRole.request().length > 0) {
                         for (String s : finalRole.request()) {

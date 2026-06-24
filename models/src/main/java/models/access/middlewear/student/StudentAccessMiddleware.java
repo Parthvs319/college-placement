@@ -10,6 +10,7 @@ import models.access.middlewear.user.UserLoginMiddleware;
 import models.body.StudentLoginRequest;
 import models.enums.UserType;
 import models.repos.StudentRepository;
+import models.sql.College;
 import models.sql.Student;
 import models.sql.User;
 import rx.Single;
@@ -47,13 +48,25 @@ public enum StudentAccessMiddleware implements BaseMiddleware {
                         throw new RoutingError(403, "Access denied — student role required");
                     }
 
+                    if (!user.active) {
+                        throw new RoutingError(403, "USER_DEACTIVATED");
+                    }
+
                     Student student = StudentRepository.INSTANCE.byUserId(user.getId());
                     if (student == null) {
                         throw new RoutingError(404, "Student profile not found. Please complete onboarding.");
                     }
 
-                    if (finalRole.requireVerified() && !user.verified) {
-                        throw new RoutingError(403, "Account not verified. Contact your college placement cell.");
+                    if (!user.verified) {
+                        throw new RoutingError(403, "USER_NOT_VERIFIED");
+                    }
+
+                    College college = student.college;
+                    if (!college.verified) {
+                        throw new RoutingError(403, "COLLEGE_NOT_VERIFIED");
+                    }
+                    if (!college.active) {
+                        throw new RoutingError(403, "COLLEGE_DEACTIVATED");
                     }
 
                     List<RequestItem> cloned = new ArrayList<>(items);

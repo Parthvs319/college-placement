@@ -46,6 +46,15 @@ public enum CompanyAccessMiddleware implements BaseMiddleware {
                         throw new RoutingError(403, "Access denied — company HR role required");
                     }
 
+                    if (!user.active) {
+                        throw new RoutingError(403, "USER_DEACTIVATED");
+                    }
+
+                    Company company = user.company;
+                    if (company != null && !company.active) {
+                        throw new RoutingError(403, "COMPANY_DEACTIVATED");
+                    }
+
                     List<RequestItem> cloned = new ArrayList<>(items);
                     if (finalRole.request().length > 0) {
                         for (String s : finalRole.request()) {
@@ -59,7 +68,7 @@ public enum CompanyAccessMiddleware implements BaseMiddleware {
                     req.setRoutingContext(context);
                     req.setRequest(zipped.getRequest());
                     req.setUser(user);
-                    req.setCompany(null); // company looked up by controller as needed
+                    req.setCompany(company);
                     req.setIp(context.request().remoteAddress().host());
                     req.setUserAgent(context.request().getHeader("User-Agent"));
                     req.setReferer(context.request().getHeader("Referer"));
