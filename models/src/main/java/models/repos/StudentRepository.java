@@ -13,18 +13,17 @@ public enum StudentRepository {
     private final SqlFinder<Long, Student> finder = new SqlFinder<>(Student.class);
 
     public Student byId(Long id) {
-        return finder.query().where().eq("id", id).eq("deleted", false).findOne();
+        return finder.query().where().eq("id", id).eq("deleted", 0).findOne();
     }
 
     public Student byUserId(Long userId) {
-        return finder.query().where().eq("user.id", userId).eq("deleted", false).findOne();
+        return finder.query().where().eq("user.id", userId).eq("deleted", 0).findOne();
     }
 
     public Student byEnrollment(String enrollmentNumber, Long collegeId) {
         return finder.query().where()
                 .eq("enrollmentNumber", enrollmentNumber)
                 .eq("college.id", collegeId)
-                .eq("deleted", false)
                 .findOne();
     }
 
@@ -43,7 +42,7 @@ public enum StudentRepository {
                 .le("activeBacklogs", maxBacklogs)
                 .eq("passingYear", passingYear)
                 .eq("optedOut", false)
-                .eq("deleted", false);
+                .eq("deleted", 0);
 
         if (departments != null && !departments.isEmpty()) {
             expr.in("department", departments);
@@ -56,7 +55,7 @@ public enum StudentRepository {
         return finder.query().where()
                 .eq("college.id", collegeId)
                 .eq("placed", true)
-                .eq("deleted", false)
+                .eq("deleted", 0)
                 .findList();
     }
 
@@ -65,7 +64,7 @@ public enum StudentRepository {
                 .eq("college.id", collegeId)
                 .eq("placed", false)
                 .eq("optedOut", false)
-                .eq("deleted", false)
+                .eq("deleted", 0)
                 .findList();
     }
 
@@ -78,6 +77,6 @@ public enum StudentRepository {
         return finder.query()
                 .fetch("user")
                 .fetch("college")
-                .where().eq("deleted", false);
+                .where().eq("deleted", 0);
     }
 }

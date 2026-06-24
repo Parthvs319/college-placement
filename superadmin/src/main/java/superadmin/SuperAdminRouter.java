@@ -71,6 +71,10 @@ public enum SuperAdminRouter implements SubRouterProtocol {
         router.get("/subscriptions/:subscriptionId/credits").handler(CreditHistoryController.INSTANCE::handle);
         router.post("/subscriptions/:subscriptionId/top-up").handler(CreditTopUpController.INSTANCE::handle);
 
+        // ── Support Tickets ──
+        router.get("/support/tickets").handler(ListSupportTicketsController.INSTANCE::handle);
+        router.put("/support/tickets/:ticketId").handler(UpdateSupportTicketController.INSTANCE::handle);
+
         return router;
     }
 }
