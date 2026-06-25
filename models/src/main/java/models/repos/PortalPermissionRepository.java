@@ -1,14 +1,18 @@
 package models.repos;
 
-import helpers.blueprint.repos.BaseRepository;
+import helpers.sql.SqlFinder;
+import io.ebean.ExpressionList;
 import models.sql.PortalPermission;
 
-public enum PortalPermissionRepository implements BaseRepository<PortalPermission> {
+import java.util.List;
+
+public enum PortalPermissionRepository {
     INSTANCE;
 
-    @Override
-    public Class<PortalPermission> getModelClass() {
-        return PortalPermission.class;
+    private final SqlFinder<Long, PortalPermission> finder = new SqlFinder<>(PortalPermission.class);
+
+    private ExpressionList<PortalPermission> where() {
+        return finder.query().where();
     }
 
     /** Fetch permissions for a sub-TPO in a specific college. */
@@ -30,7 +34,7 @@ public enum PortalPermissionRepository implements BaseRepository<PortalPermissio
     }
 
     /** All team members for a college (non-primary users with permissions). */
-    public java.util.List<PortalPermission> byCollege(Long collegeId) {
+    public List<PortalPermission> byCollege(Long collegeId) {
         return where()
                 .eq("college.id", collegeId)
                 .eq("deleted", false)
@@ -38,7 +42,7 @@ public enum PortalPermissionRepository implements BaseRepository<PortalPermissio
     }
 
     /** All team members for a company (non-primary users with permissions). */
-    public java.util.List<PortalPermission> byCompany(Long companyId) {
+    public List<PortalPermission> byCompany(Long companyId) {
         return where()
                 .eq("company.id", companyId)
                 .eq("deleted", false)

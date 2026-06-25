@@ -26,8 +26,12 @@ public class InviteToken extends BaseModel {
     public String email;                    // invited email address
 
     @ManyToOne
-    @JoinColumn(name = "college_id", nullable = false)
-    public College college;                 // college this invite is for
+    @JoinColumn(name = "college_id")
+    public College college;                 // college this invite is for (null for company HR invites)
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    public Company company;                 // company this invite is for (null for college/student invites)
 
     @Column(nullable = false)
     public UserType userType;               // STUDENT, COMPANY_HR, etc.

@@ -38,9 +38,25 @@ public enum InviteTokenRepository {
                 .findOne();
     }
 
+    public InviteToken byEmailAndCompany(String email, Long companyId) {
+        return finder.query().where()
+                .eq("email", email)
+                .eq("company.id", companyId)
+                .eq("deleted", false)
+                .findOne();
+    }
+
     public List<InviteToken> byCollege(Long collegeId) {
         return finder.query().where()
                 .eq("college.id", collegeId)
+                .eq("deleted", false)
+                .orderBy("createdAt desc")
+                .findList();
+    }
+
+    public List<InviteToken> byCompany(Long companyId) {
+        return finder.query().where()
+                .eq("company.id", companyId)
                 .eq("deleted", false)
                 .orderBy("createdAt desc")
                 .findList();
