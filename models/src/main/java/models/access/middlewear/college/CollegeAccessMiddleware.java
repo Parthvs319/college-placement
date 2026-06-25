@@ -9,7 +9,9 @@ import models.access.middlewear.BaseMiddleware;
 import models.access.middlewear.user.UserLoginMiddleware;
 import models.body.CollegeLoginRequest;
 import models.enums.UserType;
+import models.repos.PortalPermissionRepository;
 import models.sql.College;
+import models.sql.PortalPermission;
 import models.sql.User;
 import rx.Single;
 
@@ -44,7 +46,7 @@ public enum CollegeAccessMiddleware implements BaseMiddleware {
 
                     if (user.userType == UserType.COLLEGE_ADMIN
                             || (finalRole.tpoAllowed() && user.userType == UserType.TPO)) {
-                        // allowed
+                        // allowed user type
                     } else {
                         throw new RoutingError(403, "Access denied — college admin or TPO role required");
                     }
@@ -62,6 +64,24 @@ public enum CollegeAccessMiddleware implements BaseMiddleware {
                     }
                     if (!user.active) {
                         throw new RoutingError(403, "USER_DEACTIVATED");
+                    }
+
+                    // ── Module-level permission check for non-primary users ───────────
+                    if (!user.isPrimary && !finalRole.module().isEmpty()) {
+                        PortalPermission perm = PortalPermissionRepository.INSTANCE
+                                .byUserAndCollege(user.getId(), college.getId());
+
+                        if (perm == null) {
+                            throw new RoutingError(403, "INSUFFICIENT_PERMISSIONS");
+                        }
+
+                        boolean allowed = "write".equals(finalRole.minAccess())
+                                ? perm.canWrite(finalRole.module())
+                                : perm.canRead(finalRole.module());
+
+                        if (!allowed) {
+                            throw new RoutingError(403, "INSUFFICIENT_PERMISSIONS");
+                        }
                     }
 
                     List<RequestItem> cloned = new ArrayList<>(items);

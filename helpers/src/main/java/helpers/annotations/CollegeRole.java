@@ -11,4 +11,17 @@ public @interface CollegeRole {
     boolean tpoAllowed() default true;
 
     boolean apiRateLimit() default true;
+
+    /**
+     * The portal module this endpoint belongs to.
+     * Values: "drives" | "students" | "companies" | "" (no module check)
+     * Primary users always bypass this check.
+     */
+    String module() default "";
+
+    /**
+     * Minimum access level required for non-primary users.
+     * Values: "read" | "write"
+     */
+    String minAccess() default "read";
 }

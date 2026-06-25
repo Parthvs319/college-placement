@@ -69,6 +69,11 @@ public enum UserLoginController implements BaseController {
                 if(PasswordUtils.INSTANCE.match(request.getRequest().get("password") , user.getPassword())) {
                     response.setSuccess(true);
                     response.setBearerToken(TokenService.generateToken(user.getId() , user.getEmail() , user.getUserType().getValue() , user.getName()));
+                    if (user.getUserType() == models.enums.UserType.TPO
+                            || user.getUserType() == models.enums.UserType.COLLEGE_ADMIN
+                            || user.getUserType() == models.enums.UserType.COMPANY_HR) {
+                        response.setIsPrimary(user.isPrimary);
+                    }
                 } else {
                     throw new RoutingError("Invalid Password ! Please try with a valid password !");
                 }
@@ -87,6 +92,7 @@ public enum UserLoginController implements BaseController {
     class Response {
         boolean success = false;
         BearerToken bearerToken = null;
+        Boolean isPrimary = null;     // set for TPO / COMPANY_HR; null for other user types
     }
 
 }

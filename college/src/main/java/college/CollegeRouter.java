@@ -16,6 +16,7 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.post("/create").handler(CreateCollegeController.INSTANCE::handle);
         router.get("/list").handler(ListCollegesController.INSTANCE::handle);
         router.get("/me").handler(GetCollegeController.INSTANCE::handle);
+        router.get("/me/permissions").handler(GetMyPermissionsController.INSTANCE::handle);
         router.put("/me").handler(UpdateCollegeController.INSTANCE::handle);
 
         // ── Placement Policy ──
@@ -68,6 +69,12 @@ public enum CollegeRouter implements SubRouterProtocol {
 
         // ── Bulk Operations ──
         router.post("/students/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);
+
+        // ── Team Management (primary TPO only) ──
+        router.get("/team").handler(ListCollegeTeamController.INSTANCE::handle);
+        router.post("/team/invite").handler(InviteTeamMemberController.INSTANCE::handle);
+        router.put("/team/:userId").handler(UpdateTeamMemberController.INSTANCE::handle);
+        router.delete("/team/:userId").handler(RemoveTeamMemberController.INSTANCE::handle);
 
         // ── Quick-Action Emails ──
         router.post("/drives/:driveId/remind-non-applicants").handler(RemindNonApplicantsController.INSTANCE::handle);

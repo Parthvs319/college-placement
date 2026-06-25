@@ -39,6 +39,9 @@ public class User extends BaseModel {
 
     public boolean active = true;
 
+    /** True for the first/main TPO, COMPANY_HR, etc. — bypasses portal_permissions checks. */
+    public boolean isPrimary = false;
+
     private String currentOtp;
 
     public String avatarUrl;

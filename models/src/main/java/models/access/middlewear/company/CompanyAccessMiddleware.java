@@ -9,7 +9,9 @@ import models.access.middlewear.BaseMiddleware;
 import models.access.middlewear.user.UserLoginMiddleware;
 import models.body.CompanyLoginRequest;
 import models.enums.UserType;
+import models.repos.PortalPermissionRepository;
 import models.sql.Company;
+import models.sql.PortalPermission;
 import models.sql.User;
 import rx.Single;
 
@@ -53,6 +55,24 @@ public enum CompanyAccessMiddleware implements BaseMiddleware {
                     Company company = user.company;
                     if (company != null && !company.active) {
                         throw new RoutingError(403, "COMPANY_DEACTIVATED");
+                    }
+
+                    // ── Module-level permission check for non-primary users ───────────
+                    if (!user.isPrimary && company != null && !finalRole.module().isEmpty()) {
+                        PortalPermission perm = PortalPermissionRepository.INSTANCE
+                                .byUserAndCompany(user.getId(), company.getId());
+
+                        if (perm == null) {
+                            throw new RoutingError(403, "INSUFFICIENT_PERMISSIONS");
+                        }
+
+                        boolean allowed = "write".equals(finalRole.minAccess())
+                                ? perm.canWrite(finalRole.module())
+                                : perm.canRead(finalRole.module());
+
+                        if (!allowed) {
+                            throw new RoutingError(403, "INSUFFICIENT_PERMISSIONS");
+                        }
                     }
 
                     List<RequestItem> cloned = new ArrayList<>(items);
