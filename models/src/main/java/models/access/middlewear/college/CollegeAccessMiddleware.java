@@ -56,17 +56,16 @@ public enum CollegeAccessMiddleware implements BaseMiddleware {
                         throw new RoutingError(404, "No college linked to this account");
                     }
 
-                    if (!college.verified) {
+                    if (!college.isVerified()) {
                         throw new RoutingError(403, "COLLEGE_NOT_VERIFIED");
                     }
-                    if (!college.active) {
+                    if (!college.isActive()) {
                         throw new RoutingError(403, "COLLEGE_DEACTIVATED");
                     }
                     if (!user.active) {
                         throw new RoutingError(403, "USER_DEACTIVATED");
                     }
 
-                    // ── Module-level permission check for non-primary users ───────────
                     if (!user.isPrimary && !finalRole.module().isEmpty()) {
                         PortalPermission perm = PortalPermissionRepository.INSTANCE
                                 .byUserAndCollege(user.getId(), college.getId());
