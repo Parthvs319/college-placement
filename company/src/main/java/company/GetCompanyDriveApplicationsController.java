@@ -62,14 +62,13 @@ public enum GetCompanyDriveApplicationsController implements BaseController {
             if (a.student != null) {
                 Map<String, Object> s = new LinkedHashMap<>();
                 s.put("id",               a.student.getId());
-                s.put("name",             a.student.getName());
-                s.put("email",            a.student.getEmail());
+                s.put("name",             a.student.getUser() != null ? a.student.getUser().getName() : null);
+                s.put("email",            a.student.getUser() != null ? a.student.getUser().getEmail() : null);
                 s.put("enrollmentNumber", a.student.enrollmentNumber);
                 s.put("department",       a.student.department);
                 s.put("cgpa",             a.student.cgpa);
                 s.put("passingYear",      a.student.passingYear);
                 s.put("activeBacklogs",   a.student.activeBacklogs);
-                s.put("mobile",           a.student.mobile);
                 s.put("linkedinUrl",      a.student.linkedinUrl);
                 s.put("githubUrl",        a.student.githubUrl);
                 m.put("student", s);

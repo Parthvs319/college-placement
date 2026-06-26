@@ -47,13 +47,16 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.post("/drives").handler(CreateDriveController.INSTANCE::handle);
         router.get("/drives").handler(ListDrivesController.INSTANCE::handle);
         router.get("/drives/upcoming").handler(ListUpcomingDrivesController.INSTANCE::handle);
+        router.get("/drives/:driveId").handler(GetDriveController.INSTANCE::handle);
         router.put("/drives/:driveId").handler(UpdateDriveController.INSTANCE::handle);
 
         // ── Drive Applications & Rounds (TPO/Admin) ──
         router.get("/drives/:driveId/applications").handler(ListDriveApplicationsController.INSTANCE::handle);
         router.post("/drives/:driveId/rounds").handler(CreateRoundController.INSTANCE::handle);
         router.get("/drives/:driveId/rounds").handler(ListRoundsController.INSTANCE::handle);
+        router.get("/rounds/:roundId/results").handler(ListRoundResultsController.INSTANCE::handle);
         router.post("/rounds/:roundId/results").handler(SubmitRoundResultsController.INSTANCE::handle);
+        router.post("/rounds/:roundId/complete").handler(MarkRoundCompleteController.INSTANCE::handle);
 
         // ── Offers (TPO/Admin) ──
         router.post("/drives/:driveId/offers").handler(CreateOfferController.INSTANCE::handle);

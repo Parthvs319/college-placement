@@ -52,12 +52,12 @@ public enum RemoveCompanyTeamMemberController implements BaseController {
 
         PortalPermission perm = PortalPermissionRepository.INSTANCE.byUserAndCompany(targetUserId, companyId);
         if (perm != null) {
-            perm.deleted = true;
-            perm.update();
+            perm.setDeleted(true);
+            perm.save();
         }
 
         target.active = false;
-        target.update();
+        target.save();
 
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("message", "Team member removed");

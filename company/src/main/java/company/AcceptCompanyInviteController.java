@@ -3,8 +3,8 @@ package company;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.PasswordUtils;
-import helpers.utils.Request;
 import helpers.utils.ResponseUtils;
+import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.repos.InviteTokenRepository;
 import models.repos.UserRepository;
@@ -36,11 +36,11 @@ public enum AcceptCompanyInviteController implements BaseController {
     }
 
     private Object map(RoutingContext event) {
-        String body = event.body().asString();
-        Request req = new Request(body);
+        JsonObject body = event.body().asJsonObject();
+        if (body == null) body = new JsonObject();
 
-        String token    = req.get("token");
-        String password = req.get("password");
+        String token    = body.getString("token");
+        String password = body.getString("password");
 
         if (token == null || token.isBlank())       throw new RoutingError("token is required");
         if (password == null || password.length() < 6) throw new RoutingError("password must be at least 6 characters");

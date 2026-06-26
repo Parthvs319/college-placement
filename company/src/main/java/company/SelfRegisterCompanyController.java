@@ -2,8 +2,8 @@ package company;
 
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
-import helpers.utils.Request;
 import helpers.utils.ResponseUtils;
+import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.enums.UserType;
 import models.repos.CompanyRepository;
@@ -44,15 +44,15 @@ public enum SelfRegisterCompanyController implements BaseController {
     }
 
     private Object map(RoutingContext event) {
-        String body = event.body().asString();
-        Request req = new Request(body);
+        JsonObject body = event.body().asJsonObject();
+        if (body == null) body = new JsonObject();
 
-        String name    = req.get("name");
-        String hrName  = req.get("hrName");
-        String hrEmail = req.get("hrEmail");
+        String name    = body.getString("name");
+        String hrName  = body.getString("hrName");
+        String hrEmail = body.getString("hrEmail");
 
-        if (name == null || name.isBlank())    throw new RoutingError("Company name is required");
-        if (hrName == null || hrName.isBlank()) throw new RoutingError("HR name is required");
+        if (name == null || name.isBlank())       throw new RoutingError("Company name is required");
+        if (hrName == null || hrName.isBlank())   throw new RoutingError("HR name is required");
         if (hrEmail == null || hrEmail.isBlank()) throw new RoutingError("HR email is required");
 
         final String companyName = name.trim();
@@ -69,12 +69,12 @@ public enum SelfRegisterCompanyController implements BaseController {
         // Create company — inactive until approved
         Company company = new Company();
         company.name         = companyName;
-        company.industry     = req.isPresent("industry")     ? req.get("industry").trim()     : null;
-        company.website      = req.isPresent("website")      ? req.get("website").trim()      : null;
-        company.headquarters = req.isPresent("headquarters") ? req.get("headquarters").trim() : null;
-        company.description  = req.isPresent("description")  ? req.get("description").trim()  : null;
+        company.industry     = body.getString("industry");
+        company.website      = body.getString("website");
+        company.headquarters = body.getString("headquarters");
+        company.description  = body.getString("description");
         company.contactEmail = email;
-        company.contactPhone = req.isPresent("hrPhone")      ? req.get("hrPhone").trim()      : null;
+        company.contactPhone = body.getString("hrPhone");
         company.active       = false;   // pending Applyra approval
         company.save();
 
@@ -84,14 +84,14 @@ public enum SelfRegisterCompanyController implements BaseController {
 
         // Create HR user — inactive until approved
         User hrUser = new User();
-        hrUser.email    = email;
-        hrUser.name     = hrName.trim();
-        hrUser.userType = UserType.COMPANY_HR;
-        hrUser.company  = company;
-        hrUser.verified = false;
-        hrUser.active   = false;
+        hrUser.email     = email;
+        hrUser.name      = hrName.trim();
+        hrUser.userType  = UserType.COMPANY_HR;
+        hrUser.company   = company;
+        hrUser.verified  = false;
+        hrUser.active    = false;
         hrUser.isPrimary = true;
-        hrUser.password = ""; // no password until approval
+        hrUser.password  = ""; // no password until approval
         hrUser.save();
 
         // Notify Applyra team
@@ -100,7 +100,8 @@ public enum SelfRegisterCompanyController implements BaseController {
         EmailService.sendEmail(
                 SUPPORT_EMAIL,
                 "New Company Self-Registration — " + companyName,
-                buildAdminNotificationHtml(companyName, code, companyId, hrName.trim(), email, company.industry, company.website)
+                buildAdminNotificationHtml(companyName, code, companyId, hrName.trim(), email,
+                        company.industry, company.website)
         ).subscribe(
                 ok  -> System.out.println("[SelfRegister] Admin notified for " + companyName),
                 err -> System.err.println("[SelfRegister] Email error: " + err.getMessage())
@@ -108,9 +109,9 @@ public enum SelfRegisterCompanyController implements BaseController {
 
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("message", "Registration submitted! Applyra will review and activate your account shortly. You'll receive your login credentials by email.");
-        res.put("companyId", companyId);
+        res.put("companyId",   companyId);
         res.put("companyName", companyName);
-        res.put("hrEmail", email);
+        res.put("hrEmail",     email);
         return res;
     }
 

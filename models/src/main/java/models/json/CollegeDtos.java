@@ -37,6 +37,7 @@ public final class CollegeDtos {
         String venue;
         String companyName;
         Long companyId;
+        Long companyCollegeId;
         Timestamp createdAt;
     }
 
@@ -63,9 +64,12 @@ public final class CollegeDtos {
         dto.venue = d.getVenue();
         dto.createdAt = d.getCreatedAt();
         CompanyCollege cc = d.getCompanyCollege();
-        if (cc != null && cc.getCompany() != null) {
-            dto.companyName = cc.getCompany().getName();
-            dto.companyId = cc.getCompany().getId();
+        if (cc != null) {
+            dto.companyCollegeId = cc.getId();
+            if (cc.getCompany() != null) {
+                dto.companyName = cc.getCompany().getName();
+                dto.companyId = cc.getCompany().getId();
+            }
         }
         return dto;
     }

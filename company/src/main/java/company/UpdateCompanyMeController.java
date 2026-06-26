@@ -3,6 +3,7 @@ package company;
 import helpers.annotations.CompanyRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
+import helpers.utils.Request;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.company.CompanyAccessMiddleware;
@@ -38,14 +39,14 @@ public enum UpdateCompanyMeController implements BaseController {
         Company company = request.getCompany();
         if (company == null) throw new RoutingError(404, "No company linked to your account");
 
-        var body = request.getRequest();
-        if (body.isPresent("industry"))     company.industry     = body.get("industry").trim();
-        if (body.isPresent("website"))      company.website      = body.get("website").trim();
-        if (body.isPresent("logoUrl"))      company.logoUrl      = body.get("logoUrl").trim();
-        if (body.isPresent("description"))  company.description  = body.get("description").trim();
-        if (body.isPresent("headquarters")) company.headquarters = body.get("headquarters").trim();
-        if (body.isPresent("contactPhone")) company.contactPhone = body.get("contactPhone").trim();
-        if (body.isPresent("startup"))      company.startup      = Boolean.parseBoolean(body.get("startup"));
+        Request body = request.getRequest();
+        if (body.isPresent("industry"))     company.industry     = ((String) body.get("industry")).trim();
+        if (body.isPresent("website"))      company.website      = ((String) body.get("website")).trim();
+        if (body.isPresent("logoUrl"))      company.logoUrl      = ((String) body.get("logoUrl")).trim();
+        if (body.isPresent("description"))  company.description  = ((String) body.get("description")).trim();
+        if (body.isPresent("headquarters")) company.headquarters = ((String) body.get("headquarters")).trim();
+        if (body.isPresent("contactPhone")) company.contactPhone = ((String) body.get("contactPhone")).trim();
+        if (body.isPresent("startup"))      company.startup      = Boolean.parseBoolean((String) body.get("startup"));
         company.update();
 
         Map<String, Object> res = new LinkedHashMap<>();
