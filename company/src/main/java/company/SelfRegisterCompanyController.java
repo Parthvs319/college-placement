@@ -126,8 +126,8 @@ public enum SelfRegisterCompanyController implements BaseController {
                 + row("Company", companyName)
                 + row("Code", code)
                 + row("DB ID", String.valueOf(id))
-                + row("Industry", industry != null ? industry : "—")
-                + row("Website", website != null ? website : "—")
+                + row("Industry", industry != null ? industry : "")
+                + row("Website", website != null ? website : "")
                 + row("HR Name", hrName)
                 + row("HR Email", hrEmail)
                 + "</table>"

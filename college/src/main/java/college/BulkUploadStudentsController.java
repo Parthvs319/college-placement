@@ -125,6 +125,32 @@ public enum BulkUploadStudentsController implements BaseController {
                 continue;
             }
 
+            // Aadhar validation: exactly 12 digits
+            if (aadharNumber != null && !aadharNumber.isBlank()) {
+                String cleanAadhar = aadharNumber.replaceAll("\\s+", "").replaceAll("-", "");
+                if (!cleanAadhar.matches("\\d{12}")) {
+                    item.put("status", "failed");
+                    item.put("reason", "Aadhar number must be exactly 12 digits (got: " + aadharNumber.trim() + ")");
+                    results.add(item);
+                    failed++;
+                    continue;
+                }
+                aadharNumber = cleanAadhar;
+            }
+
+            // PAN validation: format ABCDE1234F (5 alpha + 4 digits + 1 alpha)
+            if (panNumber != null && !panNumber.isBlank()) {
+                String cleanPan = panNumber.trim().toUpperCase().replaceAll("\\s+", "");
+                if (!cleanPan.matches("[A-Z]{5}[0-9]{4}[A-Z]{1}")) {
+                    item.put("status", "failed");
+                    item.put("reason", "PAN number must be in format ABCDE1234F (got: " + panNumber.trim() + ")");
+                    results.add(item);
+                    failed++;
+                    continue;
+                }
+                panNumber = cleanPan;
+            }
+
             email = email.trim().toLowerCase();
 
             // Check if email already exists

@@ -480,9 +480,9 @@ public class EmailService {
                     .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b'>")
                     .append(s[2]).append("</td>")
                     .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b'>")
-                    .append(s.length > 3 && s[3] != null ? s[3] : "—").append("</td>")
+                    .append(s.length > 3 && s[3] != null ? s[3] : "").append("</td>")
                     .append("<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b'>")
-                    .append(s.length > 4 && s[4] != null && !s[4].equals("0") ? s[4] : "—").append("</td>")
+                    .append(s.length > 4 && s[4] != null && !s[4].equals("0") ? s[4] : "").append("</td>")
                     .append("</tr>");
         }
         if (studentRows.size() > 50) {

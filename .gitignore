@@ -3,3 +3,4 @@ target/
 *.log
 application-local.properties
 .env
+/students_1000.xlsx
