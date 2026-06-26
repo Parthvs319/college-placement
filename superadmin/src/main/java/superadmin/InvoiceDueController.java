@@ -113,7 +113,7 @@ public enum InvoiceDueController implements BaseController {
                     : contract.getContractAmount().divide(BigDecimal.valueOf(12), 0, java.math.RoundingMode.HALF_UP);
             item.setContractAmountDisplay("₹" + nf.format(display));
         } else {
-            item.setContractAmountDisplay"";
+            item.setContractAmountDisplay("");
         }
 
         if (contract.getCollege() != null) {
