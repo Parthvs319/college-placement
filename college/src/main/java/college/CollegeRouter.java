@@ -31,11 +31,19 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.get("/analytics").handler(CollegeAnalyticsController.INSTANCE::handle);
 
         // ── Student Management (TPO/Admin) ──
+        // IMPORTANT: static paths MUST be declared before parameterised :studentId routes
         router.get("/students").handler(ListStudentsController.INSTANCE::handle);
-        router.get("/students/:studentId").handler(GetStudentDetailController.INSTANCE::handle);
         router.get("/students/placed").handler(ListPlacedStudentsController.INSTANCE::handle);
         router.get("/students/unplaced").handler(ListUnplacedStudentsController.INSTANCE::handle);
         router.get("/students/unverified").handler(ListUnverifiedStudentsController.INSTANCE::handle);
+        router.post("/students/invite").handler(InviteStudentsController.INSTANCE::handle);
+        router.post("/students/bulk-upload").handler(BulkUploadStudentsController.INSTANCE::handle);
+        router.post("/students/onboarding-complete").handler(OnboardingCompleteController.INSTANCE::handle);
+        router.post("/students/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);
+        router.post("/students/warn").handler(WarnStudentsController.INSTANCE::handle);
+
+        // Parameterised student routes — must come after all static /students/* paths
+        router.get("/students/:studentId").handler(GetStudentDetailController.INSTANCE::handle);
         router.post("/students/:studentId/verify").handler(VerifyStudentController.INSTANCE::handle);
 
         // ── Student Document Verification (TPO/Admin) ──
@@ -72,12 +80,7 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.post("/notifications/send").handler(SendNotificationController.INSTANCE::handle);
         router.get("/notifications").handler(ListNotificationsController.INSTANCE::handle);
 
-        router.post("/students/invite").handler(InviteStudentsController.INSTANCE::handle);
-        router.post("/students/bulk-upload").handler(BulkUploadStudentsController.INSTANCE::handle);
-        router.post("/students/onboarding-complete").handler(OnboardingCompleteController.INSTANCE::handle);
-
-        // ── Bulk Operations ──
-        router.post("/students/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);
+        // ── Bulk Operations (already registered above before :studentId) ──
 
         // ── Team Management (primary TPO only) ──
         router.get("/team").handler(ListCollegeTeamController.INSTANCE::handle);
@@ -87,7 +90,6 @@ public enum CollegeRouter implements SubRouterProtocol {
 
         // ── Quick-Action Emails ──
         router.post("/drives/:driveId/remind-non-applicants").handler(RemindNonApplicantsController.INSTANCE::handle);
-        router.post("/students/warn").handler(WarnStudentsController.INSTANCE::handle);
 
         // ── Support Tickets (TPO raises tickets) ──
         router.post("/support/tickets").handler(CreateSupportTicketController.INSTANCE::handle);

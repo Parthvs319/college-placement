@@ -14,11 +14,6 @@ import models.sql.User;
 
 import java.util.ArrayList;
 
-/**
- * TPO / College Admin verifies (approves) a student.
- * Only TPO/COLLEGE_ADMIN of the same college can verify.
- * Sets user.verified = true so the student can apply to drives.
- */
 @CollegeRole
 public enum VerifyStudentController implements BaseController {
 
@@ -54,14 +49,14 @@ public enum VerifyStudentController implements BaseController {
             throw new RoutingError("Student is already verified");
         }
 
-        studentUser.verified = true;
+        studentUser.setVerified(true);;
         studentUser.update();
 
         VerifyResponse response = new VerifyResponse();
         response.studentId = student.getId();
         response.enrollmentNumber = student.getEnrollmentNumber();
         response.name = studentUser.getName();
-        response.verified = true;
+        response.verified = studentUser.isVerified();
         response.message = "Student verified successfully";
         return response;
     }
