@@ -1,6 +1,6 @@
 package student;
 
-import helpers.annotations.StudentAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
@@ -41,7 +41,7 @@ import java.util.Set;
  *
  * RESUME is auto-verified on upload.
  */
-@StudentAnnotation
+@StudentRole
 public enum UploadStudentDocumentController implements BaseController {
 
     INSTANCE;

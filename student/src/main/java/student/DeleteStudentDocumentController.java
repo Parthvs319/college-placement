@@ -1,6 +1,6 @@
 package student;
 
-import helpers.annotations.StudentAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
@@ -18,7 +18,7 @@ import java.util.Map;
  *
  * Soft-deletes a student document. Students can only delete their own documents.
  */
-@StudentAnnotation
+@StudentRole
 public enum DeleteStudentDocumentController implements BaseController {
 
     INSTANCE;

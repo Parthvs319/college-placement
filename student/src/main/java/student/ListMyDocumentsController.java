@@ -1,6 +1,6 @@
 package student;
 
-import helpers.annotations.StudentAnnotation;
+import helpers.annotations.StudentRole;
 import helpers.interfaces.BaseController;
 import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
@@ -11,7 +11,7 @@ import models.repos.StudentDocumentRepository;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-@StudentAnnotation
+@StudentRole
 public enum ListMyDocumentsController implements BaseController {
 
     INSTANCE;
