@@ -25,9 +25,8 @@ public class SuperAdminDtos {
         int totalOffers;
         int totalUsers;
         double overallPlacementRate;
-        BigDecimal averageCtc;
-        BigDecimal highestCtc;
-        BigDecimal lowestCtc;
+        int internshipCount;
+        int ppoCount;
     }
 
     @Data

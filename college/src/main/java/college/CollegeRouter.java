@@ -38,6 +38,11 @@ public enum CollegeRouter implements SubRouterProtocol {
         router.get("/students/unverified").handler(ListUnverifiedStudentsController.INSTANCE::handle);
         router.post("/students/:studentId/verify").handler(VerifyStudentController.INSTANCE::handle);
 
+        // ── Student Document Verification (TPO/Admin) ──
+        router.get("/students/:studentId/documents").handler(GetStudentDocumentsController.INSTANCE::handle);
+        router.post("/students/:studentId/documents/:docId/verify").handler(VerifyStudentDocumentController.INSTANCE::handle);
+        router.post("/students/:studentId/documents/:docId/reject").handler(RejectStudentDocumentController.INSTANCE::handle);
+
         // ── Company Management (TPO links/onboards companies) ──
         router.post("/companies/onboard").handler(OnboardCompanyController.INSTANCE::handle);
         router.post("/companies/link").handler(LinkCompanyCollegeController.INSTANCE::handle);

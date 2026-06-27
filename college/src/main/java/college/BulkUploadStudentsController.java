@@ -19,18 +19,6 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.*;
 
-/**
- * TPO bulk-uploads a list of students as JSON array.
- * Creates User (STUDENT) + Student records with auto-generated passwords.
- * Sends credentials email to each student.
- *
- * POST /college/students/bulk-upload
- * Body: { "students": [
- *   { "name": "John Doe", "email": "john@gmail.com", "enrollmentNumber": "0901CS201001",
- *     "department": "CSE", "passingYear": 2025 },
- *   ...
- * ]}
- */
 @CollegeRole
 public enum BulkUploadStudentsController implements BaseController {
 
@@ -97,6 +85,8 @@ public enum BulkUploadStudentsController implements BaseController {
             String aadharNumber     = getStr(row, "aadharNumber");
             String panNumber        = getStr(row, "panNumber");
             String studentCollegeId = getStr(row, "studentCollegeId");
+            boolean internship       = getBool(row, "internship");
+            boolean ppo              = getBool(row, "ppo");
 
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("email", email);
@@ -212,6 +202,8 @@ public enum BulkUploadStudentsController implements BaseController {
             student.panNumber        = panNumber != null && !panNumber.isBlank() ? panNumber.trim().toUpperCase() : null;
             student.studentCollegeId = studentCollegeId != null && !studentCollegeId.isBlank() ? studentCollegeId.trim() : null;
             student.category         = category != null && !category.isBlank() ? category.trim().toUpperCase() : null;
+            student.internship       = internship;
+            student.ppo              = ppo;
 
             student.save();
 
@@ -266,6 +258,13 @@ public enum BulkUploadStudentsController implements BaseController {
         } catch (NumberFormatException e) {
             return defaultVal;
         }
+    }
+
+    private boolean getBool(Map<?, ?> map, String key) {
+        Object val = map.get(key);
+        if (val == null) return false;
+        String s = val.toString().trim().toLowerCase();
+        return s.equals("true") || s.equals("yes") || s.equals("1") || s.equals("y");
     }
 
     private String generatePassword(int length) {

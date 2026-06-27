@@ -6,6 +6,7 @@ import models.sql.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Shared DTOs for all Student portal responses.
@@ -54,6 +55,8 @@ public final class StudentDtos {
         // Status
         boolean placed;
         boolean optedOut;
+        boolean internship;
+        boolean ppo;
         BigDecimal currentCtc;
         boolean profileComplete;
         Timestamp profileSubmittedAt;
@@ -87,6 +90,8 @@ public final class StudentDtos {
         dto.resumeUrl        = s.getResumeUrl();
         dto.placed           = s.isPlaced();
         dto.optedOut         = s.isOptedOut();
+        dto.internship       = s.isInternship();
+        dto.ppo              = s.isPpo();
         dto.currentCtc       = s.getCurrentCtc();
         dto.profileComplete  = s.isProfileComplete();
         dto.profileSubmittedAt = s.getProfileSubmittedAt();
@@ -289,6 +294,39 @@ public final class StudentDtos {
                 dto.companyName = cc.getCompany().getName();
             }
         }
+        return dto;
+    }
+
+    // ── Student Document ──
+
+    @Data
+    public static class DocumentResponse {
+        Long id;
+        String documentType;
+        String label;
+        String fileName;
+        String fileUrl;
+        String contentType;
+        Long fileSizeBytes;
+        Integer semester;
+        boolean verified;
+        String verificationNote;
+        String createdAt;
+    }
+
+    public static DocumentResponse toDocumentDto(StudentDocument d) {
+        DocumentResponse dto = new DocumentResponse();
+        dto.id               = d.getId();
+        dto.documentType     = d.getDocumentType();
+        dto.label            = d.getLabel();
+        dto.fileName         = d.getFileName();
+        dto.fileUrl          = d.getFileUrl();
+        dto.contentType      = d.getContentType();
+        dto.fileSizeBytes    = d.getFileSizeBytes();
+        dto.semester         = d.getSemester();
+        dto.verified         = d.isVerified();
+        dto.verificationNote = d.getVerificationNote();
+        dto.createdAt        = d.getCreatedAt() != null ? d.getCreatedAt().toString() : null;
         return dto;
     }
 

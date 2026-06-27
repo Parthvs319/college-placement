@@ -8,8 +8,6 @@ import models.access.middlewear.superadmin.SuperAdminAccessMiddleware;
 import models.repos.*;
 import models.sql.*;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,16 +36,22 @@ public enum PlatformAnalyticsController implements BaseController {
                     a.setTotalUsers(users.size());
 
                     // Aggregate students across all colleges
-                    int totalStudents = 0;
+                    int totalStudents  = 0;
                     int placedStudents = 0;
+                    int internshipCount = 0;
+                    int ppoCount        = 0;
                     for (College c : colleges) {
                         List<Student> students = StudentRepository.INSTANCE.byCollege(c.getId());
-                        totalStudents += students.size();
-                        placedStudents += StudentRepository.INSTANCE.findPlaced(c.getId()).size();
+                        totalStudents   += students.size();
+                        placedStudents  += StudentRepository.INSTANCE.findPlaced(c.getId()).size();
+                        internshipCount += (int) students.stream().filter(Student::isInternship).count();
+                        ppoCount        += (int) students.stream().filter(Student::isPpo).count();
                     }
                     a.setTotalStudents(totalStudents);
                     a.setPlacedStudents(placedStudents);
                     a.setUnplacedStudents(totalStudents - placedStudents);
+                    a.setInternshipCount(internshipCount);
+                    a.setPpoCount(ppoCount);
 
                     List<Company> allCompanies = CompanyRepository.INSTANCE.findAll();
                     a.setTotalCompanies(allCompanies.size());
@@ -76,33 +80,6 @@ public enum PlatformAnalyticsController implements BaseController {
                         a.setOverallPlacementRate(
                                 (double) placedStudents / totalStudents * 100
                         );
-                    }
-
-                    // CTC stats from offers (use offer-level ctcOffered directly)
-                    BigDecimal totalCtc = BigDecimal.ZERO;
-                    BigDecimal highest = BigDecimal.ZERO;
-                    BigDecimal lowest = null;
-                    int ctcCount = 0;
-                    for (Offer o : allOffers) {
-                        BigDecimal ctc = o.getCtcOffered();
-                        if (ctc == null && o.getDrive() != null) {
-                            ctc = o.getDrive().getCtcOffered();
-                        }
-                        if (ctc != null && ctc.compareTo(BigDecimal.ZERO) > 0) {
-                            totalCtc = totalCtc.add(ctc);
-                            ctcCount++;
-                            if (ctc.compareTo(highest) > 0) {
-                                highest = ctc;
-                            }
-                            if (lowest == null || ctc.compareTo(lowest) < 0) {
-                                lowest = ctc;
-                            }
-                        }
-                    }
-                    a.setHighestCtc(highest);
-                    a.setLowestCtc(lowest != null ? lowest : BigDecimal.ZERO);
-                    if (ctcCount > 0) {
-                        a.setAverageCtc(totalCtc.divide(BigDecimal.valueOf(ctcCount), 2, RoundingMode.HALF_UP));
                     }
 
                     return a;

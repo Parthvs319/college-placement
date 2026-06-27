@@ -93,6 +93,9 @@ public class Student extends AttrsModel {
 
     public BigDecimal currentCtc;           // CTC of accepted offer (if any)
 
+    public boolean internship = false;     // student completed/accepted an internship
+    public boolean ppo = false;            // student received a Pre-Placement Offer
+
     @OneToMany(mappedBy = "student")
     public List<StudentDocument> documents;
 

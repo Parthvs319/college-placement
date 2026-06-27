@@ -22,6 +22,10 @@ public enum StudentRouter implements SubRouterProtocol {
         router.put("/me/resumes/:resumeId/primary").handler(SetPrimaryResumeController.INSTANCE::handle);
         router.delete("/me/resumes/:resumeId").handler(DeleteResumeController.INSTANCE::handle);
 
+        router.get("/me/documents").handler(ListMyDocumentsController.INSTANCE::handle);
+        router.post("/me/documents").handler(UploadStudentDocumentController.INSTANCE::handle);
+        router.delete("/me/documents/:docId").handler(DeleteStudentDocumentController.INSTANCE::handle);
+
         router.get("/me/applications").handler(MyApplicationsController.INSTANCE::handle);
         router.get("/me/offers").handler(MyOffersController.INSTANCE::handle);
         router.post("/me/offers/:offerId/respond").handler(RespondToOfferController.INSTANCE::handle);
