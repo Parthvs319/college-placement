@@ -30,76 +30,29 @@ public enum CollegeRouter implements SubRouterProtocol {
         // ── Analytics ──
         router.get("/analytics").handler(CollegeAnalyticsController.INSTANCE::handle);
 
-        // ── Student Management (TPO/Admin) ──
-        // IMPORTANT: static paths MUST be declared before parameterised :studentId routes
-        router.get("/students").handler(ListStudentsController.INSTANCE::handle);
-        router.get("/students/placed").handler(ListPlacedStudentsController.INSTANCE::handle);
-        router.get("/students/unplaced").handler(ListUnplacedStudentsController.INSTANCE::handle);
-        router.get("/students/unverified").handler(ListUnverifiedStudentsController.INSTANCE::handle);
-        router.post("/students/invite").handler(InviteStudentsController.INSTANCE::handle);
-        router.post("/students/bulk-upload").handler(BulkUploadStudentsController.INSTANCE::handle);
-        router.post("/students/onboarding-complete").handler(OnboardingCompleteController.INSTANCE::handle);
-        router.post("/students/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);
-        router.post("/students/warn").handler(WarnStudentsController.INSTANCE::handle);
-
-        // Parameterised student routes — must come after all static /students/* paths
-        router.get("/students/:studentId").handler(GetStudentDetailController.INSTANCE::handle);
-        router.post("/students/:studentId/verify").handler(VerifyStudentController.INSTANCE::handle);
-
-        // ── Student Document Verification (TPO/Admin) ──
-        router.get("/students/:studentId/documents").handler(GetStudentDocumentsController.INSTANCE::handle);
-        router.post("/students/:studentId/documents/:docId/verify").handler(VerifyStudentDocumentController.INSTANCE::handle);
-        router.post("/students/:studentId/documents/:docId/reject").handler(RejectStudentDocumentController.INSTANCE::handle);
-
-        // ── Company Management (TPO links/onboards companies) ──
-        router.post("/companies/onboard").handler(OnboardCompanyController.INSTANCE::handle);
-        router.post("/companies/link").handler(LinkCompanyCollegeController.INSTANCE::handle);
-        router.get("/companies").handler(ListCompanyCollegesController.INSTANCE::handle);
-        router.post("/companies/remind-inactive").handler(RemindInactiveCompaniesController.INSTANCE::handle);
-
-        // ── Drive Management (TPO/Admin) ──
-        router.post("/drives").handler(CreateDriveController.INSTANCE::handle);
-        router.get("/drives").handler(ListDrivesController.INSTANCE::handle);
-        router.get("/drives/upcoming").handler(ListUpcomingDrivesController.INSTANCE::handle);
-        router.get("/drives/:driveId").handler(GetDriveController.INSTANCE::handle);
-        router.put("/drives/:driveId").handler(UpdateDriveController.INSTANCE::handle);
-
-        // ── Drive Applications & Rounds (TPO/Admin) ──
-        router.get("/drives/:driveId/applications").handler(ListDriveApplicationsController.INSTANCE::handle);
-        router.post("/drives/:driveId/rounds").handler(CreateRoundController.INSTANCE::handle);
-        router.get("/drives/:driveId/rounds").handler(ListRoundsController.INSTANCE::handle);
-        router.get("/rounds/:roundId/results").handler(ListRoundResultsController.INSTANCE::handle);
-        router.post("/rounds/:roundId/results").handler(SubmitRoundResultsController.INSTANCE::handle);
-        router.post("/rounds/:roundId/complete").handler(MarkRoundCompleteController.INSTANCE::handle);
-
-        // ── Offers (TPO/Admin) ──
-        router.post("/drives/:driveId/offers").handler(CreateOfferController.INSTANCE::handle);
-        router.get("/drives/:driveId/offers").handler(ListDriveOffersController.INSTANCE::handle);
-
-        // ── Notifications (TPO/Admin) ──
-        router.post("/notifications/send").handler(SendNotificationController.INSTANCE::handle);
-        router.get("/notifications").handler(ListNotificationsController.INSTANCE::handle);
-
-        // ── Bulk Operations (already registered above before :studentId) ──
-
-        // ── Team Management (primary TPO only) ──
-        router.get("/team").handler(ListCollegeTeamController.INSTANCE::handle);
-        router.post("/team/invite").handler(InviteTeamMemberController.INSTANCE::handle);
-        router.put("/team/:userId").handler(UpdateTeamMemberController.INSTANCE::handle);
-        router.delete("/team/:userId").handler(RemoveTeamMemberController.INSTANCE::handle);
-
-        // ── Quick-Action Emails ──
-        router.post("/drives/:driveId/remind-non-applicants").handler(RemindNonApplicantsController.INSTANCE::handle);
-
-        // ── Support Tickets (TPO raises tickets) ──
+        // ── Support Tickets ──
         router.post("/support/tickets").handler(CreateSupportTicketController.INSTANCE::handle);
 
-        // ── Reports (CSV downloads) ──
-        router.get("/reports/students").handler(StudentReportController.INSTANCE::handle);
-        router.get("/reports/drives").handler(DriveReportController.INSTANCE::handle);
-        router.get("/reports/offers").handler(OfferReportController.INSTANCE::handle);
-
+        // ── File Upload ──
         router.post("/upload").handler(FileUploadController.INSTANCE::handle);
+
+        // ── Rounds (not under /drives — paths like /rounds/:roundId/...) ──
+        router.get("/rounds/:roundId/results").handler(college.drive.ListRoundResultsController.INSTANCE::handle);
+        router.post("/rounds/:roundId/results").handler(college.drive.SubmitRoundResultsController.INSTANCE::handle);
+        router.post("/rounds/:roundId/complete").handler(college.drive.MarkRoundCompleteController.INSTANCE::handle);
+
+        // ── Reports (CSV downloads) ──
+        router.get("/reports/students").handler(college.student.StudentReportController.INSTANCE::handle);
+        router.get("/reports/drives").handler(college.drive.DriveReportController.INSTANCE::handle);
+        router.get("/reports/offers").handler(college.drive.OfferReportController.INSTANCE::handle);
+
+        // ── Sub-routers ──
+        // Using "/prefix*" (no slash before *) so both "/prefix" and "/prefix/..." are matched
+        router.route("/students*").subRouter(college.student.StudentSubRouter.INSTANCE.router(vertx));
+        router.route("/companies*").subRouter(college.company.CompanySubRouter.INSTANCE.router(vertx));
+        router.route("/drives*").subRouter(college.drive.DriveSubRouter.INSTANCE.router(vertx));
+        router.route("/team*").subRouter(college.team.TeamSubRouter.INSTANCE.router(vertx));
+        router.route("/notifications*").subRouter(college.notification.NotificationSubRouter.INSTANCE.router(vertx));
 
         return router;
     }
