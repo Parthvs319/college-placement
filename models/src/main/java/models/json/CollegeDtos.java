@@ -413,4 +413,37 @@ public final class CollegeDtos {
         }
         return dto;
     }
+
+    // ── Student Document ──────────────────────────────────────────────────────
+
+    @Data
+    public static class StudentDocumentResponse {
+        Long id;
+        String documentType;
+        String label;
+        String fileName;
+        String fileUrl;
+        String contentType;
+        Long fileSizeBytes;
+        Integer semester;
+        boolean verified;
+        String verificationNote;
+        String createdAt;
+    }
+
+    public static StudentDocumentResponse toStudentDocumentDto(StudentDocument d) {
+        StudentDocumentResponse dto = new StudentDocumentResponse();
+        dto.id               = d.getId();
+        dto.documentType     = d.getDocumentType();
+        dto.label            = d.getLabel();
+        dto.fileName         = d.getFileName();
+        dto.fileUrl          = d.getFileUrl();
+        dto.contentType      = d.getContentType();
+        dto.fileSizeBytes    = d.getFileSizeBytes();
+        dto.semester         = d.getSemester();
+        dto.verified         = d.isVerified();
+        dto.verificationNote = d.getVerificationNote();
+        dto.createdAt        = d.getCreatedAt() != null ? d.getCreatedAt().toString() : null;
+        return dto;
+    }
 }

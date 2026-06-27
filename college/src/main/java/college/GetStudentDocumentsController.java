@@ -7,10 +7,10 @@ import helpers.utils.ResponseUtils;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import models.access.middlewear.college.CollegeAccessMiddleware;
 import models.body.CollegeLoginRequest;
+import models.json.CollegeDtos;
 import models.repos.StudentDocumentRepository;
 import models.repos.StudentRepository;
 import models.sql.Student;
-import student.StudentDtos;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -47,7 +47,7 @@ public enum GetStudentDocumentsController implements BaseController {
         return StudentDocumentRepository.INSTANCE
                 .byStudentId(studentId)
                 .stream()
-                .map(StudentDtos::toDocumentDto)
+                .map(CollegeDtos::toStudentDocumentDto)
                 .collect(Collectors.toList());
     }
 }

@@ -11,7 +11,7 @@ import models.repos.StudentDocumentRepository;
 import models.repos.StudentRepository;
 import models.sql.Student;
 import models.sql.StudentDocument;
-import student.StudentDtos;
+import models.json.CollegeDtos;
 
 import java.util.ArrayList;
 
@@ -60,6 +60,6 @@ public enum RejectStudentDocumentController implements BaseController {
         doc.setVerificationNote(note);
         doc.save();
 
-        return StudentDtos.toDocumentDto(doc);
+        return CollegeDtos.toStudentDocumentDto(doc);
     }
 }

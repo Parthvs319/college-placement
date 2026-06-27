@@ -11,7 +11,7 @@ import models.repos.StudentDocumentRepository;
 import models.repos.StudentRepository;
 import models.sql.Student;
 import models.sql.StudentDocument;
-import student.StudentDtos;
+import models.json.CollegeDtos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,7 @@ public enum VerifyStudentDocumentController implements BaseController {
         // Auto-verify student if all required documents are verified
         checkAndAutoVerifyStudent(student, studentId);
 
-        return StudentDtos.toDocumentDto(doc);
+        return CollegeDtos.toStudentDocumentDto(doc);
     }
 
     /**
