@@ -240,6 +240,22 @@ public final class CollegeDtos {
         String logoUrl;
         boolean companyCanManage;
         boolean active;
+        // Identity
+        String companyType;
+        String cin;
+        String gstin;
+        Integer yearOfEstablishment;
+        String employeeCount;
+        String linkedinUrl;
+        // Profile
+        String website;
+        String description;
+        String headquarters;
+        // HR contact
+        String contactEmail;
+        String contactPhone;
+        String hrDesignation;
+        String hrLinkedin;
     }
 
     public static CompanyCollegeResponse toCompanyCollegeDto(CompanyCollege cc) {
@@ -254,6 +270,19 @@ public final class CollegeDtos {
             dto.companyCode = company.getCode();
             dto.industry = company.getIndustry();
             dto.logoUrl = company.getLogoUrl();
+            dto.companyType = company.companyType;
+            dto.cin = company.cin;
+            dto.gstin = company.gstin;
+            dto.yearOfEstablishment = company.yearOfEstablishment;
+            dto.employeeCount = company.employeeCount;
+            dto.linkedinUrl = company.linkedinUrl;
+            dto.website = company.website;
+            dto.description = company.description;
+            dto.headquarters = company.headquarters;
+            dto.contactEmail = company.contactEmail;
+            dto.contactPhone = company.contactPhone;
+            dto.hrDesignation = company.hrDesignation;
+            dto.hrLinkedin = company.hrLinkedin;
         }
         return dto;
     }
