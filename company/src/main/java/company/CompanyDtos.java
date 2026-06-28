@@ -6,7 +6,6 @@ import models.sql.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 
 /**
  * Shared DTOs for all Company portal responses.
@@ -20,29 +19,57 @@ public final class CompanyDtos {
     @Data
     public static class CompanyResponse {
         Long id;
+        String code;
         String name;
         String industry;
+
+        // Identity
+        String companyType;
+        String cin;
+        String gstin;
+        Integer yearOfEstablishment;
+        String employeeCount;
+        String linkedinUrl;
+
         String website;
         String logoUrl;
         String description;
         String headquarters;
         String contactEmail;
         String contactPhone;
+        boolean startup;
         boolean active;
+
+        // HR contact extras
+        String hrDesignation;
+        String hrLinkedin;
     }
 
     public static CompanyResponse toCompanyDto(Company c) {
         CompanyResponse dto = new CompanyResponse();
         dto.id = c.getId();
+        dto.code = c.code;
         dto.name = c.name;
         dto.industry = c.industry;
+
+        dto.companyType = c.companyType;
+        dto.cin = c.cin;
+        dto.gstin = c.gstin;
+        dto.yearOfEstablishment = c.yearOfEstablishment;
+        dto.employeeCount = c.employeeCount;
+        dto.linkedinUrl = c.linkedinUrl;
+
         dto.website = c.website;
         dto.logoUrl = c.logoUrl;
         dto.description = c.description;
         dto.headquarters = c.headquarters;
         dto.contactEmail = c.contactEmail;
         dto.contactPhone = c.contactPhone;
+        dto.startup = c.startup;
         dto.active = c.active;
+
+        dto.hrDesignation = c.hrDesignation;
+        dto.hrLinkedin = c.hrLinkedin;
         return dto;
     }
 

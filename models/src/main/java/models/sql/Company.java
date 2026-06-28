@@ -20,6 +20,20 @@ public class Company extends AttrsModel {
 
     public String industry;                 // IT, Finance, Manufacturing, etc.
 
+    // ── Company Identity ──────────────────────────────────────────────────────
+
+    public String companyType;              // PUBLIC_LTD, PRIVATE_LTD, LLP, STARTUP, MNC, GOVERNMENT_PSU
+
+    public String cin;                      // Corporate Identification Number (21 chars)
+
+    public String gstin;                    // GST Identification Number (15 chars)
+
+    public Integer yearOfEstablishment;
+
+    public String employeeCount;            // e.g. "1-50", "51-200", "201-1000", "1000+"
+
+    public String linkedinUrl;
+
     public String website;
 
     public String logoUrl;
@@ -35,6 +49,14 @@ public class Company extends AttrsModel {
     public boolean startup = false;
 
     public boolean active = true;
+
+    // ── HR Contact ────────────────────────────────────────────────────────────
+
+    public String hrDesignation;            // e.g. "Talent Acquisition Manager"
+
+    public String hrLinkedin;
+
+    // ── Relations ─────────────────────────────────────────────────────────────
 
     @OneToMany(mappedBy = "company")
     public List<CompanyCollege> companyColleges;

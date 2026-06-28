@@ -12,7 +12,10 @@ import models.services.EmailService;
 import models.sql.Company;
 import models.sql.User;
 
+import java.util.regex.Pattern;
+
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,14 +25,20 @@ import java.util.Map;
  * Superadmin must approve via POST /admin/companies/:id/approve.
  *
  * POST /company/register
- * Body: { name, industry?, website?, headquarters?, description?,
- *         hrName, hrEmail, hrPhone? }
+ * Body: { name, companyType?, industry?, cin?, gstin?, yearOfEstablishment?,
+ *         employeeCount?, linkedinUrl?, website?, headquarters?, description?,
+ *         typicalRoles?, preferredDepartments?, minCgpa?, employmentTypes?,
+ *         minCtc?, maxCtc?, hiringCities?,
+ *         hrName, hrEmail, hrPhone?, hrDesignation?, hrLinkedin? }
  */
 public enum SelfRegisterCompanyController implements BaseController {
 
     INSTANCE;
 
     private static final String SUPPORT_EMAIL = "support@applyra.in";
+
+    private static final Pattern GSTIN_PATTERN =
+            Pattern.compile("^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$");
 
     @Override
     public void handle(RoutingContext event) {
@@ -76,6 +85,28 @@ public enum SelfRegisterCompanyController implements BaseController {
         company.contactEmail = email;
         company.contactPhone = body.getString("hrPhone");
         company.active       = false;   // pending Applyra approval
+
+        // GSTIN validation
+        String gstinRaw = body.getString("gstin");
+        if (gstinRaw != null && !gstinRaw.isBlank()) {
+            String gstin = gstinRaw.trim().toUpperCase();
+            if (!GSTIN_PATTERN.matcher(gstin).matches()) {
+                throw new RoutingError("Invalid GSTIN format. Expected 15 characters (e.g. 27AAPFU0939F1ZV)");
+            }
+            company.gstin = gstin;
+        }
+
+        // Identity fields
+        company.companyType          = body.getString("companyType");
+        company.cin                  = body.getString("cin");
+        company.yearOfEstablishment  = body.getInteger("yearOfEstablishment");
+        company.employeeCount        = body.getString("employeeCount");
+        company.linkedinUrl          = body.getString("linkedinUrl");
+
+        // HR contact extras
+        company.hrDesignation = body.getString("hrDesignation");
+        company.hrLinkedin    = body.getString("hrLinkedin");
+
         company.save();
 
         int seq = CompanyRepository.INSTANCE.countAll();
@@ -94,18 +125,42 @@ public enum SelfRegisterCompanyController implements BaseController {
         hrUser.password  = ""; // no password until approval
         hrUser.save();
 
-        // Notify Applyra team
-        final Long companyId = company.getId();
-        final String code    = company.code;
-        EmailService.sendEmail(
-                SUPPORT_EMAIL,
-                "New Company Self-Registration — " + companyName,
-                buildAdminNotificationHtml(companyName, code, companyId, hrName.trim(), email,
-                        company.industry, company.website)
-        ).subscribe(
-                ok  -> System.out.println("[SelfRegister] Admin notified for " + companyName),
-                err -> System.err.println("[SelfRegister] Email error: " + err.getMessage())
-        );
+        // Notify superadmins + support email
+        final Long companyId   = company.getId();
+        final String code      = company.code;
+        final Company finalCo  = company;
+        final String finalEmail = email;
+        final String finalHrName = hrName.trim();
+
+        new Thread(() -> {
+            try {
+                // Support email (existing)
+                EmailService.sendEmail(
+                        SUPPORT_EMAIL,
+                        "New Company Self-Registration — " + companyName,
+                        buildAdminNotificationHtml(companyName, code, companyId, finalHrName, finalEmail,
+                                finalCo.industry, finalCo.website)
+                ).subscribe(
+                        ok  -> System.out.println("[SelfRegister] Support notified for " + companyName),
+                        err -> System.err.println("[SelfRegister] Support email error: " + err.getMessage())
+                );
+
+                // All superadmins
+                String notifHtml = EmailService.buildCompanyOnboardingNotificationHtml(
+                        companyName, code, finalCo.industry, finalCo.headquarters,
+                        finalEmail, "Self-registered (pending approval)"
+                );
+                String subject = "New Company Registration — " + companyName + " | Applyra";
+                List<models.sql.User> superAdmins = UserRepository.INSTANCE.findByUserType(UserType.SUPER_ADMIN);
+                for (models.sql.User sa : superAdmins) {
+                    if (!SUPPORT_EMAIL.equals(sa.email)) {
+                        EmailService.sendEmail(sa.email, subject, notifHtml).subscribe(ok -> {}, err -> {});
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("[SelfRegister] Notification thread error: " + e.getMessage());
+            }
+        }, "self-register-notify").start();
 
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("message", "Registration submitted! Applyra will review and activate your account shortly. You'll receive your login credentials by email.");

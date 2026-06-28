@@ -579,6 +579,37 @@ public class EmailService {
                 + "</div>";
     }
 
+    /**
+     * Notification email sent to superadmins, college TPOs, and other stakeholders
+     * when a company is onboarded / registered on Applyra.
+     */
+    public static String buildCompanyOnboardingNotificationHtml(
+            String companyName, String companyCode, String industry,
+            String headquarters, String hrEmail, String onboardedBy) {
+        return "<!DOCTYPE html><html><body style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#1a1a1a'>"
+                + "<h2 style='color:#7c3aed'>New Company Onboarded — " + companyName + "</h2>"
+                + "<p>A new company has been onboarded on <strong>Applyra</strong> and is now available for placement drives.</p>"
+                + "<div style='background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:16px;margin:16px 0'>"
+                + "<table style='width:100%;border-collapse:collapse'>"
+                + notifRow("Company", companyName)
+                + notifRow("Code", companyCode != null ? companyCode : "—")
+                + notifRow("Industry", industry != null ? industry : "—")
+                + notifRow("Headquarters", headquarters != null ? headquarters : "—")
+                + notifRow("HR Email", hrEmail)
+                + notifRow("Onboarded By", onboardedBy)
+                + "</table>"
+                + "</div>"
+                + "<p>Log in to Applyra to link this company to placement drives.</p>"
+                + "<hr style='border:none;border-top:1px solid #e5e7eb;margin:24px 0'>"
+                + "<p style='color:#6b7280;font-size:12px'>Applyra Placement Platform — automated notification</p>"
+                + "</body></html>";
+    }
+
+    private static String notifRow(String label, String value) {
+        return "<tr><td style='padding:6px 12px;font-weight:600;color:#6b7280;width:130px'>" + label
+                + "</td><td style='padding:6px 12px;color:#1a1a1a'>" + value + "</td></tr>";
+    }
+
     public static String buildCustomHtml(String recipientName, String subject, String body) {
         return "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>"
                 + "<h2 style='color: #2563eb;'>" + subject + "</h2>"
