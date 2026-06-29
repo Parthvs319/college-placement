@@ -7,6 +7,7 @@ import io.vertx.rxjava.ext.web.RoutingContext;
 import lombok.Data;
 import models.access.middlewear.college.CollegeAccessMiddleware;
 import models.body.CollegeLoginRequest;
+import models.enums.EmploymentType;
 import models.repos.*;
 import models.sql.Student;
 
@@ -48,9 +49,19 @@ public enum CollegeAnalyticsController implements BaseController {
             analytics.placementRate = (double) analytics.placedStudents / analytics.totalStudents * 100;
         }
 
-        // Internship and PPO counts
+        // Student-level internship / PPO / full-time counts
         analytics.internshipCount = (int) allStudents.stream().filter(Student::isInternship).count();
         analytics.ppoCount        = (int) allStudents.stream().filter(Student::isPpo).count();
+        analytics.fullTimeCount   = analytics.placedStudents - analytics.ppoCount;
+        if (analytics.fullTimeCount < 0) analytics.fullTimeCount = 0;
+
+        // Drive counts by type
+        analytics.fullTimeDrives   = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.FULL_TIME);
+        analytics.internshipDrives = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.INTERNSHIP);
+        analytics.ppoDrives        = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.PPO);
+
+        // Total offers released
+        analytics.totalOffers = OfferRepository.INSTANCE.countByCollege(collegeId);
 
         // Department-wise stats
         Map<String, int[]> deptMap = new LinkedHashMap<>();
@@ -88,8 +99,16 @@ public enum CollegeAnalyticsController implements BaseController {
         int unplacedStudents;
         int totalCompanies;
         double placementRate;
+        // Student-level counts
         int internshipCount;
         int ppoCount;
+        int fullTimeCount;
+        // Drive counts by type
+        int fullTimeDrives;
+        int internshipDrives;
+        int ppoDrives;
+        // Offers
+        int totalOffers;
         List<DeptStat> departmentStats;
     }
 

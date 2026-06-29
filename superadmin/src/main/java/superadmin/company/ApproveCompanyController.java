@@ -84,7 +84,7 @@ public enum ApproveCompanyController implements BaseController {
 
         EmailService.sendEmail(
                 hrEmail,
-                "Your Applyra Company Account is Approved — " + companyName,
+                "Your Applyra Company Account is Approved | " + companyName,
                 buildApprovalHtml(companyName, hrName, hrEmail, finalPassword)
         ).subscribe(
                 ok  -> System.out.println("[ApproveCompany] Credentials sent to " + hrEmail),
@@ -107,7 +107,7 @@ public enum ApproveCompanyController implements BaseController {
 
     private static String buildApprovalHtml(String companyName, String hrName, String email, String password) {
         return "<!DOCTYPE html><html><body style='font-family:sans-serif;color:#1a1a1a;max-width:600px;margin:0 auto;padding:20px'>"
-                + "<h2 style='color:#7c3aed'>Welcome to Applyra — " + companyName + "</h2>"
+                + "<h2 style='color:#7c3aed'>Welcome to Applyra | " + companyName + "</h2>"
                 + "<p>Hi " + hrName + ",</p>"
                 + "<p>Your company registration on <strong>Applyra</strong> has been approved. "
                 + "You can now log in to manage placement drives and connect with colleges.</p>"

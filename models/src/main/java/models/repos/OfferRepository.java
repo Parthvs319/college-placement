@@ -74,6 +74,30 @@ public enum OfferRepository {
                 .findCount();
     }
 
+    /** All offers for a specific companyCollege link (used by TPO company-detail page) */
+    public List<Offer> byCompanyCollege(Long companyCollegeId) {
+        return finder.query()
+                .fetch("student")
+                .fetch("student.user")
+                .fetch("drive")
+                .where()
+                .eq("drive.companyCollege.id", companyCollegeId)
+                .eq("deleted", false)
+                .orderBy("createdAt desc")
+                .findList();
+    }
+
+    /** Count all offers for a college (via drive -> companyCollege -> college) */
+    public int countByCollege(Long collegeId) {
+        return finder.query()
+                .fetch("drive")
+                .fetch("drive.companyCollege")
+                .where()
+                .eq("drive.companyCollege.college.id", collegeId)
+                .eq("deleted", false)
+                .findCount();
+    }
+
     public List<Offer> findRecent(int limit) {
         return finder.query()
                 .fetch("student")

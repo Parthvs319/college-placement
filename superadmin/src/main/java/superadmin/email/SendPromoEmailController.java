@@ -161,7 +161,7 @@ public enum SendPromoEmailController implements BaseController {
 
             "<p style='margin:0 0 12px;color:#111827;font-size:16px;font-weight:600'>" + greeting + "</p>" +
             collegeNote +
-            "<p style='margin:0 0 28px;color:#374151;font-size:15px;line-height:1.6'>Landing the right job in today's market is tough — but with the right tools, you don't have to do it alone. Applyra's AI is built specifically to help students like you stand out, prepare better, and get placed faster.</p>" +
+            "<p style='margin:0 0 28px;color:#374151;font-size:15px;line-height:1.6'>Landing the right job in today's market is tough, but with the right tools, you don't have to do it alone. Applyra's AI is built specifically to help students like you stand out, prepare better, and get placed faster.</p>" +
 
             // Feature cards
             "<table width='100%' cellpadding='0' cellspacing='0'>" +
@@ -172,7 +172,7 @@ public enum SendPromoEmailController implements BaseController {
 
             featureCard("🎯", "#ECFDF5", "#059669",
                 "Smart Drive Matching",
-                "Our AI matches you to placement drives where your profile — CGPA, department, skills — gives you the best shot. No more applying blind.") +
+                "Our AI matches you to placement drives where your profile (CGPA, department, skills) gives you the best shot. No more applying blind.") +
 
             featureCard("📝", "#FFF7ED", "#D97706",
                 "AI Interview Prep",
@@ -180,7 +180,7 @@ public enum SendPromoEmailController implements BaseController {
 
             featureCard("📊", "#FDF4FF", "#9333EA",
                 "Skill Gap Insights",
-                "See exactly what skills recruiters in your target companies are looking for — and a personalised roadmap to close the gaps before your next drive.") +
+                "See exactly what skills recruiters in your target companies are looking for, and a personalised roadmap to close the gaps before your next drive.") +
 
             featureCard("🚀", "#FFF1F2", "#E11D48",
                 "One-click Applications",
@@ -191,12 +191,12 @@ public enum SendPromoEmailController implements BaseController {
             // Social proof
             "<div style='margin:32px 0;padding:20px 24px;background:#F9FAFB;border-left:4px solid #C4A55A;border-radius:0 8px 8px 0'>" +
             "<p style='margin:0;color:#374151;font-size:14px;line-height:1.6;font-style:italic'>\"Applyra's resume analyzer helped me raise my ATS score from 42 to 87. I got shortlisted by 3 companies in the same week.\"</p>" +
-            "<p style='margin:8px 0 0;color:#6B7280;font-size:13px;font-weight:600'>— Priya S., placed at Infosys</p>" +
+            "<p style='margin:8px 0 0;color:#6B7280;font-size:13px;font-weight:600'>- Priya S., placed at Infosys</p>" +
             "</div>" +
 
             // CTA
             "<div style='text-align:center;margin:32px 0 8px'>" +
-            "<a href='https://applyra.in' style='display:inline-block;background:linear-gradient(135deg,#C4A55A,#D4B86A);color:#1A1A2E;font-size:16px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:50px;letter-spacing:0.3px'>Get started — it's free →</a>" +
+            "<a href='https://applyra.in' style='display:inline-block;background:linear-gradient(135deg,#C4A55A,#D4B86A);color:#1A1A2E;font-size:16px;font-weight:800;text-decoration:none;padding:16px 40px;border-radius:50px;letter-spacing:0.3px'>Get started, it's free →</a>" +
             "</div>" +
             "<p style='margin:12px 0 0;text-align:center;color:#9CA3AF;font-size:13px'>No credit card needed · Free plan available</p>" +
 

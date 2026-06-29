@@ -42,7 +42,7 @@ public enum SendActionOtpController implements BaseController {
                     );
 
                     new Thread(() ->
-                            EmailService.sendEmail(adminEmail, "Applyra — Action Confirmation OTP", htmlBody)
+                            EmailService.sendEmail(adminEmail, "Applyra Action Confirmation OTP", htmlBody)
                                     .subscribe(
                                             sent -> System.out.println("[SendActionOtp] Email sent=" + sent + " to " + adminEmail),
                                             err  -> System.err.println("[SendActionOtp] Email error: " + err.getMessage())

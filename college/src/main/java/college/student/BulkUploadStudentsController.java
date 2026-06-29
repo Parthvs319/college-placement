@@ -218,7 +218,7 @@ public enum BulkUploadStudentsController implements BaseController {
                             collegeName, finalName, finalEmail, rawPassword,
                             enrollmentNumber, finalDept, finalYear, tpoName
                     );
-                    EmailService.sendEmail(finalEmail, "Your Applyra Student Login — " + collegeName, html)
+                    EmailService.sendEmail(finalEmail, "Your Applyra Student Login | " + collegeName, html)
                             .subscribe(
                                     sent -> System.out.println("[BulkUpload] Credentials " + (sent ? "sent" : "failed") + " to " + finalEmail),
                                     err -> System.err.println("[BulkUpload] Email error: " + err.getMessage())

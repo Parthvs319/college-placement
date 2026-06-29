@@ -47,7 +47,7 @@ public class NotificationService {
                         String html = EmailService.buildDriveAnnouncementHtml(
                                 companyName, drive.title, driveDate, regDeadline, college.name, PORTAL_URL);
                         EmailService.sendEmail(student.user.email,
-                                "New Drive: " + companyName + " — " + drive.title, html)
+                                "New Drive: " + companyName + " | " + drive.title, html)
                                 .subscribe(ok -> { if (ok) delivered.incrementAndGet(); else failed.incrementAndGet(); },
                                         err -> failed.incrementAndGet());
                     }
@@ -65,7 +65,7 @@ public class NotificationService {
         }
 
         return logNotification(college, drive, channels, "DRIVE_ANNOUNCEMENT",
-                "New Drive: " + companyName + " — " + drive.title, null,
+                "New Drive: " + companyName + " | " + drive.title, null,
                 students.size(), delivered.get(), failed.get(), null);
     }
 
@@ -94,7 +94,7 @@ public class NotificationService {
                     String html = EmailService.buildOfferNotificationHtml(
                             studentName, companyName, designation, ctc, deadline, PORTAL_URL);
                     EmailService.sendEmail(student.user.email,
-                            "Offer from " + companyName + " — " + designation, html)
+                            "Offer from " + companyName + " | " + designation, html)
                             .subscribe(ok -> { if (ok) delivered.incrementAndGet(); else failed.incrementAndGet(); },
                                     err -> failed.incrementAndGet());
                 }
@@ -111,7 +111,7 @@ public class NotificationService {
         }
 
         return logNotification(college, drive, channels, "OFFER",
-                "Offer: " + companyName + " — " + designation, null,
+                "Offer: " + companyName + " | " + designation, null,
                 1, delivered.get(), failed.get(), null);
     }
 
@@ -139,7 +139,7 @@ public class NotificationService {
                         String html = EmailService.buildDeadlineReminderHtml(
                                 studentName, companyName, drive.title, deadline, PORTAL_URL);
                         EmailService.sendEmail(student.user.email,
-                                "Deadline Reminder: " + companyName + " — " + drive.title, html)
+                                "Deadline Reminder: " + companyName + " | " + drive.title, html)
                                 .subscribe(ok -> { if (ok) delivered.incrementAndGet(); else failed.incrementAndGet(); },
                                         err -> failed.incrementAndGet());
                     }
@@ -157,7 +157,7 @@ public class NotificationService {
         }
 
         return logNotification(college, drive, channels, "DEADLINE_REMINDER",
-                "Deadline Reminder: " + companyName + " — " + drive.title, null,
+                "Deadline Reminder: " + companyName + " | " + drive.title, null,
                 recipients.size(), delivered.get(), failed.get(), null);
     }
 

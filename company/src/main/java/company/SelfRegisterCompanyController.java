@@ -137,7 +137,7 @@ public enum SelfRegisterCompanyController implements BaseController {
                 // Support email (existing)
                 EmailService.sendEmail(
                         SUPPORT_EMAIL,
-                        "New Company Self-Registration — " + companyName,
+                        "New Company Self-Registration: " + companyName,
                         buildAdminNotificationHtml(companyName, code, companyId, finalHrName, finalEmail,
                                 finalCo.industry, finalCo.website)
                 ).subscribe(
@@ -150,7 +150,7 @@ public enum SelfRegisterCompanyController implements BaseController {
                         companyName, code, finalCo.industry, finalCo.headquarters,
                         finalEmail, "Self-registered (pending approval)"
                 );
-                String subject = "New Company Registration — " + companyName + " | Applyra";
+                String subject = "New Company Registration: " + companyName + " | Applyra";
                 List<models.sql.User> superAdmins = UserRepository.INSTANCE.findByUserType(UserType.SUPER_ADMIN);
                 for (models.sql.User sa : superAdmins) {
                     if (!SUPPORT_EMAIL.equals(sa.email)) {
@@ -175,7 +175,7 @@ public enum SelfRegisterCompanyController implements BaseController {
             String hrName, String hrEmail,
             String industry, String website) {
         return "<!DOCTYPE html><html><body style='font-family:sans-serif;color:#1a1a1a;max-width:600px;margin:0 auto;padding:20px'>"
-                + "<h2 style='color:#7c3aed'>New Company Registration — Action Required</h2>"
+                + "<h2 style='color:#7c3aed'>New Company Registration: Action Required</h2>"
                 + "<p>A new company has self-registered on Applyra and is pending your approval.</p>"
                 + "<table style='border-collapse:collapse;width:100%'>"
                 + row("Company", companyName)

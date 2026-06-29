@@ -94,7 +94,7 @@ public enum VerifyCollegeController implements BaseController {
             String html = EmailService.buildTpoCredentialsHtml(
                     college.getName(), tpoEmail, rawPassword, college.getCode()
             );
-            EmailService.sendEmail(tpoEmail, "Your Applyra TPO Login Credentials — " + college.getName(), html)
+            EmailService.sendEmail(tpoEmail, "Your Applyra TPO Login Credentials | " + college.getName(), html)
                     .subscribe(
                             sent -> System.out.println("[VerifyCollege] Credentials email " + (sent ? "sent" : "failed") + " to " + tpoEmail),
                             err -> System.err.println("[VerifyCollege] Email error: " + err.getMessage())

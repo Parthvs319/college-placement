@@ -100,7 +100,7 @@ public enum AddTpoController implements BaseController {
                             null, null, null, portalUrl,
                             null, null
                     );
-                    String subject = "Your Applyra TPO Account — " + fCollege;
+                    String subject = "Your Applyra TPO Account | " + fCollege;
                     EmailService.sendEmail(fEmail, subject, html)
                             .subscribe(
                                     sent -> System.out.println("[AddTpo] Email " + (sent ? "sent" : "failed") + " to " + fEmail),

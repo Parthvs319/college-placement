@@ -177,7 +177,7 @@ public enum GenerateInvoiceController implements BaseController {
                     String collegeHtml = EmailService.buildInvoiceEmailHtml(
                             fCollegeName, fInvoiceNum, fPeriod, fAmount, fFileUrl, fDueDate
                     );
-                    String subject = "Invoice " + fInvoiceNum + " — Applyra Platform";
+                    String subject = "Invoice " + fInvoiceNum + " | Applyra Platform";
                     for (String email : collegeEmails) {
                         EmailService.sendEmail(email, subject, collegeHtml)
                                 .subscribe(

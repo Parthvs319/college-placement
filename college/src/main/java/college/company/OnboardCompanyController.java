@@ -115,7 +115,8 @@ public enum OnboardCompanyController implements BaseController {
             company.save();
             int companySeq = CompanyRepository.INSTANCE.countAll();
             // Code format: CMP-{COLLEGE_CODE}-{NNN}
-            company.code = "CMP-" + collegeCode + "-" + String.format("%03d", companySeq);
+            String safeCollegeCode = (collegeCode != null && !collegeCode.isBlank()) ? collegeCode : "APL";
+            company.code = "CMP-" + safeCollegeCode + "-" + String.format("%03d", companySeq);
             company.update();
             companyCreated = true;
         }
@@ -163,7 +164,7 @@ public enum OnboardCompanyController implements BaseController {
                         finalCompany.headquarters, finalHrEmail,
                         collegeName + " (TPO Portal)"
                 );
-                String subject = "New Company Onboarded — " + finalCompany.name + " | Applyra";
+                String subject = "New Company Onboarded: " + finalCompany.name + " | Applyra";
 
                 // 1. Notify all super admins
                 List<User> superAdmins = UserRepository.INSTANCE.findByUserType(UserType.SUPER_ADMIN);
@@ -190,7 +191,7 @@ public enum OnboardCompanyController implements BaseController {
                     String credHtml = EmailService.buildCompanyCredentialsHtml(
                             finalCompany.name, collegeName, finalHrEmail, finalPassword
                     );
-                    EmailService.sendEmail(finalHrEmail, "Your Applyra Company Login — " + collegeName, credHtml)
+                    EmailService.sendEmail(finalHrEmail, "Your Applyra Company Login | " + collegeName, credHtml)
                             .subscribe(
                                     sent -> System.out.println("[OnboardCompany] Credentials " + (sent ? "sent" : "failed") + " to " + finalHrEmail),
                                     err  -> System.err.println("[OnboardCompany] Credential email error: " + err.getMessage())
