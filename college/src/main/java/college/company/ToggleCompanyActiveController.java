@@ -33,7 +33,7 @@ public enum ToggleCompanyActiveController implements BaseController {
                     if (cc == null) throw new RoutingError(404, "Company link not found");
 
                     // Ensure this link belongs to the requesting college
-                    Long collegeId = req.getCollegeId();
+                    Long collegeId = req.getCollege().getId();
                     if (cc.getCollege() == null || !cc.getCollege().getId().equals(collegeId)) {
                         throw new RoutingError(403, "Not authorized to modify this company link");
                     }
