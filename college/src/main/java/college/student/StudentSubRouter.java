@@ -21,6 +21,7 @@ public enum StudentSubRouter implements SubRouterProtocol {
         router.post("/bulk-upload").handler(BulkUploadStudentsController.INSTANCE::handle);
         router.post("/onboarding-complete").handler(OnboardingCompleteController.INSTANCE::handle);
         router.post("/verify-bulk").handler(BulkVerifyStudentsController.INSTANCE::handle);
+        router.post("/verify-by-enrollment").handler(BulkVerifyByEnrollmentController.INSTANCE::handle);
         router.post("/warn").handler(WarnStudentsController.INSTANCE::handle);
 
         // Parameterised student routes — must come after all static paths

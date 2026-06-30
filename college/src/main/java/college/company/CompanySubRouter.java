@@ -17,6 +17,7 @@ public enum CompanySubRouter implements SubRouterProtocol {
         router.get("/").handler(ListCompanyCollegesController.INSTANCE::handle);
         router.post("/remind-inactive").handler(RemindInactiveCompaniesController.INSTANCE::handle);
         router.get("/:companyCollegeId/offers").handler(GetCompanyOffersController.INSTANCE::handle);
+        router.post("/:companyCollegeId/toggle-active").handler(ToggleCompanyActiveController.INSTANCE::handle);
 
         return router;
     }

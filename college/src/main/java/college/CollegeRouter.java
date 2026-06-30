@@ -30,6 +30,9 @@ public enum CollegeRouter implements SubRouterProtocol {
         // ── Analytics ──
         router.get("/analytics").handler(CollegeAnalyticsController.INSTANCE::handle);
 
+        // ── College Mail ──
+        router.post("/send-mail").handler(college.email.SendCollegeMailController.INSTANCE::handle);
+
         // ── Support Tickets ──
         router.post("/support/tickets").handler(CreateSupportTicketController.INSTANCE::handle);
 

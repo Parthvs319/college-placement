@@ -180,6 +180,78 @@ public class EmailService {
         });
     }
 
+    /**
+     * Send an HTML email with a custom replyTo address and optional CC.
+     * The "from" stays as the Brevo verified sender, but replies go to replyTo.
+     */
+    public static Single<Boolean> sendEmailWithReplyTo(
+            String toEmail, String toName,
+            String subject, String htmlBody,
+            String replyToEmail, String replyToName,
+            java.util.List<String[]> ccList) {
+
+        if (BREVO_API_KEY == null || BREVO_API_KEY.isEmpty()) {
+            System.out.println("[Email-DEV] To: " + toEmail + " ReplyTo: " + replyToEmail + " | Subject: " + subject);
+            return Single.just(true);
+        }
+
+        return Single.fromCallable(() -> {
+            try {
+                StringBuilder toField = new StringBuilder("[{\"email\":\"" + escapeJson(toEmail) + "\"");
+                if (toName != null && !toName.isBlank()) toField.append(",\"name\":\"").append(escapeJson(toName)).append("\"");
+                toField.append("}]");
+
+                StringBuilder ccField = new StringBuilder("[");
+                if (ccList != null && !ccList.isEmpty()) {
+                    boolean first = true;
+                    for (String[] cc : ccList) {
+                        if (cc == null || cc.length < 1 || cc[0] == null || cc[0].isBlank()) continue;
+                        if (!first) ccField.append(",");
+                        ccField.append("{\"email\":\"").append(escapeJson(cc[0])).append("\"");
+                        if (cc.length > 1 && cc[1] != null && !cc[1].isBlank())
+                            ccField.append(",\"name\":\"").append(escapeJson(cc[1])).append("\"");
+                        ccField.append("}");
+                        first = false;
+                    }
+                }
+                ccField.append("]");
+
+                String replyToPart = "";
+                if (replyToEmail != null && !replyToEmail.isBlank()) {
+                    replyToPart = "\"replyTo\":{\"email\":\"" + escapeJson(replyToEmail) + "\"";
+                    if (replyToName != null && !replyToName.isBlank())
+                        replyToPart += ",\"name\":\"" + escapeJson(replyToName) + "\"";
+                    replyToPart += "},";
+                }
+
+                String json = "{"
+                        + "\"sender\":{\"name\":\"" + escapeJson(BREVO_FROM_NAME) + "\",\"email\":\"" + escapeJson(BREVO_FROM_EMAIL) + "\"},"
+                        + replyToPart
+                        + "\"to\":" + toField + ","
+                        + (ccList != null && !ccList.isEmpty() ? "\"cc\":" + ccField + "," : "")
+                        + "\"subject\":\"" + escapeJson(subject) + "\","
+                        + "\"htmlContent\":\"" + escapeJson(htmlBody) + "\""
+                        + "}";
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                        .header("api-key", BREVO_API_KEY)
+                        .header("Content-Type", "application/json")
+                        .header("Accept", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
+
+                HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 201) return true;
+                System.err.println("[Email] Brevo replyTo email error (" + response.statusCode() + "): " + response.body());
+                return false;
+            } catch (Exception e) {
+                System.err.println("[Email] sendEmailWithReplyTo failed to " + toEmail + ": " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
     private static String escapeJson(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\")

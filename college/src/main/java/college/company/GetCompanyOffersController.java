@@ -79,7 +79,7 @@ public enum GetCompanyOffersController implements BaseController {
             if (o.drive != null) {
                 m.put("driveId",           o.drive.getId());
                 m.put("driveTitle",        o.drive.getTitle());
-                m.put("driveCode",         o.drive.getCode());
+                m.put("driveCode",         o.drive.getDriveCode());
                 m.put("employmentType",    o.drive.getEmploymentType() != null ? o.drive.getEmploymentType().name() : null);
             }
 

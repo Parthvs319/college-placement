@@ -58,7 +58,7 @@ public enum CollegeAnalyticsController implements BaseController {
         // Drive counts by type
         analytics.fullTimeDrives   = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.FULL_TIME);
         analytics.internshipDrives = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.INTERNSHIP);
-        analytics.ppoDrives        = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.PPO);
+        analytics.ppoDrives        = DriveRepository.INSTANCE.countByCollegeAndType(collegeId, EmploymentType.INTERN_PLUS_FTE);
 
         // Total offers released
         analytics.totalOffers = OfferRepository.INSTANCE.countByCollege(collegeId);
