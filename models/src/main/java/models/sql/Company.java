@@ -50,6 +50,10 @@ public class Company extends AttrsModel {
 
     public boolean active = true;
 
+    public boolean onboardedByCollege = false;
+
+    public boolean selfOnboard = false;
+
     // ── HR Contact ────────────────────────────────────────────────────────────
 
     public String hrDesignation;            // e.g. "Talent Acquisition Manager"

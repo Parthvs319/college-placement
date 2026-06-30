@@ -96,6 +96,7 @@ public enum OnboardCompanyController implements BaseController {
             company.name         = companyName;
             company.contactEmail = hrEmail;
             company.active       = true;
+            company.onboardedByCollege = true;
 
             company.industry     = str(body, "industry");
             company.website      = str(body, "website");

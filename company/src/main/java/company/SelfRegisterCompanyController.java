@@ -85,6 +85,7 @@ public enum SelfRegisterCompanyController implements BaseController {
         company.contactEmail = email;
         company.contactPhone = body.getString("hrPhone");
         company.active       = false;   // pending Applyra approval
+        company.selfOnboard  = true;
 
         // GSTIN validation
         String gstinRaw = body.getString("gstin");
