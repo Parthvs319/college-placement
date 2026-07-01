@@ -72,6 +72,7 @@ public enum CreateDriveController implements BaseController {
         drive.status = DriveStatus.UPCOMING;
 
         if (body.isPresent("jobDescription")) drive.jobDescription = body.get("jobDescription");
+        if (body.isPresent("jdFileUrl")) drive.jdFileUrl = body.get("jdFileUrl");
         if (body.isPresent("academicYear")) drive.academicYear = Integer.parseInt(body.get("academicYear"));
         if (body.isPresent("minCgpa")) drive.minCgpa = new BigDecimal(String.valueOf(body.get("minCgpa")));
         if (body.isPresent("maxActiveBacklogs")) drive.maxActiveBacklogs = Integer.parseInt(body.get("maxActiveBacklogs"));

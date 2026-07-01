@@ -43,6 +43,7 @@ public enum UpdateDriveController implements BaseController {
 
         if (body.isPresent("title")) drive.title = body.get("title");
         if (body.isPresent("jobDescription")) drive.jobDescription = body.get("jobDescription");
+        if (body.isPresent("jdFileUrl")) drive.jdFileUrl = body.get("jdFileUrl");
         if (body.isPresent("minCgpa")) drive.minCgpa = new BigDecimal(String.valueOf(body.get("minCgpa")));
         if (body.isPresent("maxActiveBacklogs")) drive.maxActiveBacklogs = Integer.parseInt(body.get("maxActiveBacklogs"));
         if (body.isPresent("ctcOffered")) drive.ctcOffered = new BigDecimal(String.valueOf(body.get("ctcOffered")));

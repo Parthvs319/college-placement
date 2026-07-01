@@ -33,6 +33,9 @@ public class Drive extends AttrsModel {
 
     public String jobDescription;
 
+    /** S3 URL to the uploaded JD document (PDF/DOCX) */
+    public String jdFileUrl;
+
     @Column(nullable = false)
     public EmploymentType employmentType;
 

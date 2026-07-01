@@ -42,7 +42,7 @@ public enum UploadController implements BaseController {
     INSTANCE;
 
     private static final Set<String> ALLOWED_FOLDERS = Set.of(
-            "resumes", "documents", "logos", "offer-letters", "brochures"
+            "resumes", "documents", "logos", "offer-letters", "brochures", "jd"
     );
 
     private static final Set<String> OCR_CONTENT_TYPES = Set.of(

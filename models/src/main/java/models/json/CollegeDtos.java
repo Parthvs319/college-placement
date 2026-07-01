@@ -20,6 +20,7 @@ public final class CollegeDtos {
         String driveCode;
         String title;
         String jobDescription;
+        String jdFileUrl;
         String employmentType;
         String status;
         int academicYear;
@@ -47,6 +48,7 @@ public final class CollegeDtos {
         dto.driveCode = d.getDriveCode();
         dto.title = d.getTitle();
         dto.jobDescription = d.getJobDescription();
+        dto.jdFileUrl = d.getJdFileUrl();
         dto.employmentType = d.getEmploymentType() != null ? d.getEmploymentType().name() : null;
         dto.status = d.getStatus() != null ? d.getStatus().name() : null;
         dto.academicYear = d.getAcademicYear();
