@@ -76,7 +76,7 @@ public enum CreateDriveController implements BaseController {
                 );
     }
 
-    private SuccessResponse createDrive(CollegeLoginRequest request) {
+    private Object createDrive(CollegeLoginRequest request) {
         Request body = request.getRequest();
 
         Long companyCollegeId = body.get("companyCollegeId");
