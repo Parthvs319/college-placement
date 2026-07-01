@@ -49,12 +49,15 @@ public enum CreateDriveController implements BaseController {
 
     private Object createDrive(CollegeLoginRequest request, RoutingContext rc) {
         Request body = request.getRequest();
-        String companyCollegeIdStr = body.get("companyCollegeId");
-        String title = body.get("title");
-        String employmentTypeStr = body.get("employmentType");
-        if (companyCollegeIdStr == null || title == null || employmentTypeStr == null) {
+        Object ccIdRaw = body.get("companyCollegeId");
+        Object titleRaw = body.get("title");
+        Object empTypeRaw = body.get("employmentType");
+        if (ccIdRaw == null || titleRaw == null || empTypeRaw == null) {
             throw new RoutingError("companyCollegeId, title, and employmentType are required");
         }
+        String companyCollegeIdStr = String.valueOf(ccIdRaw);
+        String title = String.valueOf(titleRaw);
+        String employmentTypeStr = String.valueOf(empTypeRaw);
         CompanyCollege cc = CompanyCollegeRepository.INSTANCE.byId(Long.parseLong(companyCollegeIdStr));
         if (cc == null) {
             throw new RoutingError("Company-College link not found");
