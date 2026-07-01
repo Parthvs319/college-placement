@@ -1,10 +1,13 @@
 package college.drive;
 
 import helpers.annotations.CollegeRole;
+import helpers.blueprint.enums.RequestItemType;
 import helpers.customErrors.RoutingError;
 import helpers.interfaces.BaseController;
 import helpers.utils.Request;
+import helpers.utils.RequestItem;
 import helpers.utils.ResponseUtils;
+import helpers.utils.SuccessResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.ext.web.RoutingContext;
@@ -30,40 +33,60 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @CollegeRole
 public enum CreateDriveController implements BaseController {
 
     INSTANCE;
 
+    public List<RequestItem> items() {
+        List<RequestItem> items = new ArrayList<>();
+        items.add(RequestItem.builder().key("companyCollegeId").itemType(RequestItemType.INTEGER).required(true).build());
+        items.add(RequestItem.builder().key("title").itemType(RequestItemType.STRING).required(true).build());
+        items.add(RequestItem.builder().key("employmentType").itemType(RequestItemType.STRING).required(true).build());
+        items.add(RequestItem.builder().key("jobDescription").itemType(RequestItemType.STRING).required(false).build());
+        items.add(RequestItem.builder().key("jdFileUrl").itemType(RequestItemType.STRING).required(false).build());
+        items.add(RequestItem.builder().key("academicYear").itemType(RequestItemType.INTEGER).required(false).build());
+        items.add(RequestItem.builder().key("minCgpa").itemType(RequestItemType.DOUBLE).required(false).build());
+        items.add(RequestItem.builder().key("maxActiveBacklogs").itemType(RequestItemType.INTEGER).required(false).build());
+        items.add(RequestItem.builder().key("ctcOffered").itemType(RequestItemType.DOUBLE).required(false).build());
+        items.add(RequestItem.builder().key("stipend").itemType(RequestItemType.DOUBLE).required(false).build());
+        items.add(RequestItem.builder().key("location").itemType(RequestItemType.STRING).required(false).build());
+        items.add(RequestItem.builder().key("isRemote").itemType(RequestItemType.BOOLEAN).required(false).build());
+        items.add(RequestItem.builder().key("venue").itemType(RequestItemType.STRING).required(false).build());
+        items.add(RequestItem.builder().key("registrationDeadline").itemType(RequestItemType.STRING).required(false).build());
+        items.add(RequestItem.builder().key("driveDate").itemType(RequestItemType.STRING).required(false).build());
+        items.add(RequestItem.builder().key("minPassingYear").itemType(RequestItemType.INTEGER).required(false).build());
+        items.add(RequestItem.builder().key("maxPassingYear").itemType(RequestItemType.INTEGER).required(false).build());
+        items.add(RequestItem.builder().key("eligibleDepartments").itemType(RequestItemType.ARRAY).required(false).build());
+        items.add(RequestItem.builder().key("rounds").itemType(RequestItemType.ARRAY).required(false).build());
+        items.add(RequestItem.builder().key("notifyEligibleStudents").itemType(RequestItemType.BOOLEAN).required(false).build());
+        items.add(RequestItem.builder().key("notifyCompanyHR").itemType(RequestItemType.BOOLEAN).required(false).build());
+        items.add(RequestItem.builder().key("notifyAdmins").itemType(RequestItemType.BOOLEAN).required(false).build());
+        return items;
+    }
+
     @Override
     public void handle(RoutingContext event) {
-        CollegeAccessMiddleware.INSTANCE.with(event, new ArrayList<>(), this.getClass())
-                .map(req -> createDrive(req, event))
+        CollegeAccessMiddleware.INSTANCE.with(event, items(), this.getClass())
+                .map(this::createDrive)
                 .subscribe(
                         o -> ResponseUtils.INSTANCE.writeJsonResponse(event, o),
                         error -> ResponseUtils.INSTANCE.handleError(event, error)
                 );
     }
 
-    private Object createDrive(CollegeLoginRequest request, RoutingContext rc) {
+    private SuccessResponse createDrive(CollegeLoginRequest request) {
         Request body = request.getRequest();
-        Object ccIdRaw = body.get("companyCollegeId");
-        Object titleRaw = body.get("title");
-        Object empTypeRaw = body.get("employmentType");
-        if (ccIdRaw == null || titleRaw == null || empTypeRaw == null) {
-            throw new RoutingError("companyCollegeId, title, and employmentType are required");
-        }
-        String companyCollegeIdStr = String.valueOf(ccIdRaw);
-        String title = String.valueOf(titleRaw);
-        String employmentTypeStr = String.valueOf(empTypeRaw);
-        CompanyCollege cc = CompanyCollegeRepository.INSTANCE.byId(Long.parseLong(companyCollegeIdStr));
+
+        Long companyCollegeId = body.get("companyCollegeId");
+        String title = body.get("title");
+        String employmentTypeStr = body.get("employmentType");
+        CompanyCollege cc = CompanyCollegeRepository.INSTANCE.byId(companyCollegeId);
         if (cc == null) {
             throw new RoutingError("Company-College link not found");
         }
 
-        // Verify TPO is creating drive for their own college
         if (!cc.getCollege().getId().equals(request.getCollege().getId())) {
             throw new RoutingError("You can only create drives for your own college");
         }
@@ -76,27 +99,52 @@ public enum CreateDriveController implements BaseController {
 
         if (body.isPresent("jobDescription")) drive.jobDescription = body.get("jobDescription");
         if (body.isPresent("jdFileUrl")) drive.jdFileUrl = body.get("jdFileUrl");
-        if (body.isPresent("academicYear")) drive.academicYear = Integer.parseInt(body.get("academicYear"));
-        if (body.isPresent("minCgpa")) drive.minCgpa = new BigDecimal(String.valueOf(body.get("minCgpa")));
-        if (body.isPresent("maxActiveBacklogs")) drive.maxActiveBacklogs = Integer.parseInt(body.get("maxActiveBacklogs"));
-        if (body.isPresent("ctcOffered")) drive.ctcOffered = new BigDecimal(String.valueOf(body.get("ctcOffered")));
-        if (body.isPresent("stipend")) drive.stipend = new BigDecimal(String.valueOf(body.get("stipend")));
+        if (body.isPresent("academicYear")) {
+            Long ay = body.get("academicYear");
+            if (ay != null) drive.academicYear = ay.intValue();
+        }
+        if (body.isPresent("minCgpa")) {
+            Double mc = body.get("minCgpa");
+            if (mc != null) drive.minCgpa = BigDecimal.valueOf(mc);
+        }
+        if (body.isPresent("maxActiveBacklogs")) {
+            Long mab = body.get("maxActiveBacklogs");
+            if (mab != null) drive.maxActiveBacklogs = mab.intValue();
+        }
+        if (body.isPresent("ctcOffered")) {
+            Double ctc = body.get("ctcOffered");
+            if (ctc != null) drive.ctcOffered = BigDecimal.valueOf(ctc);
+        }
+        if (body.isPresent("stipend")) {
+            Double st = body.get("stipend");
+            if (st != null) drive.stipend = BigDecimal.valueOf(st);
+        }
         if (body.isPresent("location")) drive.location = body.get("location");
-        if (body.isPresent("isRemote")) drive.isRemote = Boolean.parseBoolean(String.valueOf(body.get("isRemote")));
+        if (body.isPresent("isRemote")) {
+            Boolean ir = body.get("isRemote");
+            if (ir != null) drive.isRemote = ir;
+        }
         if (body.isPresent("venue")) drive.venue = body.get("venue");
         if (body.isPresent("registrationDeadline")) {
-            drive.registrationDeadline = Timestamp.valueOf(String.valueOf(body.get("registrationDeadline")));
+            String rd = body.get("registrationDeadline");
+            if (rd != null) drive.registrationDeadline = Timestamp.valueOf(rd);
         }
         if (body.isPresent("driveDate")) {
-            drive.driveDate = Timestamp.valueOf(String.valueOf(body.get("driveDate")));
+            String dd = body.get("driveDate");
+            if (dd != null) drive.driveDate = Timestamp.valueOf(dd);
         }
-        if (body.isPresent("minPassingYear")) drive.minPassingYear = Integer.parseInt(body.get("minPassingYear"));
-        if (body.isPresent("maxPassingYear")) drive.maxPassingYear = Integer.parseInt(body.get("maxPassingYear"));
+        if (body.isPresent("minPassingYear")) {
+            Long mpy = body.get("minPassingYear");
+            if (mpy != null) drive.minPassingYear = mpy.intValue();
+        }
+        if (body.isPresent("maxPassingYear")) {
+            Long mxpy = body.get("maxPassingYear");
+            if (mxpy != null) drive.maxPassingYear = mxpy.intValue();
+        }
 
-        // Parse eligible departments from JSON array
-        JsonObject jsonBody = rc.body().asJsonObject();
-        if (jsonBody != null && jsonBody.containsKey("eligibleDepartments")) {
-            JsonArray deptsArr = jsonBody.getJsonArray("eligibleDepartments");
+        // Eligible departments from ARRAY
+        if (body.isPresent("eligibleDepartments")) {
+            JsonArray deptsArr = body.get("eligibleDepartments");
             if (deptsArr != null && !deptsArr.isEmpty()) {
                 List<String> depts = new ArrayList<>();
                 for (int i = 0; i < deptsArr.size(); i++) {
@@ -114,8 +162,8 @@ public enum CreateDriveController implements BaseController {
         drive.update();
 
         // Create rounds if provided
-        if (jsonBody != null && jsonBody.containsKey("rounds")) {
-            JsonArray roundsArr = jsonBody.getJsonArray("rounds");
+        if (body.isPresent("rounds")) {
+            JsonArray roundsArr = body.get("rounds");
             if (roundsArr != null) {
                 for (int i = 0; i < roundsArr.size(); i++) {
                     JsonObject rObj = roundsArr.getJsonObject(i);
@@ -140,13 +188,15 @@ public enum CreateDriveController implements BaseController {
             }
         }
 
-        // Parse notification flags
-        boolean notifyStudents = jsonBody != null && jsonBody.getBoolean("notifyEligibleStudents", false);
-        boolean notifyHR       = jsonBody != null && jsonBody.getBoolean("notifyCompanyHR", false);
-        boolean notifyAdmins   = jsonBody != null && jsonBody.getBoolean("notifyAdmins", false);
+        // Notification flags
+        Boolean notifyStudents = body.isPresent("notifyEligibleStudents") ? body.get("notifyEligibleStudents") : false;
+        Boolean notifyHR       = body.isPresent("notifyCompanyHR") ? body.get("notifyCompanyHR") : false;
+        Boolean notifyAdmins   = body.isPresent("notifyAdmins") ? body.get("notifyAdmins") : false;
+        if (notifyStudents == null) notifyStudents = false;
+        if (notifyHR == null) notifyHR = false;
+        if (notifyAdmins == null) notifyAdmins = false;
 
         if (notifyStudents || notifyHR || notifyAdmins) {
-            // Capture final values for thread
             final String collegeName = request.getCollege().getName() != null
                     ? request.getCollege().getName() : "Your College";
             final String companyName = cc.getCompany() != null ? cc.getCompany().getName() : "Company";
@@ -169,11 +219,14 @@ public enum CreateDriveController implements BaseController {
             final List<String> deptFilter = drive.getEligibleDepartments();
             final int passYear = drive.getAcademicYear();
 
+            final boolean doNotifyStudents = notifyStudents;
+            final boolean doNotifyHR = notifyHR;
+            final boolean doNotifyAdmins = notifyAdmins;
+
             new Thread(() -> {
                 int sentCount = 0;
 
-                // 1) Notify eligible students
-                if (notifyStudents) {
+                if (doNotifyStudents) {
                     try {
                         List<Student> eligible = StudentRepository.INSTANCE.findEligible(
                                 collegeId,
@@ -209,8 +262,7 @@ public enum CreateDriveController implements BaseController {
                     }
                 }
 
-                // 2) Notify company HR
-                if (notifyHR) {
+                if (doNotifyHR) {
                     try {
                         User hrUser = cc.getManagedByUser();
                         if (hrUser != null && hrUser.getEmail() != null && !hrUser.getEmail().isBlank()) {
@@ -230,10 +282,8 @@ public enum CreateDriveController implements BaseController {
                     }
                 }
 
-                // 3) Notify super admins and college TPOs
-                if (notifyAdmins) {
+                if (doNotifyAdmins) {
                     try {
-                        // Super admins
                         List<User> superAdmins = UserRepository.INSTANCE.findByUserType(UserType.SUPER_ADMIN);
                         for (User sa : superAdmins) {
                             if (sa.getEmail() == null || sa.getEmail().isBlank()) continue;
@@ -249,11 +299,10 @@ public enum CreateDriveController implements BaseController {
                             try { Thread.sleep(80); } catch (InterruptedException ignored) {}
                         }
 
-                        // College TPOs (other team members)
                         List<User> tpos = UserRepository.INSTANCE.byCollegeAndType(collegeId, UserType.TPO);
                         for (User tpo : tpos) {
                             if (tpo.getEmail() == null || tpo.getEmail().isBlank()) continue;
-                            if (tpo.getEmail().equals(tpoEmail)) continue; // skip creator
+                            if (tpo.getEmail().equals(tpoEmail)) continue;
                             String html = buildDriveAdminEmail(
                                     tpo.getName(), companyName, driveTitle, driveCode,
                                     ctcStr, locationStr, driveDateStr, collegeName, tpoName
@@ -277,7 +326,6 @@ public enum CreateDriveController implements BaseController {
         return CollegeDtos.toDriveDto(drive);
     }
 
-    // Email for eligible students about the new drive
     private String buildDriveStudentEmail(String studentName, String companyName,
                                            String driveTitle, String driveCode,
                                            String ctc, String location,
@@ -316,7 +364,6 @@ public enum CreateDriveController implements BaseController {
                 + "</td></tr></table></body></html>";
     }
 
-    // Email for company HR about the new drive
     private String buildDriveHREmail(String hrName, String companyName,
                                       String driveTitle, String driveCode,
                                       String ctc, String location,
@@ -353,7 +400,6 @@ public enum CreateDriveController implements BaseController {
                 + "</td></tr></table></body></html>";
     }
 
-    // Email for super admins and TPOs about the new drive
     private String buildDriveAdminEmail(String recipientName, String companyName,
                                          String driveTitle, String driveCode,
                                          String ctc, String location,
