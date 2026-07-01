@@ -25,7 +25,7 @@ public class DriveRound extends BaseModel {
 
     public int roundNumber;                 // 1, 2, 3...
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     public RoundType roundType;
 
     public String name;                     // "Online Assessment", "Technical Interview R1"

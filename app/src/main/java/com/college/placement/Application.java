@@ -1,6 +1,7 @@
 package com.college.placement;
 
 import helpers.sql.SqlConfigFactory;
+import io.ebean.DB;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.rxjava.core.Vertx;
 import models.consumers.AIConsumer;
