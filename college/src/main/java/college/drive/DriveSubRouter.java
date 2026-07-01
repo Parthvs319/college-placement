@@ -25,6 +25,7 @@ public enum DriveSubRouter implements SubRouterProtocol {
         router.get("/:driveId/rounds").handler(ListRoundsController.INSTANCE::handle);
         router.post("/:driveId/offers").handler(CreateOfferController.INSTANCE::handle);
         router.get("/:driveId/offers").handler(ListDriveOffersController.INSTANCE::handle);
+        router.post("/:driveId/finalize-venue").handler(FinalizeVenueController.INSTANCE::handle);
         router.post("/:driveId/remind-non-applicants").handler(RemindNonApplicantsController.INSTANCE::handle);
 
         return router;
