@@ -40,7 +40,7 @@ public class HttpVerticle extends AbstractVerticle {
         router.get("/").handler(ctx -> ctx.response().end("OK"));
 
         // Generic upload API (S3 + OCR)
-        router.post("/api/upload").handler(UploadController.INSTANCE::handle);
+        router.post("/upload").handler(UploadController.INSTANCE::handle);
 
         // Public location APIs (no auth)
         router.get("/location/states").handler(LocationController.INSTANCE::getStates);
