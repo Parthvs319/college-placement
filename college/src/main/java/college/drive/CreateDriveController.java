@@ -156,9 +156,10 @@ public enum CreateDriveController implements BaseController {
 
         drive.save();
 
-        // Auto-generate drive code after getting the ID
         int driveSeq = DriveRepository.INSTANCE.countByCollege(request.getCollege().getId());
-        drive.driveCode = "DRV-" + request.getCollege().getCode() + "-" + String.format("%03d", driveSeq);
+        String collegeCode = request.getCollege().getCode() != null ? request.getCollege().getCode() : "COL";
+        String companyCode = cc.getCompany() != null && cc.getCompany().getCode() != null ? cc.getCompany().getCode() : "CMP";
+        drive.driveCode = "Drive-" + collegeCode + "-" + companyCode + "-" + String.format("%03d", driveSeq);
         drive.update();
 
         // Create rounds if provided
