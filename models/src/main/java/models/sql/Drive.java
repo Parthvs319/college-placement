@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import models.enums.DriveStatus;
 import models.enums.EmploymentType;
+import models.repos.DriveRepository;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -90,4 +91,13 @@ public class Drive extends AttrsModel {
 
     @DbJsonB
     public List<String> niceToHaveSkills;
+
+    public void save(College college , CompanyCollege cc) {
+        int driveSeq = DriveRepository.INSTANCE.countByCollege(college.getId());
+        String collegeCode = college.getCode() != null ? college.getCode() : "COL";
+        String companyCode = cc.getCompany() != null && cc.getCompany().getCode() != null ? cc.getCompany().getCode() : "CMP";
+        String driveCode = "Drive-" + collegeCode + "-" + companyCode + "-" + String.format("%03d", driveSeq);
+        this.setDriveCode(driveCode);
+        super.save();
+    }
 }

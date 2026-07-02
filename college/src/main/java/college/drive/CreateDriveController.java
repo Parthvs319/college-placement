@@ -154,15 +154,8 @@ public enum CreateDriveController implements BaseController {
             }
         }
 
-        drive.save();
+        drive.save(request.getCollege() , cc);
 
-        int driveSeq = DriveRepository.INSTANCE.countByCollege(request.getCollege().getId());
-        String collegeCode = request.getCollege().getCode() != null ? request.getCollege().getCode() : "COL";
-        String companyCode = cc.getCompany() != null && cc.getCompany().getCode() != null ? cc.getCompany().getCode() : "CMP";
-        drive.driveCode = "Drive-" + collegeCode + "-" + companyCode + "-" + String.format("%03d", driveSeq);
-        drive.update();
-
-        // Create rounds if provided
         if (body.isPresent("rounds")) {
             JsonArray roundsArr = body.get("rounds");
             if (roundsArr != null) {
@@ -189,7 +182,6 @@ public enum CreateDriveController implements BaseController {
             }
         }
 
-        // Notification flags
         Boolean notifyStudents = body.isPresent("notifyEligibleStudents") ? body.get("notifyEligibleStudents") : false;
         Boolean notifyHR       = body.isPresent("notifyCompanyHR") ? body.get("notifyCompanyHR") : false;
         Boolean notifyAdmins   = body.isPresent("notifyAdmins") ? body.get("notifyAdmins") : false;
