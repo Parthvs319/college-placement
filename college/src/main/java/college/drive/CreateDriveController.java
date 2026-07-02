@@ -7,7 +7,6 @@ import helpers.interfaces.BaseController;
 import helpers.utils.Request;
 import helpers.utils.RequestItem;
 import helpers.utils.ResponseUtils;
-import helpers.utils.SuccessResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.ext.web.RoutingContext;
